@@ -13,10 +13,7 @@ book:
     - 03-preprocessing.qmd
     - 04-tuning.qmd
     - references.qmd
-
-execute: 
-  cache: true
-
+    
 bibliography: references.bib
 
 format:
