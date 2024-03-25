@@ -1,0 +1,262 @@
+# Introduction
+
+```{r}
+#| label: get-eval-fits
+#| include: false
+# Sys.setenv(emlwr.eval_fits = "true")
+if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
+  eval_fits <- FALSE
+} else {
+  eval_fits <- TRUE
+}
+```
+
+## Early value
+
+To demonstrate the impact that a couple small pieces of intuition can have on execution time when evaluating machine learning models, I'll run through a quick model tuning example. On the first go, I'll lean on tidymodels' default values and a simple grid search, and on the second, I'll pull a few tricks out from my sleeves that will drastically reduce the time to evaluate models while only negligibly decreasing predictive performance.
+
+### Setup
+
+First, loading a few needed packages:
+
+```{r}
+#| label: load-pkgs
+library(tidymodels)
+library(future)
+library(readmission)
+library(finetune)
+library(bonsai)
+```
+
+For the purposes of this example, we'll use a dataset giving hospital readmission data for patients with Type I diabetes. The dataset includes clinical care data from 130 U.S. hospitals from years 1999-2008. Each row describes a patient "encounter" (loosely, an inpatient hospital stay).
+
+```{r}
+#| label: readmission-print
+readmission
+```
+
+The first variable in this data, `readmitted`, gives whether the patient was readmitted within 30 days of discharge. We'd like to predict readmission using the remaining information in the dataset: demographic characteristics, insurance provider, medications taken, etc.
+
+::: callout-note
+For a more in-depth analysis of this data, see @strack2014 and @couch24, as well as @sec-datasets.
+:::
+
+We'll first split the data into training and testing sets before generating a set of 10 folds from the training data for cross-validation.
+
+```{r}
+#| label: readmission-split
+set.seed(1)
+readmission_split <- initial_split(readmission)
+readmission_train <- training(readmission_split)
+readmission_test <- testing(readmission_split)
+readmission_folds <- vfold_cv(readmission_train)
+```
+
+### A first go
+
+For my first go at tuning, I'll tune a boosted tree model using grid search. By default, tidymodels will use XGBoost as the modeling engine; I'll try out a few different values for `learn_rate`— a parameter that controls how drastically newly added trees impact predictions—and `trees`—the number of trees in the ensemble.
+
+```{r}
+#| label: bt
+bt <- 
+  boost_tree(
+    mode = "classification", 
+    learn_rate = tune(),
+    trees = tune()
+  )
+```
+
+I'll carry out a grid search using `tune_grid()`, trying out a bunch of different pairs of values for `learn_rate` and `trees` and seeing what sticks. The argument `grid = 12` indicates that I want to try out 12 different combinations of values and will let tidymodels take care of exactly what those values are.
+
+```{r}
+#| label: bm-basic
+#| message: false
+#| warning: false
+#| eval: !expr eval_fits
+set.seed(1)
+
+bm_basic <- 
+  bench::mark(
+    basic = 
+      tune_grid(
+        object = bt,
+        preprocessor = readmitted ~ .,
+        resamples = readmission_folds,
+        grid = 12
+      )
+  )
+```
+
+```{r}
+#| label: get-bm-basic
+#| include: false
+if (identical(eval_fits, "true")) {
+  save(bm_basic, file = "data/01-intro/bm_basic.Rda")
+} else {
+  load("data/01-intro/bm_basic.Rda")
+}
+```
+
+`bench::mark()` returns, among other things, a precise timing of how long this process takes.
+
+```{r}
+#| label: bm-basic-print
+bm_basic
+```
+
+Holy smokes! `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` hours is a good while. What all did `tune_grid()` do, though?
+
+First, let's break down how many model fits actually happened. Since I've supplied `grid = 12`, we're evaluating 12 possible model configurations. Each of those model configurations is evaluated against `readmission_folds`, a `r nrow(readmission_folds)`-fold cross validation object, meaning that each configuration is fitted `r nrow(readmission_folds)` times. That's `r nrow(readmission_folds) * 12` model fits!
+
+Further, consider that those fits happen on `r nrow(readmission_folds)-1`/`r nrow(readmission_folds)`ths of the training data, or `r nrow(readmission_folds$splits[[1]])` rows.
+
+<!--# TODO: The above doesn't seem to be in-lining correctly? -->
+
+With a couple small changes, though, the time to tune this model can be *drastically* decreased.
+
+### A speedy go
+
+To cut down on the time to evaluate these models, I'll make a few small modifications.
+
+First, I'll **evaluate in parallel**: Almost all modern laptops have more than one CPU core, and distributing computations across them only takes a couple lines of code with tidymodels.
+
+```{r}
+plan(multisession, workers = 4)
+```
+
+While this tuning process could benefit from distributing across many more cores than 4, I'll just use 4 here to give a realistic picture of the kinds of speedups possible on a typical laptop.
+
+Then, we'll **use a clever grid**: The tidymodels framework enables something called the "submodel trick," a technique that will allow us to predict from many more models than we actually fit. Instead of just supplying `grid = 12`, I'll construct the grid myself.
+
+```{r}
+bt_grid <-
+  bt %>%
+  extract_parameter_set_dials() %>% 
+  grid_regular(levels = 4)
+```
+
+::: callout-note
+To learn more about the submodel trick, see @sec-submodel.
+:::
+
+Next, I'll **switch out the computational engine**: Substituting XGBoost with another gradient-boosting model that can better handle some properties of this dataset will cut down on our fit time by a good bit.
+
+```{r}
+bt_lgb <- bt %>% set_engine("lightgbm")
+```
+
+Finally, I'll **give up early on poorly-performing models**: Rather than using grid search with `tune_grid()`, I'll use a technique called *racing* that stops evaluating models when they seem to be performing poorly using the `tune_race_anova()` function.
+
+```{r}
+#| label: bm-speedy
+#| warning: false
+#| message: false
+#| eval: !expr eval_fits
+set.seed(1)
+
+bm_speedy <- 
+  bench::mark(
+    speedy = 
+      tune_race_anova(
+        object = bt_lgb,
+        preprocessor = readmitted ~ .,
+        resamples = readmission_folds,
+        grid = bt_grid
+      )
+  )
+```
+
+```{r}
+#| label: get-bm-speedy
+#| include: false
+if (identical(eval_fits, "true")) {
+  save(bm_speedy, file = "data/01-intro/bm_speedy.Rda")
+} else {
+  load("data/01-intro/bm_speedy.Rda")
+}
+```
+
+Checking out the new benchmarks:
+
+```{r}
+#| label: bm-speedy-print
+bm_speedy
+```
+
+```{r}
+#| label: back-to-default
+#| echo: false
+plan("default")
+```
+
+The total time to tune was reduced from `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` *hours* to `r round(as.numeric(bm_speedy$median[[1]]) / 60, 2)` *minutes*—the second approach was `r round(as.numeric(bm_basic[["median"]][[1]]) / as.numeric(bm_speedy[["median"]][[1]]))` times faster than the first.
+
+The first thing I'd wonder when seeing this result is how much of a penalty in predictive performance I'd suffer due to this transition. Let's evaluate both of the top models from these tuning results on the test set. First, for the basic workflow:
+
+```{r}
+#| label: fit-basic
+#| eval: !expr eval_fits
+fit_basic <- 
+  select_best(bm_basic$result[[1]], metric = "roc_auc") %>%
+  finalize_workflow(workflow(readmitted ~ ., bt), parameters = .) %>%
+  last_fit(split = readmission_split)
+```
+
+```{r}
+#| label: get-fit-basic
+#| include: false
+if (identical(eval_fits, "true")) {
+  save(fit_basic, file = "data/01-intro/fit_basic.Rda")
+} else {
+  load("data/01-intro/fit_basic.Rda")
+}
+```
+
+```{r}
+#| label: print-fit-basic-metrics
+collect_metrics(fit_basic)
+```
+
+As for the quicker approach:
+
+```{r}
+#| label: fit-speedy
+#| eval: !expr eval_fits
+fit_speedy <- 
+  select_best(bm_speedy$result[[1]], metric = "roc_auc") %>%
+  finalize_workflow(workflow(readmitted ~ ., bt), parameters = .) %>%
+  last_fit(split = readmission_split)
+```
+
+```{r}
+#| label: get-fit-speedy
+#| include: false
+if (identical(eval_fits, "true")) {
+  save(fit_speedy, file = "data/01-intro/fit_speedy.Rda")
+} else {
+  load("data/01-intro/fit_speedy.Rda")
+}
+```
+
+```{r}
+#| label: print-fit-speedy-metrics
+collect_metrics(fit_speedy)
+```
+
+Virtually indistinguishable performance results in `r round(100 * as.numeric(bm_speedy[["median"]][[1]]) / as.numeric(bm_basic[["median"]][[1]]), 1)`% of the time.
+
+## The cost of slowness
+
+All of this said, R is not known for its computational efficiency. If I really prioritize that, why am I writing a book about R?
+
+## Our approach
+
+Because I use R. Evidently, you do too.
+
+-   who is this for -- low-compute R user: why R? why tidymodels?
+
+-   relentlessly empirical
+
+-   what do we optimize: "overhead" of tidymodels
+
+## Datasets {#sec-datasets}

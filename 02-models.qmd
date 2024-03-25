@@ -1,0 +1,9 @@
+# Models
+
+In summary, this book has no content whatsoever.
+
+```{r}
+1 + 1
+```
+
+## The submodel trick {#sec-submodel}

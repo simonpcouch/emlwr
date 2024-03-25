@@ -1,0 +1,58 @@
+[
+  {
+    "objectID": "01-intro.html#early-value",
+    "href": "01-intro.html#early-value",
+    "title": "1  Introduction",
+    "section": "1.1 Early value",
+    "text": "1.1 Early value\nTo demonstrate the impact that a couple small pieces of intuition can have on execution time when evaluating machine learning models, I’ll run through a quick model tuning example. On the first go, I’ll lean on tidymodels’ default values and a simple grid search, and on the second, I’ll pull a few tricks out from my sleeves that will drastically reduce the time to evaluate models while only negligibly decreasing predictive performance.\n\n1.1.1 Setup\nFirst, loading a few needed packages:\n\nlibrary(tidymodels)\nlibrary(future)\nlibrary(readmission)\nlibrary(finetune)\nlibrary(bonsai)\n\nFor the purposes of this example, we’ll use a dataset giving hospital readmission data for patients with Type I diabetes. The dataset includes clinical care data from 130 U.S. hospitals from years 1999-2008. Each row describes a patient “encounter” (loosely, an inpatient hospital stay).\n\nreadmission\n\n# A tibble: 71,515 × 12\n   readmitted race   sex   age   admission_source blood_glucose insurer duration\n   &lt;fct&gt;      &lt;fct&gt;  &lt;fct&gt; &lt;fct&gt; &lt;fct&gt;            &lt;fct&gt;         &lt;fct&gt;      &lt;dbl&gt;\n 1 Yes        Afric… Male  [60-… Referral         &lt;NA&gt;          &lt;NA&gt;           7\n 2 No         Cauca… Fema… [50-… Emergency        Normal        Private        4\n 3 Yes        Cauca… Fema… [70-… Referral         &lt;NA&gt;          Medica…        5\n 4 No         Cauca… Fema… [80-… Referral         &lt;NA&gt;          Private        5\n 5 No         Cauca… Fema… [70-… Referral         &lt;NA&gt;          &lt;NA&gt;           4\n 6 No         Cauca… Male  [50-… Emergency        Very High     &lt;NA&gt;           2\n 7 Yes        Afric… Fema… [70-… Referral         &lt;NA&gt;          Private        3\n 8 No         Cauca… Fema… [20-… Emergency        &lt;NA&gt;          &lt;NA&gt;           1\n 9 No         Cauca… Male  [60-… Other            &lt;NA&gt;          &lt;NA&gt;          12\n10 No         Cauca… Fema… [80-… Referral         &lt;NA&gt;          Medica…        1\n# ℹ 71,505 more rows\n# ℹ 4 more variables: n_previous_visits &lt;dbl&gt;, n_diagnoses &lt;dbl&gt;,\n#   n_procedures &lt;dbl&gt;, n_medications &lt;dbl&gt;\n\n\nThe first variable in this data, readmitted, gives whether the patient was readmitted within 30 days of discharge. We’d like to predict readmission using the remaining information in the dataset: demographic characteristics, insurance provider, medications taken, etc.\n\n\n\n\n\n\nNote\n\n\n\nFor a more in-depth analysis of this data, see Strack et al. (2014) and tidymodels.org (2024), as well as Section 1.4.\n\n\nWe’ll first split the data into training and testing sets before generating a set of 10 folds from the training data for cross-validation.\n\nset.seed(1)\nreadmission_split &lt;- initial_split(readmission)\nreadmission_train &lt;- training(readmission_split)\nreadmission_test &lt;- testing(readmission_split)\nreadmission_folds &lt;- vfold_cv(readmission_train)\n\n\n\n1.1.2 A first go\nFor my first go at tuning, I’ll tune a boosted tree model using grid search. By default, tidymodels will use XGBoost as the modeling engine; I’ll try out a few different values for learn_rate— a parameter that controls how drastically newly added trees impact predictions—and trees—the number of trees in the ensemble.\n\nbt &lt;- \n  boost_tree(\n    mode = \"classification\", \n    learn_rate = tune(),\n    trees = tune()\n  )\n\nI’ll carry out a grid search using tune_grid(), trying out a bunch of different pairs of values for learn_rate and trees and seeing what sticks. The argument grid = 12 indicates that I want to try out 12 different combinations of values and will let tidymodels take care of exactly what those values are.\n\nset.seed(1)\n\nbm_basic &lt;- \n  bench::mark(\n    basic = \n      tune_grid(\n        object = bt,\n        preprocessor = readmitted ~ .,\n        resamples = readmission_folds,\n        grid = 12\n      )\n  )\n\nbench::mark() returns, among other things, a precise timing of how long this process takes.\n\nbm_basic\n\n# A tibble: 1 × 6\n  expression      min   median `itr/sec` mem_alloc `gc/sec`\n  &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;\n1 basic         1.54h    1.54h  0.000181    5.02GB  0.00795\n\n\nHoly smokes! 1.54 hours is a good while. What all did tune_grid() do, though?\nFirst, let’s break down how many model fits actually happened. Since I’ve supplied grid = 12, we’re evaluating 12 possible model configurations. Each of those model configurations is evaluated against readmission_folds, a 10-fold cross validation object, meaning that each configuration is fitted 10 times. That’s 120 model fits!\nFurther, consider that those fits happen on 9/10ths of the training data, or rows.\n\nWith a couple small changes, though, the time to tune this model can be drastically decreased.\n\n\n1.1.3 A speedy go\nTo cut down on the time to evaluate these models, I’ll make a few small modifications.\nFirst, I’ll evaluate in parallel: Almost all modern laptops have more than one CPU core, and distributing computations across them only takes a couple lines of code with tidymodels.\n\nplan(multisession, workers = 4)\n\nWhile this tuning process could benefit from distributing across many more cores than 4, I’ll just use 4 here to give a realistic picture of the kinds of speedups possible on a typical laptop.\nThen, we’ll use a clever grid: The tidymodels framework enables something called the “submodel trick,” a technique that will allow us to predict from many more models than we actually fit. Instead of just supplying grid = 12, I’ll construct the grid myself.\n\nbt_grid &lt;-\n  bt %&gt;%\n  extract_parameter_set_dials() %&gt;% \n  grid_regular(levels = 4)\n\n\n\n\n\n\n\nNote\n\n\n\nTo learn more about the submodel trick, see Section 2.1.\n\n\nNext, I’ll switch out the computational engine: Substituting XGBoost with another gradient-boosting model that can better handle some properties of this dataset will cut down on our fit time by a good bit.\n\nbt_lgb &lt;- bt %&gt;% set_engine(\"lightgbm\")\n\nFinally, I’ll give up early on poorly-performing models: Rather than using grid search with tune_grid(), I’ll use a technique called racing that stops evaluating models when they seem to be performing poorly using the tune_race_anova() function.\n\nset.seed(1)\n\nbm_speedy &lt;- \n  bench::mark(\n    speedy = \n      tune_race_anova(\n        object = bt_lgb,\n        preprocessor = readmitted ~ .,\n        resamples = readmission_folds,\n        grid = bt_grid\n      )\n  )\n\nChecking out the new benchmarks:\n\nbm_speedy\n\n# A tibble: 1 × 6\n  expression      min   median `itr/sec` mem_alloc `gc/sec`\n  &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;\n1 speedy         3.3m     3.3m   0.00505    1.65GB    0.399\n\n\nThe total time to tune was reduced from 1.54 hours to 3.3 minutes—the second approach was 28 times faster than the first.\nThe first thing I’d wonder when seeing this result is how much of a penalty in predictive performance I’d suffer due to this transition. Let’s evaluate both of the top models from these tuning results on the test set. First, for the basic workflow:\n\nfit_basic &lt;- \n  select_best(bm_basic$result[[1]], metric = \"roc_auc\") %&gt;%\n  finalize_workflow(workflow(readmitted ~ ., bt), parameters = .) %&gt;%\n  last_fit(split = readmission_split)\n\n\ncollect_metrics(fit_basic)\n\n# A tibble: 3 × 4\n  .metric     .estimator .estimate .config             \n  &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;               \n1 accuracy    binary        0.912  Preprocessor1_Model1\n2 roc_auc     binary        0.596  Preprocessor1_Model1\n3 brier_class binary        0.0799 Preprocessor1_Model1\n\n\nAs for the quicker approach:\n\nfit_speedy &lt;- \n  select_best(bm_speedy$result[[1]], metric = \"roc_auc\") %&gt;%\n  finalize_workflow(workflow(readmitted ~ ., bt), parameters = .) %&gt;%\n  last_fit(split = readmission_split)\n\n\ncollect_metrics(fit_speedy)\n\n# A tibble: 3 × 4\n  .metric     .estimator .estimate .config             \n  &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;               \n1 accuracy    binary        0.912  Preprocessor1_Model1\n2 roc_auc     binary        0.593  Preprocessor1_Model1\n3 brier_class binary        0.0829 Preprocessor1_Model1\n\n\nVirtually indistinguishable performance results in 3.6% of the time."
+  },
+  {
+    "objectID": "01-intro.html#the-cost-of-slowness",
+    "href": "01-intro.html#the-cost-of-slowness",
+    "title": "1  Introduction",
+    "section": "1.2 The cost of slowness",
+    "text": "1.2 The cost of slowness\nAll of this said, R is not known for its computational efficiency. If I really prioritize that, why am I writing a book about R?"
+  },
+  {
+    "objectID": "01-intro.html#our-approach",
+    "href": "01-intro.html#our-approach",
+    "title": "1  Introduction",
+    "section": "1.3 Our approach",
+    "text": "1.3 Our approach\nBecause I use R. Evidently, you do too.\n\nwho is this for – low-compute R user: why R? why tidymodels?\nrelentlessly empirical\nwhat do we optimize: “overhead” of tidymodels"
+  },
+  {
+    "objectID": "01-intro.html#sec-datasets",
+    "href": "01-intro.html#sec-datasets",
+    "title": "1  Introduction",
+    "section": "1.4 Datasets",
+    "text": "1.4 Datasets\n\n\n\n\nStrack, Beata, Jonathan P DeShazo, Chris Gennings, Juan L Olmo, Sebastian Ventura, Krzysztof J Cios, John N Clore, et al. 2014. “Impact of HbA1c Measurement on Hospital Readmission Rates: Analysis of 70,000 Clinical Database Patient Records.” BioMed Research International 2014.\n\n\ntidymodels.org. 2024. “Fair Prediction of Hospital Readmission: A Machine Learning Fairness Case Study.” https://www.tidymodels.org/learn/work/fairness-readmission/."
+  },
+  {
+    "objectID": "02-models.html#sec-submodel",
+    "href": "02-models.html#sec-submodel",
+    "title": "2  Models",
+    "section": "2.1 The submodel trick",
+    "text": "2.1 The submodel trick"
+  },
+  {
+    "objectID": "03-preprocessing.html",
+    "href": "03-preprocessing.html",
+    "title": "3  Preprocessors",
+    "section": "",
+    "text": "In summary, this book has no content whatsoever.\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "04-tuning.html",
+    "href": "04-tuning.html",
+    "title": "4  Search",
+    "section": "",
+    "text": "In summary, this book has no content whatsoever.\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "References",
+    "section": "",
+    "text": "tidymodels.org. 2024. “Fair Prediction of Hospital Readmission: A\nMachine Learning Fairness Case Study.” https://www.tidymodels.org/learn/work/fairness-readmission/."
+  }
+]
