@@ -52,7 +52,7 @@ readmission_test <- testing(readmission_split)
 readmission_folds <- vfold_cv(readmission_train)
 ```
 
-### A first go
+### A first go {#sec-first-go}
 
 For my first go at tuning, I'll tune a boosted tree model using grid search. By default, tidymodels will use XGBoost as the modeling engine; I'll try out a few different values for `learn_rate`— a parameter that controls how drastically newly added trees impact predictions—and `trees`—the number of trees in the ensemble.
 
@@ -114,7 +114,7 @@ Further, consider that those fits happen on `r nrow(readmission_folds)-1`/`r nro
 
 With a couple small changes, though, the time to tune this model can be *drastically* decreased.
 
-### A speedy go
+### A speedy go {#sec-speedy-go}
 
 To cut down on the time to evaluate these models, I'll make a few small modifications.
 
@@ -258,5 +258,49 @@ Because I use R. Evidently, you do too.
 -   relentlessly empirical
 
 -   what do we optimize: "overhead" of tidymodels
+
+## The hard part
+
+To better understand how to cut down on the time to evaluate models with tidymodels, we need to understand a bit about how tidymodels works.
+
+Like many other "unifying frameworks" (mlr3, caret, scikit-learn(?)), the tidymodels framework itself does not implement the algorithms to train and predict from models. Instead, tidymodels provides a common interface to modeling *engines*: packages (or functions from packages) that provide the methods to `fit()` and `predict()`.
+
+![](figures/translate_diagram.png){#fig-fit-boost-tree}
+
+The process of "translating" between the tidymodels and engine formats is illustrated in @fig-fit-boost-tree. When fitting and predicting with tidymodels, some portion of the code's evaluation time is due to the "translation" of the inputted unified code to the specific syntax that the engine expects, and some portion of it is due to the translation of what the engine returns to the unified output returned by tidymodels; these portions are in the tidymodels team's control. The rest of the evaluation time occurs inside of the modeling engine's code.
+
+The portions of the evaluation time that are in the tidymodels team's control are shown in green, and I'll refer to them in this book as "overhead." The overhead of tidymodels in terms of evaluation time is relatively constant with respect to the size of training data. This overhead consists of tasks like checking data types, handling errors and warnings, and—most importantly—programmatically assembling calls to engine functions.
+
+The portion of the evaluation time shown in orange represents the actual training of (or predicting from) the model. This portion is implemented by the modeling *engine* and is thus not in the tidymodels team's control. In contrast to overhead, the evaluation time of this code is very much sensitive to the size of the inputted data; depending on the engine, increases in the number of rows or columns of training or testing data may drastically increase the time to train or predict from a given model.
+
+::: callout-note
+The algorithmic complexity of the models implemented by these engines is well-understood in many cases. At the same time, the behavior of evaluation time for some engine implementations often differs greatly from what theory would lead one to believe. Regressions in modeling code may introduce undue slowdowns and, conversely, performance optimizations that lead to evaluation times that scale better than theory would suggest may be the very reason for the existence of some engines.
+:::
+
+As shown in @fig-fit-scale, the proportion of evaluation time that overhead is responsible for depends on how quickly the engine can fit or predict for a given dataset.
+
+![](figures/scaling_diagram.png){#fig-fit-scale}
+
+Since the absolute overhead of tidymodels' translation is relatively constant, overhead is only a substantial portion of evaluation time when models fit or predict *very* quickly. For a linear model fitted on 30 data points with `lm()`, this overhead is [continuously benchmarked](https://github.com/tidymodels/parsnip/blob/11a3ab942f131e9d612d4d37c4b77273be064aaf/tests/testthat/test_fit_interfaces.R#L171) to remain under 2/3. That is, absolute worst-case, fitting a model with tidymodels takes three times longer than using the engine interface itself. However, this overhead approaches fractions of a percent for fits on even 10,000 rows for many engines. Thus, a focus on reducing the evaluation time of overhead is valuable in the sense that the framework ought not to unintentionally introduce regressions that cause overhead to scale with the size of training data, but in general, the hard part of reducing evaluation time when evaluating models is reducing the evaluation time for computations carried out by the modeling engine.
+
+The next question is then *how could tidymodels cut down on evaluation time for modeling engines that it doesn't own?* To answer this question, let's revisit the applied example from @sec-first-go. In that first example, the code does some translation to the engine's syntax, sets up some error handling, and then fits and predicts from `r nrow(readmission_folds) * 12` models.
+
+![](figures/basic_resample.png){#fig-basic-resample}
+
+@fig-basic-resample depicts this process, where we evaluate all \``r nrow(readmission_folds) * 12` models in order. Each white dot in the engine portion of the evaluation time represents another round of fitting and predicting with engine. Remember that in reality, for even modest dataset sizes, the green portions representing tidymodels overhead are much smaller by proportion than represented.
+
+In @sec-speedy-go, the first thing I did was introduce a parallel backend. Distributing engine fits across available cores is itself a gamechanger, as illustrated in @fig-parallel-resample.
+
+![](figures/parallel_resample.png){#fig-parallel-resample}
+
+Then, switching out computational engines for a more performant alternative further reduces evaluation time, as shown in @fig-parallel-resample-opt.
+
+![](figures/parallel_resample_opt.png)
+
+Finally, as depicted in @fig-parallel-resample-opt2, the submodel trick described in @sec-submodel and racing described in @sec-search eliminate a substantial portion of the engine fits.
+
+![](figures/parallel_resample_opt2.png)The tidymodels team devotes substantial energy to ensuring support for the most performant parallelization technologies, modeling engines, model-specific optimizations, and search techniques. This book will demonstrate how to best make use of these features to reduce the time needed to evaluate machine learning models.
+
+\<!--# TODO: "evaluation time" is probably ambiguous with `eval_time` *and* "evaluate models" here. find a better term for how long a thing takes to run --\>
 
 ## Datasets {#sec-datasets}

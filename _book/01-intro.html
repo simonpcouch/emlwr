@@ -201,12 +201,13 @@ div.csl-indent {
   <li><a href="#early-value" id="toc-early-value" class="nav-link active" data-scroll-target="#early-value"><span class="header-section-number">1.1</span> Early value</a>
   <ul class="collapse">
   <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup"><span class="header-section-number">1.1.1</span> Setup</a></li>
-  <li><a href="#a-first-go" id="toc-a-first-go" class="nav-link" data-scroll-target="#a-first-go"><span class="header-section-number">1.1.2</span> A first go</a></li>
-  <li><a href="#a-speedy-go" id="toc-a-speedy-go" class="nav-link" data-scroll-target="#a-speedy-go"><span class="header-section-number">1.1.3</span> A speedy go</a></li>
+  <li><a href="#sec-first-go" id="toc-sec-first-go" class="nav-link" data-scroll-target="#sec-first-go"><span class="header-section-number">1.1.2</span> A first go</a></li>
+  <li><a href="#sec-speedy-go" id="toc-sec-speedy-go" class="nav-link" data-scroll-target="#sec-speedy-go"><span class="header-section-number">1.1.3</span> A speedy go</a></li>
   </ul></li>
   <li><a href="#the-cost-of-slowness" id="toc-the-cost-of-slowness" class="nav-link" data-scroll-target="#the-cost-of-slowness"><span class="header-section-number">1.2</span> The cost of slowness</a></li>
   <li><a href="#our-approach" id="toc-our-approach" class="nav-link" data-scroll-target="#our-approach"><span class="header-section-number">1.3</span> Our approach</a></li>
-  <li><a href="#sec-datasets" id="toc-sec-datasets" class="nav-link" data-scroll-target="#sec-datasets"><span class="header-section-number">1.4</span> Datasets</a></li>
+  <li><a href="#the-hard-part" id="toc-the-hard-part" class="nav-link" data-scroll-target="#the-hard-part"><span class="header-section-number">1.4</span> The hard part</a></li>
+  <li><a href="#sec-datasets" id="toc-sec-datasets" class="nav-link" data-scroll-target="#sec-datasets"><span class="header-section-number">1.5</span> Datasets</a></li>
   </ul>
 </nav>
     </div>
@@ -236,16 +237,37 @@ div.csl-indent {
 <section id="setup" class="level3" data-number="1.1.1">
 <h3 data-number="1.1.1" class="anchored" data-anchor-id="setup"><span class="header-section-number">1.1.1</span> Setup</h3>
 <p>First, loading a few needed packages:</p>
-<div class="cell" data-hash="01-intro_cache/html/load-pkgs_29245af76b4916cc8a0eafb6165b022b">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(future)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readmission)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(finetune)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bonsai)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching packages ────────────────────────────────────── tidymodels 1.1.1 ──</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>✔ broom        1.0.5          ✔ recipes      1.0.10    
+✔ dials        1.2.1          ✔ rsample      1.2.0     
+✔ dplyr        1.1.4          ✔ tibble       3.2.1     
+✔ ggplot2      3.5.0          ✔ tidyr        1.3.1     
+✔ infer        1.0.6.9000     ✔ tune         1.2.0.9000
+✔ modeldata    1.3.0          ✔ workflows    1.1.4     
+✔ parsnip      1.2.0          ✔ workflowsets 1.0.1     
+✔ purrr        1.0.2          ✔ yardstick    1.3.0     </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
+✖ purrr::discard() masks scales::discard()
+✖ dplyr::filter()  masks stats::filter()
+✖ dplyr::lag()     masks stats::lag()
+✖ recipes::step()  masks stats::step()
+• Learn how to get started at https://www.tidymodels.org/start/</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(future)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readmission)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(finetune)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bonsai)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>For the purposes of this example, we’ll use a dataset giving hospital readmission data for patients with Type I diabetes. The dataset includes clinical care data from 130 U.S. hospitals from years 1999-2008. Each row describes a patient “encounter” (loosely, an inpatient hospital stay).</p>
-<div class="cell" data-hash="01-intro_cache/html/readmission-print_6480355adbbdf031bbf3f5d04b491e88">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>readmission</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>readmission</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 71,515 × 12
    readmitted race   sex   age   admission_source blood_glucose insurer duration
@@ -276,74 +298,76 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>For a more in-depth analysis of this data, see <span class="citation" data-cites="strack2014">Strack et al. (<a href="references.html#ref-strack2014" role="doc-biblioref">2014</a>)</span> and <span class="citation" data-cites="couch24">tidymodels.org (<a href="references.html#ref-couch24" role="doc-biblioref">2024</a>)</span>, as well as <a href="#sec-datasets"><span>Section&nbsp;1.4</span></a>.</p>
+<p>For a more in-depth analysis of this data, see <span class="citation" data-cites="strack2014">Strack et al. (<a href="references.html#ref-strack2014" role="doc-biblioref">2014</a>)</span> and <span class="citation" data-cites="couch24">tidymodels.org (<a href="references.html#ref-couch24" role="doc-biblioref">2024</a>)</span>, as well as <a href="#sec-datasets"><span>Section&nbsp;1.5</span></a>.</p>
 </div>
 </div>
 <p>We’ll first split the data into training and testing sets before generating a set of 10 folds from the training data for cross-validation.</p>
-<div class="cell" data-hash="01-intro_cache/html/readmission-split_edfbd2b21768ff09987d1ec7db940aa5">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>readmission_split <span class="ot">&lt;-</span> <span class="fu">initial_split</span>(readmission)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>readmission_train <span class="ot">&lt;-</span> <span class="fu">training</span>(readmission_split)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>readmission_test <span class="ot">&lt;-</span> <span class="fu">testing</span>(readmission_split)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>readmission_folds <span class="ot">&lt;-</span> <span class="fu">vfold_cv</span>(readmission_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>readmission_split <span class="ot">&lt;-</span> <span class="fu">initial_split</span>(readmission)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>readmission_train <span class="ot">&lt;-</span> <span class="fu">training</span>(readmission_split)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>readmission_test <span class="ot">&lt;-</span> <span class="fu">testing</span>(readmission_split)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>readmission_folds <span class="ot">&lt;-</span> <span class="fu">vfold_cv</span>(readmission_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="a-first-go" class="level3" data-number="1.1.2">
-<h3 data-number="1.1.2" class="anchored" data-anchor-id="a-first-go"><span class="header-section-number">1.1.2</span> A first go</h3>
+<section id="sec-first-go" class="level3" data-number="1.1.2">
+<h3 data-number="1.1.2" class="anchored" data-anchor-id="sec-first-go"><span class="header-section-number">1.1.2</span> A first go</h3>
 <p>For my first go at tuning, I’ll tune a boosted tree model using grid search. By default, tidymodels will use XGBoost as the modeling engine; I’ll try out a few different values for <code>learn_rate</code>— a parameter that controls how drastically newly added trees impact predictions—and <code>trees</code>—the number of trees in the ensemble.</p>
-<div class="cell" data-hash="01-intro_cache/html/bt_03fa487985b223f77e9388433bc172ad">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>bt <span class="ot">&lt;-</span> </span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">boost_tree</span>(</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"classification"</span>, </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">learn_rate =</span> <span class="fu">tune</span>(),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">trees =</span> <span class="fu">tune</span>()</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>bt <span class="ot">&lt;-</span> </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">boost_tree</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">mode =</span> <span class="st">"classification"</span>, </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">learn_rate =</span> <span class="fu">tune</span>(),</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">trees =</span> <span class="fu">tune</span>()</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>I’ll carry out a grid search using <code>tune_grid()</code>, trying out a bunch of different pairs of values for <code>learn_rate</code> and <code>trees</code> and seeing what sticks. The argument <code>grid = 12</code> indicates that I want to try out 12 different combinations of values and will let tidymodels take care of exactly what those values are.</p>
-<div class="cell" data-hash="01-intro_cache/html/bm-basic_c23316327b540ec1247167ea08e8e087">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>bm_basic <span class="ot">&lt;-</span> </span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  bench<span class="sc">::</span><span class="fu">mark</span>(</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">basic =</span> </span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tune_grid</span>(</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">object =</span> bt,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">preprocessor =</span> readmitted <span class="sc">~</span> .,</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">resamples =</span> readmission_folds,</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">grid =</span> <span class="dv">12</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>      )</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>bm_basic <span class="ot">&lt;-</span> </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  bench<span class="sc">::</span><span class="fu">mark</span>(</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">basic =</span> </span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tune_grid</span>(</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">object =</span> bt,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">preprocessor =</span> readmitted <span class="sc">~</span> .,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">resamples =</span> readmission_folds,</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">grid =</span> <span class="dv">12</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><code>bench::mark()</code> returns, among other things, a precise timing of how long this process takes.</p>
-<div class="cell" data-hash="01-intro_cache/html/bm-basic-print_5a189bf763d75167d27d34901a2650ff">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>bm_basic</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>bm_basic</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1 × 6
-  expression      min   median `itr/sec` mem_alloc `gc/sec`
-  &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-1 basic         1.54h    1.54h  0.000181    5.02GB  0.00795</code></pre>
+<pre><code># A tibble: 1 × 13
+  expression min        median     `itr/sec` mem_alloc  `gc/sec` n_itr  n_gc
+  &lt;bnch_xpr&gt; &lt;bench_tm&gt; &lt;bench_tm&gt;     &lt;dbl&gt; &lt;bnch_byt&gt;    &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt;
+1 &lt;language&gt; 5533.004   5533.004    0.000181 5388873320  0.00795     1    44
+# ℹ 5 more variables: total_time &lt;bench_tm&gt;, result &lt;list&gt;, memory &lt;list&gt;,
+#   time &lt;list&gt;, gc &lt;list&gt;</code></pre>
 </div>
 </div>
 <p>Holy smokes! 1.54 hours is a good while. What all did <code>tune_grid()</code> do, though?</p>
 <p>First, let’s break down how many model fits actually happened. Since I’ve supplied <code>grid = 12</code>, we’re evaluating 12 possible model configurations. Each of those model configurations is evaluated against <code>readmission_folds</code>, a 10-fold cross validation object, meaning that each configuration is fitted 10 times. That’s 120 model fits!</p>
-<p>Further, consider that those fits happen on 9/10ths of the training data, or rows.</p>
+<p>Further, consider that those fits happen on 9/10ths of the training data, or 48272 rows.</p>
 <!--# TODO: The above doesn't seem to be in-lining correctly? -->
 <p>With a couple small changes, though, the time to tune this model can be <em>drastically</em> decreased.</p>
 </section>
-<section id="a-speedy-go" class="level3" data-number="1.1.3">
-<h3 data-number="1.1.3" class="anchored" data-anchor-id="a-speedy-go"><span class="header-section-number">1.1.3</span> A speedy go</h3>
+<section id="sec-speedy-go" class="level3" data-number="1.1.3">
+<h3 data-number="1.1.3" class="anchored" data-anchor-id="sec-speedy-go"><span class="header-section-number">1.1.3</span> A speedy go</h3>
 <p>To cut down on the time to evaluate these models, I’ll make a few small modifications.</p>
 <p>First, I’ll <strong>evaluate in parallel</strong>: Almost all modern laptops have more than one CPU core, and distributing computations across them only takes a couple lines of code with tidymodels.</p>
-<div class="cell" data-hash="01-intro_cache/html/unnamed-chunk-9_97fb619f725026dfca12170fd1ccc2e1">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>While this tuning process could benefit from distributing across many more cores than 4, I’ll just use 4 here to give a realistic picture of the kinds of speedups possible on a typical laptop.</p>
 <p>Then, we’ll <strong>use a clever grid</strong>: The tidymodels framework enables something called the “submodel trick,” a technique that will allow us to predict from many more models than we actually fit. Instead of just supplying <code>grid = 12</code>, I’ll construct the grid myself.</p>
-<div class="cell" data-hash="01-intro_cache/html/unnamed-chunk-10_14c3033c9443e3df1fbc99aad1c43f1a">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>bt_grid <span class="ot">&lt;-</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  bt <span class="sc">%&gt;%</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_parameter_set_dials</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grid_regular</span>(<span class="at">levels =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>bt_grid <span class="ot">&lt;-</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  bt <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_parameter_set_dials</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grid_regular</span>(<span class="at">levels =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -359,44 +383,46 @@ Note
 </div>
 </div>
 <p>Next, I’ll <strong>switch out the computational engine</strong>: Substituting XGBoost with another gradient-boosting model that can better handle some properties of this dataset will cut down on our fit time by a good bit.</p>
-<div class="cell" data-hash="01-intro_cache/html/unnamed-chunk-11_a7b12bd080291f235c6a1d56c702522a">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>bt_lgb <span class="ot">&lt;-</span> bt <span class="sc">%&gt;%</span> <span class="fu">set_engine</span>(<span class="st">"lightgbm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>bt_lgb <span class="ot">&lt;-</span> bt <span class="sc">%&gt;%</span> <span class="fu">set_engine</span>(<span class="st">"lightgbm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Finally, I’ll <strong>give up early on poorly-performing models</strong>: Rather than using grid search with <code>tune_grid()</code>, I’ll use a technique called <em>racing</em> that stops evaluating models when they seem to be performing poorly using the <code>tune_race_anova()</code> function.</p>
-<div class="cell" data-hash="01-intro_cache/html/bm-speedy_d85ec888b70ebcc3d853d43793a66757">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>bm_speedy <span class="ot">&lt;-</span> </span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  bench<span class="sc">::</span><span class="fu">mark</span>(</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">speedy =</span> </span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tune_race_anova</span>(</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">object =</span> bt_lgb,</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">preprocessor =</span> readmitted <span class="sc">~</span> .,</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">resamples =</span> readmission_folds,</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">grid =</span> bt_grid</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>      )</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>bm_speedy <span class="ot">&lt;-</span> </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  bench<span class="sc">::</span><span class="fu">mark</span>(</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">speedy =</span> </span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tune_race_anova</span>(</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">object =</span> bt_lgb,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">preprocessor =</span> readmitted <span class="sc">~</span> .,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">resamples =</span> readmission_folds,</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">grid =</span> bt_grid</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Checking out the new benchmarks:</p>
-<div class="cell" data-hash="01-intro_cache/html/bm-speedy-print_b98e9e1ff8114f53b6f022de37ae7c87">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>bm_speedy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>bm_speedy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1 × 6
-  expression      min   median `itr/sec` mem_alloc `gc/sec`
-  &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;
-1 speedy         3.3m     3.3m   0.00505    1.65GB    0.399</code></pre>
+<pre><code># A tibble: 1 × 13
+  expression min        median     `itr/sec` mem_alloc  `gc/sec` n_itr  n_gc
+  &lt;bnch_xpr&gt; &lt;bench_tm&gt; &lt;bench_tm&gt;     &lt;dbl&gt; &lt;bnch_byt&gt;    &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt;
+1 &lt;language&gt; 197.9526   197.9526     0.00505 1774148152    0.399     1    79
+# ℹ 5 more variables: total_time &lt;bench_tm&gt;, result &lt;list&gt;, memory &lt;list&gt;,
+#   time &lt;list&gt;, gc &lt;list&gt;</code></pre>
 </div>
 </div>
 <p>The total time to tune was reduced from 1.54 <em>hours</em> to 3.3 <em>minutes</em>—the second approach was 28 times faster than the first.</p>
 <p>The first thing I’d wonder when seeing this result is how much of a penalty in predictive performance I’d suffer due to this transition. Let’s evaluate both of the top models from these tuning results on the test set. First, for the basic workflow:</p>
-<div class="cell" data-hash="01-intro_cache/html/fit-basic_c2d985741654a56bb12b7e91dcd63385">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fit_basic <span class="ot">&lt;-</span> </span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select_best</span>(bm_basic<span class="sc">$</span>result[[<span class="dv">1</span>]], <span class="at">metric =</span> <span class="st">"roc_auc"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">finalize_workflow</span>(<span class="fu">workflow</span>(readmitted <span class="sc">~</span> ., bt), <span class="at">parameters =</span> .) <span class="sc">%&gt;%</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">last_fit</span>(<span class="at">split =</span> readmission_split)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>fit_basic <span class="ot">&lt;-</span> </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select_best</span>(bm_basic<span class="sc">$</span>result[[<span class="dv">1</span>]], <span class="at">metric =</span> <span class="st">"roc_auc"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">finalize_workflow</span>(<span class="fu">workflow</span>(readmitted <span class="sc">~</span> ., bt), <span class="at">parameters =</span> .) <span class="sc">%&gt;%</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">last_fit</span>(<span class="at">split =</span> readmission_split)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="01-intro_cache/html/print-fit-basic-metrics_d181476cc7e4d3d0197afa71d1b00f8e">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(fit_basic)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(fit_basic)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 4
   .metric     .estimator .estimate .config             
@@ -407,14 +433,14 @@ Note
 </div>
 </div>
 <p>As for the quicker approach:</p>
-<div class="cell" data-hash="01-intro_cache/html/fit-speedy_ce37c1b7ddeee51f2c7fe9c6cecd0ce0">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>fit_speedy <span class="ot">&lt;-</span> </span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select_best</span>(bm_speedy<span class="sc">$</span>result[[<span class="dv">1</span>]], <span class="at">metric =</span> <span class="st">"roc_auc"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">finalize_workflow</span>(<span class="fu">workflow</span>(readmitted <span class="sc">~</span> ., bt), <span class="at">parameters =</span> .) <span class="sc">%&gt;%</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">last_fit</span>(<span class="at">split =</span> readmission_split)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>fit_speedy <span class="ot">&lt;-</span> </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select_best</span>(bm_speedy<span class="sc">$</span>result[[<span class="dv">1</span>]], <span class="at">metric =</span> <span class="st">"roc_auc"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">finalize_workflow</span>(<span class="fu">workflow</span>(readmitted <span class="sc">~</span> ., bt), <span class="at">parameters =</span> .) <span class="sc">%&gt;%</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">last_fit</span>(<span class="at">split =</span> readmission_split)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-hash="01-intro_cache/html/print-fit-speedy-metrics_49ff8480f18604619222f158d458b61b">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(fit_speedy)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(fit_speedy)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 4
   .metric     .estimator .estimate .config             
@@ -440,8 +466,43 @@ Note
 <li><p>what do we optimize: “overhead” of tidymodels</p></li>
 </ul>
 </section>
-<section id="sec-datasets" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="sec-datasets"><span class="header-section-number">1.4</span> Datasets</h2>
+<section id="the-hard-part" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="the-hard-part"><span class="header-section-number">1.4</span> The hard part</h2>
+<p>To better understand how to cut down on the time to evaluate models with tidymodels, we need to understand a bit about how tidymodels works.</p>
+<p>Like many other “unifying frameworks” (mlr3, caret, scikit-learn(?)), the tidymodels framework itself does not implement the algorithms to train and predict from models. Instead, tidymodels provides a common interface to modeling <em>engines</em>: packages (or functions from packages) that provide the methods to <code>fit()</code> and <code>predict()</code>.</p>
+<p><img src="figures/translate_diagram.png" id="fig-fit-boost-tree" class="img-fluid"></p>
+<p>The process of “translating” between the tidymodels and engine formats is illustrated in <span class="quarto-unresolved-ref">?fig-fit-boost-tree</span>. When fitting and predicting with tidymodels, some portion of the code’s evaluation time is due to the “translation” of the inputted unified code to the specific syntax that the engine expects, and some portion of it is due to the translation of what the engine returns to the unified output returned by tidymodels; these portions are in the tidymodels team’s control. The rest of the evaluation time occurs inside of the modeling engine’s code.</p>
+<p>The portions of the evaluation time that are in the tidymodels team’s control are shown in green, and I’ll refer to them in this book as “overhead.” The overhead of tidymodels in terms of evaluation time is relatively constant with respect to the size of training data. This overhead consists of tasks like checking data types, handling errors and warnings, and—most importantly—programmatically assembling calls to engine functions.</p>
+<p>The portion of the evaluation time shown in orange represents the actual training of (or predicting from) the model. This portion is implemented by the modeling <em>engine</em> and is thus not in the tidymodels team’s control. In contrast to overhead, the evaluation time of this code is very much sensitive to the size of the inputted data; depending on the engine, increases in the number of rows or columns of training or testing data may drastically increase the time to train or predict from a given model.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The algorithmic complexity of the models implemented by these engines is well-understood in many cases. At the same time, the behavior of evaluation time for some engine implementations often differs greatly from what theory would lead one to believe. Regressions in modeling code may introduce undue slowdowns and, conversely, performance optimizations that lead to evaluation times that scale better than theory would suggest may be the very reason for the existence of some engines.</p>
+</div>
+</div>
+<p>As shown in <span class="quarto-unresolved-ref">?fig-fit-scale</span>, the proportion of evaluation time that overhead is responsible for depends on how quickly the engine can fit or predict for a given dataset.</p>
+<p><img src="figures/scaling_diagram.png" id="fig-fit-scale" class="img-fluid"></p>
+<p>Since the absolute overhead of tidymodels’ translation is relatively constant, overhead is only a substantial portion of evaluation time when models fit or predict <em>very</em> quickly. For a linear model fitted on 30 data points with <code>lm()</code>, this overhead is <a href="https://github.com/tidymodels/parsnip/blob/11a3ab942f131e9d612d4d37c4b77273be064aaf/tests/testthat/test_fit_interfaces.R#L171">continuously benchmarked</a> to remain under 2/3. That is, absolute worst-case, fitting a model with tidymodels takes three times longer than using the engine interface itself. However, this overhead approaches fractions of a percent for fits on even 10,000 rows for many engines. Thus, a focus on reducing the evaluation time of overhead is valuable in the sense that the framework ought not to unintentionally introduce regressions that cause overhead to scale with the size of training data, but in general, the hard part of reducing evaluation time when evaluating models is reducing the evaluation time for computations carried out by the modeling engine.</p>
+<p>The next question is then <em>how could tidymodels cut down on evaluation time for modeling engines that it doesn’t own?</em> To answer this question, let’s revisit the applied example from <a href="#sec-first-go"><span>Section&nbsp;1.1.2</span></a>. In that first example, the code does some translation to the engine’s syntax, sets up some error handling, and then fits and predicts from 120 models.</p>
+<p><img src="figures/basic_resample.png" id="fig-basic-resample" class="img-fluid"></p>
+<p><span class="quarto-unresolved-ref">?fig-basic-resample</span> depicts this process, where we evaluate all `120 models in order. Each white dot in the engine portion of the evaluation time represents another round of fitting and predicting with engine. Remember that in reality, for even modest dataset sizes, the green portions representing tidymodels overhead are much smaller by proportion than represented.</p>
+<p>In <a href="#sec-speedy-go"><span>Section&nbsp;1.1.3</span></a>, the first thing I did was introduce a parallel backend. Distributing engine fits across available cores is itself a gamechanger, as illustrated in <span class="quarto-unresolved-ref">?fig-parallel-resample</span>.</p>
+<p><img src="figures/parallel_resample.png" id="fig-parallel-resample" class="img-fluid"></p>
+<p>Then, switching out computational engines for a more performant alternative further reduces evaluation time, as shown in <span class="quarto-unresolved-ref">?fig-parallel-resample-opt</span>.</p>
+<p><img src="figures/parallel_resample_opt.png" class="img-fluid"></p>
+<p>Finally, as depicted in <span class="quarto-unresolved-ref">?fig-parallel-resample-opt2</span>, the submodel trick described in <a href="02-models.html#sec-submodel"><span>Section&nbsp;2.1</span></a> and racing described in <a href="04-tuning.html"><span>Chapter&nbsp;4</span></a> eliminate a substantial portion of the engine fits.</p>
+<p><img src="figures/parallel_resample_opt2.png" class="img-fluid">The tidymodels team devotes substantial energy to ensuring support for the most performant parallelization technologies, modeling engines, model-specific optimizations, and search techniques. This book will demonstrate how to best make use of these features to reduce the time needed to evaluate machine learning models.</p>
+<p>&lt;!–# TODO: “evaluation time” is probably ambiguous with <code>eval_time</code> <em>and</em> “evaluate models” here. find a better term for how long a thing takes to run –&gt;</p>
+</section>
+<section id="sec-datasets" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="sec-datasets"><span class="header-section-number">1.5</span> Datasets</h2>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">

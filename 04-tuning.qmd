@@ -1,4 +1,4 @@
-# Search
+# Search {#sec-search}
 
 In summary, this book has no content whatsoever.
 
