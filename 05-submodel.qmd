@@ -44,7 +44,7 @@ bt <-
 
 ### Grids
 
-If I just pass these resamples and model specification to `tune_grid()`, as I did in @sec-first-go, tidymodels will take care of generating the grid of parameters to evaluate itself. By default, tidymodels generates grids of parameters using an experimental design called a latin hypercube [@santner2003; @dupuy2015; @stein1987]. We can use the function `grid_latin_hypercube()` from the dials package to replicate the same grid that `tune_grid()` had generated under the hood:
+If I just pass these resamples and model specification to `tune_grid()`, as I did in @sec-first-go, tidymodels will take care of generating the grid of parameters to evaluate itself. By default, tidymodels generates grids of parameters using an experimental design called a latin hypercube [@mckay1979; @dupuy2015]. We can use the function `grid_latin_hypercube()` from the dials package to replicate the same grid that `tune_grid()` had generated under the hood:
 
 ```{r}
 #| label: bt-grid-latin-hypercube
@@ -192,12 +192,13 @@ The above pseudocode admittedly requires some generosity (or mental gymnastics) 
 In the applied example above, we saw a relatively modest speedup. If we want to really show off the power of the submodel trick, in terms of time spent resampling per model evaluated, we can come up with a somewhat silly grid:
 
 ```{r}
-bm_grid_regular_go_brrr <-
-  bm_grid_regular %>%
+bt_grid_regular_go_brrr <-
+  bt_grid_regular %>%
   slice_max(trees, by = learn_rate) %>%
-  map(1:max(.$trees), ~mutate(., trees = .x))
+  map(.x = 1:max(.$trees), .f = ~mutate(.y, trees = .x), dfr = .) %>%
+  bind_rows()
 
-bm_grid_regular_go_brrr
+bt_grid_regular_go_brrr
 ```
 
 In this grid, we have the same number of unique values of `learn_rate`, $4$, resulting in the same $4$ model fits. Except that, in this case, we're evaluating every model with number of trees $1, 2, 3, 4, ..., 2000$. If our hypothesis that predicting on the assessment set and generating performance metrics is comparatively fast is true, then we'll see that elapsed time *per grid point* is way lower:
@@ -216,7 +217,7 @@ bm_grid_regular_go_brrr <-
         object = bt,
         preprocessor = readmitted ~ .,
         resamples = readmission_folds,
-        grid = bm_grid_regular_go_brrr
+        grid = bt_grid_regular_go_brrr
       )
   )
 ```
@@ -242,3 +243,56 @@ bm_grid_regular_go_brrr$median[[1]] / nrow(bt_grid_regular_go_brrr)
 ```
 
 Whether this difference in timing is of practical significance to a user is debatable. In the context where we generated `bm_grid_regular`, where the grid of points searched over is relatively comparable (and thus similarly likely to identify a performant model) yet the decreased number of model fits gave rise to a reasonable speedup—`round(as.numeric(bm_grid_regular$median[[1]] / bm_basic$median[[1]]), 2) - 1 * 100`%—is undoubtedly impactful for many typical use cases of tidymodels. The more eye-popping per-grid-point speedups, as with `bm_grid_regular_go_brrr`, are more so a fun trick than a practical tool for most use cases.
+
+## Overview
+
+I've demonstrated the impact of the submodel trick in the above section through one example context, tuning `trees` in an XGBoost boosted tree model. The submodel trick can be found in many places across the tidymodels framework, though.
+
+Submodels are defined with respect to a given model parameter, e.g. `trees` in `boost_tree()`. While a given parameter often defines a submodel regardless of modeling engine for a given model type—e.g. `trees` defines submodels for `boost_tree()` models regardless of whether the model is fitted with `engine = "xgboost"` or `engine = "lightgbm"`—there are some exceptions. Many tidymodels users undoubtedly tune models using arguments that define submodels without even knowing it. Some common examples include:
+
+-   `penalty` in `linear_reg()`, `logistic_reg()`, and `multinom_reg()`, which controls the amount of regularization in linear models.
+
+-   `neighbors` in `nearest_neighbor()`, the number of training data points nearest the point to be predicted that are factored into the prediction.
+
+Again, some modeling engines for each of these model types do not actually support prediction from submodels from the noted parameter. See @sec-supported-arguments for a complete table of currently supported arguments defining submodels in tidymodels.
+
+In the above example, we had to manually specify a grid like `bt_regular_grid` in order for tidymodels to use a grid that can take advantage of the submodel trick. This reflects the frameworks' general prioritization of predictive performance over computational performance in its design and defaults; latin hypercubes have better statistical properties when it comes to discovering performant hyperparameter combinations than a regular grid [@mckay1979, @stein1987; @santner2003]. However, note that in the case where a model is being tuned over only one argument, the submodel trick will kick in regardless of the sampling approach being used: regardless of how a set of univariate points are distributed, the most extreme parameter value (e.g. the max `trees`) can be used to generate predictions for values across the distribution.
+
+### Supported parameters {#sec-supported-arguments}
+
+A number of tuning parameters support the submodel trick:
+
+```{r}
+#| label: generate-supported-args
+#| warning: false
+#| message: false
+#| include: false
+library(parsnip)
+loaded <- lapply(parsnip:::extensions(), require, character.only = TRUE)
+model_env <- 
+  parsnip::get_model_env() %>%
+  as.list()
+model_env <- model_env[grepl("\\_args", names(model_env))]
+model_env <- 
+  purrr::map2(model_env, names(model_env), ~mutate(.x, model = .y)) %>%
+  bind_rows() %>%
+  mutate(model = gsub("_args", "", model))
+
+has_submodel <- 
+  model_env %>%
+  filter(has_submodel) %>%
+  arrange(tolower(model)) %>%
+  select(
+    `Model Type` = model,
+    Argument = parsnip,
+    Engine = engine
+  ) %>%
+  summarize(
+    Engines = list(c(Engine)),
+    .by = c(`Model Type`, Argument)
+  ) %>%
+  rowwise() %>%
+  mutate(Engines = paste0(Engines, collapse = ", "))
+
+gt::gt(has_submodel)
+```
