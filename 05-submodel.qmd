@@ -1,7 +1,244 @@
 # The submodel trick {#sec-submodel}
 
-In summary, this book has no content whatsoever.
+```{r}
+#| label: get-eval-fits-submodel
+#| include: false
+# Sys.setenv(emlwr.eval_fits = "true")
+if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
+  eval_fits <- FALSE
+} else {
+  eval_fits <- TRUE
+}
+```
+
+In @sec-speedy-go, I created a custom `grid` of parameters–rather than relying on tidymodels' default grid generation, to enable something I referred to as the "submodel trick." The submodel trick allows us to evaluate many models than we actually fit; given that model fitting is the most computationally intensive operation when resampling models (by far), cutting out a good few of those fits results in substantial time savings. This chapter will explain what the submodel trick is, demonstrating its individual contribution to the speedup we saw in @sec-speedy-go along the way. Then, I'll explain how users can use the submodel trick in their own analyses to speed up the model development process.
+
+## Demonstration
 
 ```{r}
-1 + 1
+#| label: get-bm-basic-submodel
+#| include: false
+load("data/01-intro/bm_basic.Rda")
+load("data/01-intro/bm_speedy.Rda")
 ```
+
+Recall that, in @sec-first-go, we resampled an XGBoost boosted tree model to predict whether patients would be readmitted within 30 days after an inpatient hospital stay. Using default settings with no optimizations, the model took `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` hours to resample. With a switch in computation engine, implementation of parallel processing, change in search strategy, *and enablement of the submodel trick*, the time to resample was knocked down to `r round(as.numeric(bm_speedy$median[[1]]) / 60, 2)` minutes. What is the submodel trick, though, and what was its individual contribution to that speedup?
+
+First, loading in data and setting up the model specification as before:
+
+```{r}
+#| label: readmission-split-submodel
+
+# load and split data:
+set.seed(1)
+readmission_split <- initial_split(readmission)
+readmission_train <- training(readmission_split)
+readmission_test <- testing(readmission_split)
+readmission_folds <- vfold_cv(readmission_train)
+
+# set up model specification
+bt <- 
+  boost_tree(learn_rate = tune(), trees = tune()) %>%
+  set_mode("classification")
+```
+
+### Grids
+
+If I just pass these resamples and model specification to `tune_grid()`, as I did in @sec-first-go, tidymodels will take care of generating the grid of parameters to evaluate itself. By default, tidymodels generates grids of parameters using an experimental design called a latin hypercube [@santner2003; @dupuy2015; @stein1987]. We can use the function `grid_latin_hypercube()` from the dials package to replicate the same grid that `tune_grid()` had generated under the hood:
+
+```{r}
+#| label: bt-grid-latin-hypercube
+set.seed(1)
+bt_grid_latin_hypercube <- 
+  bt %>%
+  extract_parameter_set_dials() %>%
+  grid_latin_hypercube(size = 12)
+
+bt_grid_latin_hypercube
+```
+
+Since we're working with a two-dimensional grid in this case, we can plot the resulting grid to get a sense for the distribution of values:
+
+```{r}
+ggplot(bt_grid_latin_hypercube) +
+  aes(x = trees, y = learn_rate) +
+  geom_point()
+```
+
+While the details of sampling using latin hypercubes are not important to understand this chapter, note that values are not repeated in a given dimension. Said another way, we get 12 unique values for `trees`, and 12 unique values for `learn_rate`. Juxtapose this with the design resulting from `grid_regular()` used in @sec-speedy-go:
+
+```{r}
+#| label: bt-grid-regular
+set.seed(1)
+bt_grid_regular <-
+  bt %>%
+  extract_parameter_set_dials() %>% 
+  grid_regular(levels = 4)
+
+bt_grid_regular
+```
+
+Plotting in the same way:
+
+```{r}
+ggplot(bt_grid_regular) +
+  aes(x = trees, y = learn_rate) +
+  geom_point()
+```
+
+This grid is "regular" in the sense that `levels = 4` values are generated individually for each parameter, and the resulting grid is created by pairing up each unique combination of those values.
+
+You may have noticed that this regular grid contains even more proposed points—`4 x 4 = 16`—than the latin hypercube with `size = 12`. A reasonable question, then: how on earth would the larger grid be resampled more quickly than the smaller one? It's possible that I hid some slowdown resulting from this larger grid among the rest of the optimizations implemented in @sec-speedy-go; lets test the effect of the change in grid by itself.
+
+```{r}
+#| label: bm-grid-regular
+#| message: false
+#| warning: false
+#| eval: !expr eval_fits
+set.seed(1)
+
+bm_grid_regular <- 
+  bench::mark(
+    grid_regular = 
+      tune_grid(
+        object = bt,
+        preprocessor = readmitted ~ .,
+        resamples = readmission_folds,
+        grid = bt_grid_regular
+      )
+  )
+```
+
+```{r}
+#| label: get-bm-grid-regular
+#| include: false
+if (identical(eval_fits, "true")) {
+  save(bm_grid_regular, file = "data/05-submodel/bm_grid_regular.Rda")
+} else {
+  load("data/05-submodel/bm_grid_regular.Rda")
+}
+```
+
+```{r}
+bm_grid_regular
+```
+
+See? Have some faith in me!
+
+Changing only the `grid` argument (and even increasing the number of proposed `grid` points), we've decreased the time to evaluate against resamples from `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` to `r round(as.numeric(bm_grid_regular$median[[1]]) / 60 / 60, 2)`.
+
+### The trick
+
+Passing this regular grid allowed `tune_grid()` to use what the tidymodels team refers to as the "submodel trick," where many more models can be evaluated than were actually fit.
+
+To best understand how the submodel trick works, let's refresh on how boosted trees work. The training process begins with a simple decision tree, and subsequent trees are added iteratively, each one correcting the errors of the previous trees by focusing more on the data points associated with the greatest error. The final model is a weighted sum of all the individual trees, where each tree contributes to reducing the overall error.
+
+So, for example, to train a boosted tree model with `r bt_grid_regular$trees[4]` trees, we first need to train a boosted tree model with 1 tree. Then, we need to take that model, figure out where it made its largest errors, and train a second tree that aims to correct those errors. So on, until the, say, `r bt_grid_regular$trees[2]`-th tree, and so on until the `r bt_grid_regular$trees[3]`-rd tree, and so on until, finally, the `r bt_grid_regular$trees[4]`-th tree. *Picking up what I'm putting down?* Along the way to training a boosted tree with 2000 trees, we happened to train a bunch of other models we might be interested in evaluating: what we call *submodels*. So, in the example of `bt_grid_regular`, for a given `learn_rate`, we only need to train the model with the maximum `trees`. In this example, that's a quarter of the model fits.
+
+::: callout-note
+You might note that we don't see a speedup nearly as drastic as 4 times. While we indeed only fit a quarter of the models, we're fitting the boosted trees with the largest number of trees, and the time to train a boosted tree scales linearly with the number of trees. Said another way, we're eliminating the need to fit only the faster-fitting models. This tends to be the case in many cases where the submodel trick applies.
+:::
+
+To evaluate a fitted model with performance metrics, all we need are its predictions (and, usually, the true values being predicted). In pseudocode, resampling a model against performance metrics usually goes something like this:
+
+```{r}
+#| label: resampling-pseudocode-usual
+for (resample in resamples) {
+  # analogue to the "training" set for the resample
+  analysis <- analysis(resample)
+  # analogue to the "testing" set for the resample
+  assessment <- assessment(resample)
+  
+  for (model in models) {
+    # the longest-running operation:
+    model_fit <- fit(model, analysis)
+    
+    # usually, comparatively quick operations:
+    model_predictions <- predict(model_fit, assessment)
+    metrics <- c(metrics, metric(model_predictions))
+  }
+}
+```
+
+::: callout-note
+`analysis()`, `assessment()`, `fit()`, and `predict()` are indeed actual functions in tidymodels. `metric()` is not, but an analogue could be created from the output of the function `metric_set()`.
+:::
+
+Among all of these operations, fitting the model with `fit()` is usually the longest-running step, by far. In comparison, `predict()`ing on new values and calculating metrics takes very little time. Using the submodel trick allows us to reduce the number of `fit()`s while keeping the number of calls to `predict()` and `metric()` constant. In pseudocode, resampling with the submodel trick could look like:
+
+```{r}
+#| label: resampling-pseudocode-usual
+for (resample in resamples) {
+  analysis <- analysis(resample)
+  assessment <- assessment(resample)
+  
+  models_to_fit <- models[unique(non_submodel_args)]
+  
+  for (model in models_to_fit) {
+    model_fit <- fit(model, analysis)
+    
+    for (model_to_eval in models[unique(submodel_args)]) {
+      model_to_eval <- predict(model_to_eval, assessment)
+      metrics <- c(metrics, metric(model_predictions))
+    }
+  }
+}
+```
+
+The above pseudocode admittedly requires some generosity (or mental gymnastics) to interpret, but the idea is that if `fit()`ting is indeed the majority of the time spent in resampling, and `models_to_fit` contains many fewer elements than `models` in the preceding pseudocode blocks, we should see substantial speedups.
+
+### At its most extreme
+
+In the applied example above, we saw a relatively modest speedup. If we want to really show off the power of the submodel trick, in terms of time spent resampling per model evaluated, we can come up with a somewhat silly grid:
+
+```{r}
+bm_grid_regular_go_brrr <-
+  bm_grid_regular %>%
+  slice_max(trees, by = learn_rate) %>%
+  map(1:max(.$trees), ~mutate(., trees = .x))
+
+bm_grid_regular_go_brrr
+```
+
+In this grid, we have the same number of unique values of `learn_rate`, $4$, resulting in the same $4$ model fits. Except that, in this case, we're evaluating every model with number of trees $1, 2, 3, 4, ..., 2000$. If our hypothesis that predicting on the assessment set and generating performance metrics is comparatively fast is true, then we'll see that elapsed time *per grid point* is way lower:
+
+```{r}
+#| label: bm-grid-regular-go-brrr
+#| message: false
+#| warning: false
+#| eval: !expr eval_fits
+set.seed(1)
+
+bm_grid_regular_go_brrr <- 
+  bench::mark(
+    grid_regular_go_brrr = 
+      tune_grid(
+        object = bt,
+        preprocessor = readmitted ~ .,
+        resamples = readmission_folds,
+        grid = bm_grid_regular_go_brrr
+      )
+  )
+```
+
+```{r}
+#| label: get-bm-grid-regular
+#| include: false
+if (identical(eval_fits, "true")) {
+  save(bm_grid_regular_go_brrr, file = "data/05-submodel/bm_grid_regular_go_brrr.Rda")
+} else {
+  load("data/05-submodel/bm_grid_regular_go_brrr.Rda")
+}
+```
+
+The above code took `r round(as.numeric(bm_grid_regular_go_brrr$median[[1]]) / 60 / 60, 2)` hours to run, definitely longer than the `r round(as.numeric(bm_grid_regular$median[[1]]) / 60 / 60, 2)` hours from `bm_grid_regular` (that fitted the same number of models), but comparable. But, *per grid point,* that difference is huge:
+
+```{r}
+# time per grid point for bm_grid_regular
+bm_grid_regular$median[[1]] / nrow(bt_grid_regular)
+
+# time per grid point for bm_grid_regular_go_brrr
+bm_grid_regular_go_brrr$median[[1]] / nrow(bt_grid_regular_go_brrr)
+```
+
+Whether this difference in timing is of practical significance to a user is debatable. In the context where we generated `bm_grid_regular`, where the grid of points searched over is relatively comparable (and thus similarly likely to identify a performant model) yet the decreased number of model fits gave rise to a reasonable speedup—`round(as.numeric(bm_grid_regular$median[[1]] / bm_basic$median[[1]]), 2) - 1 * 100`%—is undoubtedly impactful for many typical use cases of tidymodels. The more eye-popping per-grid-point speedups, as with `bm_grid_regular_go_brrr`, are more so a fun trick than a practical tool for most use cases.

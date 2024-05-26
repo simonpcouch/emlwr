@@ -59,11 +59,8 @@ For my first go at tuning, I'll tune a boosted tree model using grid search. By 
 ```{r}
 #| label: bt
 bt <- 
-  boost_tree(
-    mode = "classification", 
-    learn_rate = tune(),
-    trees = tune()
-  )
+  boost_tree(learn_rate = tune(), trees = tune()) %>%
+  set_mode("classification")
 ```
 
 I'll carry out a grid search using `tune_grid()`, trying out a bunch of different pairs of values for `learn_rate` and `trees` and seeing what sticks. The argument `grid = 12` indicates that I want to try out 12 different combinations of values and will let tidymodels take care of exactly what those values are.
@@ -103,6 +100,8 @@ if (identical(eval_fits, "true")) {
 #| label: bm-basic-print
 bm_basic
 ```
+
+<!--# TODO: change this to 12 points so that the number of points match up -->
 
 Holy smokes! `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` hours is a good while. What all did `tune_grid()` do, though?
 
