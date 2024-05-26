@@ -4,14 +4,15 @@ project:
 book:
   title: "Efficient Machine Learning with R"
   subtitle: "Low-Compute Predictive Modeling with tidymodels"
-  author: "Simon"
+  author: "Simon P. Couch"
   date: "3/21/2024"
   chapters:
     - index.qmd
     - 01-intro.qmd
     - 02-models.qmd
-    - 03-preprocessing.qmd
-    - 04-tuning.qmd
+    - 03-parallelism.qmd
+    - 04-search.qmd
+    - 05-submodel.qmd
     - references.qmd
     
 bibliography: references.bib

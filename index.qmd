@@ -1,3 +1,31 @@
 # Preface {.unnumbered}
 
 writing stacks on a slow laptop
+
+## Outline:
+
+-   **Introduction**: Demonstrate a speedup with an applied example – switch modeling engine, evaluate in parallel, adjust search approach, use submodels
+
+-   **Models**: Explore timings to resample various different models
+
+    -   Across models
+
+    -   By model type
+
+    -   Threading
+
+-   **Parallelism**: Sequential vs. forking vs. socket clusters
+
+-   **Search**: Grid search vs. racing vs. iterative
+
+-   **The submodel trick**: Revisit example from introduction and explain the ins and outs
+
+Beyond the basics(?):
+
+-   **Preprocessing**
+
+-   **Sparsity**
+
+-   **GPU Training**
+
+-   **Stacking**

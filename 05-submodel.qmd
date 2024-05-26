@@ -1,4 +1,4 @@
-# Preprocessors
+# The submodel trick {#sec-submodel}
 
 In summary, this book has no content whatsoever.
 
