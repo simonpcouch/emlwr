@@ -11,7 +11,15 @@ if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
 }
 ```
 
-In @sec-speedy-go, I created a custom `grid` of parameters–rather than relying on tidymodels' default grid generation, to enable something I referred to as the "submodel trick." The submodel trick allows us to evaluate many models than we actually fit; given that model fitting is the most computationally intensive operation when resampling models (by far), cutting out a good few of those fits results in substantial time savings. This chapter will explain what the submodel trick is, demonstrating its individual contribution to the speedup we saw in @sec-speedy-go along the way. Then, I'll explain how users can use the submodel trick in their own analyses to speed up the model development process.
+```{r}
+#| label: load-pkgs-submodel
+#| include: false
+#| message: false
+#| warning: false
+
+```
+
+In @sec-speedy-go, I created a custom `grid` of parameters, rather than relying on tidymodels' default grid generation, to enable something I referred to as the "submodel trick." The submodel trick allows us to evaluate many more models than we actually fit; given that model fitting is the most computationally intensive operation when resampling models (by far), cutting out a good few of those fits results in substantial time savings. This chapter will explain what the submodel trick is, demonstrating its individual contribution to the speedup we saw in @sec-speedy-go along the way. Then, I'll explain how users can use the submodel trick in their own analyses to speed up the model development process.
 
 ## Demonstration
 
@@ -24,10 +32,14 @@ load("data/01-intro/bm_speedy.Rda")
 
 Recall that, in @sec-first-go, we resampled an XGBoost boosted tree model to predict whether patients would be readmitted within 30 days after an inpatient hospital stay. Using default settings with no optimizations, the model took `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` hours to resample. With a switch in computation engine, implementation of parallel processing, change in search strategy, *and enablement of the submodel trick*, the time to resample was knocked down to `r round(as.numeric(bm_speedy$median[[1]]) / 60, 2)` minutes. What is the submodel trick, though, and what was its individual contribution to that speedup?
 
-First, loading in data and setting up the model specification as before:
+First, loading packages and setting up resamples and the model specification as before:
 
 ```{r}
 #| label: readmission-split-submodel
+
+# load packages
+library(tidymodels)
+library(readmission)
 
 # load and split data:
 set.seed(1)
@@ -86,7 +98,7 @@ ggplot(bt_grid_regular) +
   geom_point()
 ```
 
-This grid is "regular" in the sense that `levels = 4` values are generated individually for each parameter, and the resulting grid is created by pairing up each unique combination of those values.
+The argument `levels = 4` indicates that $4$ values are generated individually for each parameter, and the resulting grid is created by pairing up each unique combination of those values.
 
 You may have noticed that this regular grid contains even more proposed points—`4 x 4 = 16`—than the latin hypercube with `size = 12`. A reasonable question, then: how on earth would the larger grid be resampled more quickly than the smaller one? It's possible that I hid some slowdown resulting from this larger grid among the rest of the optimizations implemented in @sec-speedy-go; lets test the effect of the change in grid by itself.
 
@@ -115,6 +127,7 @@ bm_grid_regular <-
 if (identical(eval_fits, "true")) {
   save(bm_grid_regular, file = "data/05-submodel/bm_grid_regular.Rda")
 } else {
+  library(bench)
   load("data/05-submodel/bm_grid_regular.Rda")
 }
 ```
@@ -125,7 +138,7 @@ bm_grid_regular
 
 See? Have some faith in me!
 
-Changing only the `grid` argument (and even increasing the number of proposed `grid` points), we've decreased the time to evaluate against resamples from `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` to `r round(as.numeric(bm_grid_regular$median[[1]]) / 60 / 60, 2)`.
+Changing only the `grid` argument (and even increasing the number of proposed `grid` points), we've decreased the time to evaluate against resamples from `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` to `r round(as.numeric(bm_grid_regular$median[[1]]) / 60 / 60, 2)` hours, or a speedup of `r round(as.numeric(bm_grid_regular$median[[1]] / bm_basic$median[[1]]), 2) - 1 * 100`%.
 
 ### The trick
 
@@ -143,6 +156,7 @@ To evaluate a fitted model with performance metrics, all we need are its predict
 
 ```{r}
 #| label: resampling-pseudocode-usual
+#| eval: false
 for (resample in resamples) {
   # analogue to the "training" set for the resample
   analysis <- analysis(resample)
@@ -167,7 +181,8 @@ for (resample in resamples) {
 Among all of these operations, fitting the model with `fit()` is usually the longest-running step, by far. In comparison, `predict()`ing on new values and calculating metrics takes very little time. Using the submodel trick allows us to reduce the number of `fit()`s while keeping the number of calls to `predict()` and `metric()` constant. In pseudocode, resampling with the submodel trick could look like:
 
 ```{r}
-#| label: resampling-pseudocode-usual
+#| label: resampling-pseudocode-submodel
+#| eval: false
 for (resample in resamples) {
   analysis <- analysis(resample)
   assessment <- assessment(resample)
@@ -192,16 +207,17 @@ The above pseudocode admittedly requires some generosity (or mental gymnastics) 
 In the applied example above, we saw a relatively modest speedup. If we want to really show off the power of the submodel trick, in terms of time spent resampling per model evaluated, we can come up with a somewhat silly grid:
 
 ```{r}
+#| label: bt-grid-regular-go-brrr
 bt_grid_regular_go_brrr <-
   bt_grid_regular %>%
   slice_max(trees, by = learn_rate) %>%
-  map(.x = 1:max(.$trees), .f = ~mutate(.y, trees = .x), dfr = .) %>%
+  map(.x = c(1, seq(10, max(.$trees), 10)), .f = ~mutate(.y, trees = .x), dfr = .) %>%
   bind_rows()
 
 bt_grid_regular_go_brrr
 ```
 
-In this grid, we have the same number of unique values of `learn_rate`, $4$, resulting in the same $4$ model fits. Except that, in this case, we're evaluating every model with number of trees $1, 2, 3, 4, ..., 2000$. If our hypothesis that predicting on the assessment set and generating performance metrics is comparatively fast is true, then we'll see that elapsed time *per grid point* is way lower:
+In this grid, we have the same number of unique values of `learn_rate`, $4$, resulting in the same $4$ model fits. Except that, in this case, we're evaluating every model with number of trees $1, 10, 20, 30, 40, ..., 2000$. If our hypothesis that predicting on the assessment set and generating performance metrics is comparatively fast is true, then we'll see that elapsed time *per grid point* is way lower:
 
 ```{r}
 #| label: bm-grid-regular-go-brrr
@@ -223,7 +239,7 @@ bm_grid_regular_go_brrr <-
 ```
 
 ```{r}
-#| label: get-bm-grid-regular
+#| label: get-bm-grid-regular-go-brrr
 #| include: false
 if (identical(eval_fits, "true")) {
   save(bm_grid_regular_go_brrr, file = "data/05-submodel/bm_grid_regular_go_brrr.Rda")
@@ -232,9 +248,10 @@ if (identical(eval_fits, "true")) {
 }
 ```
 
-The above code took `r round(as.numeric(bm_grid_regular_go_brrr$median[[1]]) / 60 / 60, 2)` hours to run, definitely longer than the `r round(as.numeric(bm_grid_regular$median[[1]]) / 60 / 60, 2)` hours from `bm_grid_regular` (that fitted the same number of models), but comparable. But, *per grid point,* that difference is huge:
+The above code took `r round(as.numeric(bm_grid_regular_go_brrr$median[[1]]) / 60 / 60, 2)` hours to run, a bit longer than the `r round(as.numeric(bm_grid_regular$median[[1]]) / 60 / 60, 2)` hours from `bm_grid_regular` (that fitted the same number of models), but comparable. *Per grid point,* that difference is huge:
 
 ```{r}
+#| label: time-per-grid-point
 # time per grid point for bm_grid_regular
 bm_grid_regular$median[[1]] / nrow(bt_grid_regular)
 
@@ -242,7 +259,7 @@ bm_grid_regular$median[[1]] / nrow(bt_grid_regular)
 bm_grid_regular_go_brrr$median[[1]] / nrow(bt_grid_regular_go_brrr)
 ```
 
-Whether this difference in timing is of practical significance to a user is debatable. In the context where we generated `bm_grid_regular`, where the grid of points searched over is relatively comparable (and thus similarly likely to identify a performant model) yet the decreased number of model fits gave rise to a reasonable speedup—`round(as.numeric(bm_grid_regular$median[[1]] / bm_basic$median[[1]]), 2) - 1 * 100`%—is undoubtedly impactful for many typical use cases of tidymodels. The more eye-popping per-grid-point speedups, as with `bm_grid_regular_go_brrr`, are more so a fun trick than a practical tool for most use cases.
+Whether this difference in timing is of practical significance to a user is debatable. In the context where we generated `bm_grid_regular`, where the grid of points searched over is relatively comparable (and thus similarly likely to identify a performant model) yet the decreased number of model fits gave rise to a reasonable speedup—`r round(as.numeric(bm_grid_regular$median[[1]] / bm_basic$median[[1]]), 2) - 1 * 100`%—is undoubtedly impactful for many typical use cases of tidymodels. The more eye-popping per-grid-point speedups, as with `bm_grid_regular_go_brrr`, are more so a fun trick than a practical tool for most use cases.
 
 ## Overview
 
@@ -256,7 +273,7 @@ Submodels are defined with respect to a given model parameter, e.g. `trees` in `
 
 Again, some modeling engines for each of these model types do not actually support prediction from submodels from the noted parameter. See @sec-supported-arguments for a complete table of currently supported arguments defining submodels in tidymodels.
 
-In the above example, we had to manually specify a grid like `bt_regular_grid` in order for tidymodels to use a grid that can take advantage of the submodel trick. This reflects the frameworks' general prioritization of predictive performance over computational performance in its design and defaults; latin hypercubes have better statistical properties when it comes to discovering performant hyperparameter combinations than a regular grid [@mckay1979, @stein1987; @santner2003]. However, note that in the case where a model is being tuned over only one argument, the submodel trick will kick in regardless of the sampling approach being used: regardless of how a set of univariate points are distributed, the most extreme parameter value (e.g. the max `trees`) can be used to generate predictions for values across the distribution.
+In the above example, we had to manually specify a grid like `bt_regular_grid` in order for tidymodels to use a grid that can take advantage of the submodel trick. This reflects the frameworks' general prioritization of predictive performance over computational performance in its design and defaults; latin hypercubes have better statistical properties when it comes to discovering performant hyperparameter combinations than a regular grid [@mckay1979; @stein1987; @santner2003]. However, note that in the case where a model is being tuned over only one argument, the submodel trick will kick in regardless of the sampling approach being used: regardless of how a set of univariate points are distributed, the most extreme parameter value (e.g. the max `trees`) can be used to generate predictions for values across the distribution.
 
 ### Supported parameters {#sec-supported-arguments}
 
@@ -293,6 +310,10 @@ has_submodel <-
   ) %>%
   rowwise() %>%
   mutate(Engines = paste0(Engines, collapse = ", "))
+```
 
-gt::gt(has_submodel)
+```{r}
+#| label: print-has-submodel
+#| echo: false
+kableExtra::kable(has_submodel)
 ```

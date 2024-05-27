@@ -3,6 +3,10 @@
 ```{r}
 #| label: get-eval-fits
 #| include: false
+#| warning: false
+#| message: false
+library(bench)
+
 # Sys.setenv(emlwr.eval_fits = "true")
 if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
   eval_fits <- FALSE
