@@ -1,17 +1,47 @@
 # Parallel computing
 
-## Across-models
+...
 
-### Sequential
+Above all, the question I want to answer is, if my laptop has a handful of CPU cores (and maybe even a snazzy GPU), how can I get the absolute most out of them to reduce the time to develop machine learning models?
 
-### Socket Clusters
+## Across-models {#sec-across-models}
 
-### Forking
+In @sec-intro, one of the changes I made to greatly speed up that resampling process was to introduce an across-models parallel backend. By "across-models," I mean that each individual model fit happens on a single CPU core, but I allot each of the CPU cores I've reserved for a training a number of model fits to take care of.
 
-## Within-models
+Phrased another way, in the case of "sequential" training, all `r nrow(readmission_folds) * 12` model fits happened one after the other.
 
-### OpenMP
+![](figures/basic_resample.png){#fig-basic-resample-2}
 
-### GPU Training
+While the one CPU core running my R process works itself to the bone, the other remaining 9 are mostly sitting idle (besides keeping my many browser tabs whirring). CPU parallelism is about somehow making use of more cores than the one my main R process is running on; in theory, if $n$ times as many cores are working on fitting models, the whole process will take $1/n$ of the time.
 
-## Within and Across
+![](figures/parallel_resample.png){#fig-parallel-resample-2}
+
+Why do I say "in theory"? The orchestration of splitting up that work is actually a very, very difficult problem, for two main reasons:
+
+-   **Getting data from one place to another**: Each of us has likely spent minutes or even hours waiting for a call to `load()` on a big old `.RData` object to complete. In that situation, data is being brought in from our hard disk or a remote database (or even elsewhere in memory) into memory allocated by our R process. R is a single-process program, so in order to train multiple models simultaneously, we need multiple R processes, each able to access the training data. We then have two options: one would be to somehow each of those R processes to share one copy of the data (this is the intent behind @sec-forking), the other to send a copy of the data to each process. The former *sounds* nice but can become quite the headache quite quickly. The latter *sounds* computationally expensive but, with enough memory and sufficiently low latency in copying data, can often outperform forking for local workflows.
+
+-   **Load balancing**: Imagine I have some machine learning model with a parameter $p$, and that the computational complexity of that model is such that the model takes $p$ minutes to train. I am trying out values of $p$ in $1, 2, 3, ..., 40$ and distributing model training across 5 cores. Without the knowledge of how $p$ affects training times, I might send models with $p$ in $1, 2, 3, ...8$ off to the first core, $9, 10, 11, ..., 16$ off to the second core, and so on. In this case, the first core would finish up all of its fits in a little over half an hour while the last would take almost 5 hours. In this example, I've taken the penalty on overhead of sending all of the training data off to each core, but in the end, one core ends up doing the majority of the work anyway. In this case, too, we were lucky that the computational complexity of model fits relative to this parameter were roughly linear—it's not uncommon for model fit times to have a quadratic or geometric relationship with the values of critical hyperparameters. A critical reader might have two questions. The first: if the computational complexity relative to this parameter is known, why don't you just batch the values of $p$ up such that each worker will take approximately the same amount of time? This is a reasonable question, and it relates to the hard problem of *chunking*. In some situations, related to individual parameters, it really is just about this simple to determine the relationship between parameter values and fit times. In reality, those relationships tend not to be quite so clear-cut, and even when they are, the implications of that parameter value for fit times often depend on the values of other parameters. A pairing of some parameter value $p$ with some other value of a different parameter $q$ might cause instability in some gradient process or otherwise, making the problem of estimating the fit time of a model given some set of parameter values a pretty difficult problem. The second question: couldn't you just send each of the cores a single parameter value and have them let the parent R process know they're done, at which point they'll receive another parameter value to get to work on evaluating? That way, the workers that happen to end up with a quicker-fitting values earlier on won't sit idle waiting for other cores to finish. This approach is called *asynchronous* (or "async") and, in some situations, can be quite helpful. Remember, though, that this requires getting data (in the form of the communication that a given worker is done evaluating a model, and maybe passing along some performance metric values) back and forth much more often. If the overhead of that communication exceeds the time that synchronous workers had spent idle, waiting for busier cores to finish running, then the asynchronous approach will result in a net slowdown.
+
+There are two dominant approaches to distributing model fits across local cores that I've hinted at already: forking and socket clusters. We'll delve further into the weeds of each of those approaches in the coming subsections. At a high level, though, the folk knowledge is that forking is subject to less overhead in sending data back and forth, but has some quirks that make it less portable (more plainly, it's not available on Windows) and a bit unstable thanks to a less-than-friendly relationship with R's garbage collector. The challenge of balancing loads isn't dependent on which parallelism technique you choose.
+
+Before I spend time experimenting with these techniques, I want to quickly situate the terminology I'm using here in the greater context of discussions of parallel computing with R. "Sequential," "forking," and "socket clusters" are my preferred terms for the techniques I'll now write about, but there's quite a bit of diversity in the terminology folks use to write about them. I've also called out keywords (as in, functions or packages) related to these techniques in various generations of parallel computing frameworks in R. In "base," I refer to functions in the parallel package, building on popular packages multicore (first on CRAN in 2009, inspiring `mclapply()`) and snow (first on CRAN in 2003, inspiring `parLapply()`) and included in base installations of R from R 2.14.0 (2011) onward [@pkgparallel].
+
+| Technique | future | foreach | base | Synonyms |
+|--------------|------------------|--------------|--------------|--------------|
+| Sequential | `sequential()` |  |  | Serial |
+| Forking | `multicore()` | doMC | `mclapply()` |  |
+| Socket Clusters | `multisession()` | doParallel | `parLapply()` | Parallel Socket Clusters (PSOCK), Cluster, Socket |
+
+### Sequential {#sec-sequential}
+
+### Socket Clusters {#sec-socket-clusters}
+
+### Forking {#sec-forking}
+
+## Within-models {#sec-within-models}
+
+### OpenMP {#sec-openmp}
+
+### GPU Training {#sec-gpu-training}
+
+## Within and Across {#sec-within-and-across}
