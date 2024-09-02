@@ -1,26 +1,32 @@
-# Preface {.unnumbered}
+# I'm glad you're here. {.unnumbered}
 
-writing stacks on a slow laptop
+Welcome to *Efficient Machine Learning with R*! This is a book about predictive modeling with tidymodels, focused on reducing the time and memory required to train machine learning models without sacrificing predictive performance.
+
+-   This book assumes familiarity with data analysis with the tidyverse as well as the basics of machine learning with tidymodels: fitting models with parsnip, resampling data with rsample, and tuning model parameters with tune. For more on tidy data analysis, see [@wickham2023]. For the basics of predictive modeling with tidymodels, see [@kuhn2022].
+
+-   *Efficient Machine Learning with R* is staunchly empirical. While the scaling properties of many of the statistical and computational techniques described in this book are well-theorized, we'll observe that empirical timings often defy expectations based on that theory.
 
 ## Outline:
 
--   **Introduction**: Demonstrate a speedup with an applied example – switch modeling engine, evaluate in parallel, adjust search approach, use submodels
+```{r}
+#| include: false
+load("data/01-intro/bm_basic.Rda")
+load("data/01-intro/bm_speedy.Rda")
+```
 
--   **Models**: Explore timings to resample various different models
+-   The **Introduction** demonstrates a `r round(as.numeric(bm_basic[["median"]][[1]]) / as.numeric(bm_speedy[["median"]][[1]]))` speedup with an applied example. By adapting a grid search on a canonical model to use a more performant modeling engine, hooking into a parallel computing framework, transitioning to an optimized search strategy, and defining the grid to search over carefully, the section shows that users can drastically cut down on tuning times without sacrificing predictive performance. The following chapters then explore those optimizations in further details.
 
-    -   Across models
+-   The **Models** chapter explore timings to resample various different modeling engines. The chapter compares implementations both within and across model types.
 
-    -   By model type
+    <!--# should we call out threading here? too early for predictive vs computational performance discussion? -->
 
-    -   Threading
+-   **Parallelism** compares various approaches to distributing model computations across CPU cores. We'll explore two different across-model parallel computing frameworks supported by tidymodels—process forking and socket clusters—and explore their relationship to within-model parallelization.
 
--   **Parallelism**: Sequential vs. forking vs. socket clusters
+-   Then, **Search** explores various alternatives to grid search that can reduce the total number of model fits required to search a given grid space by only resampling models that seem to have a chance at being the "best."
 
--   **Search**: Grid search vs. racing vs. iterative
+-   Finally, **Submodels** investigates approaches to designing grids that can further reduce the total number of model fits required to search a given grid space by generating predictions from one model that can be used to evaluate several.
 
--   **The submodel trick**: Revisit example from introduction and explain the ins and outs
-
-Beyond the basics(?):
+The optimizations discussed in those aforementioned chapters can, on their own, substantially reduce the time to evaluate machine learning models with tidymodels. Depending on the problem context, some modeling workflows may benefit from more specialized optimizations. The following chapters discuss some of those use cases:
 
 -   **Preprocessing**
 

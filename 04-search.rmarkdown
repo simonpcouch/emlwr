@@ -1,10 +1,46 @@
 # Search {#sec-search}
 
+
+
+
+
+
+
+
+```{r setup, echo = FALSE, warning = FALSE, message = FALSE}
+library(knitr)
+library(doMC)
+
+opts_chunk$set(
+  collapse = TRUE
+)
+
+registerDoMC(cores = 1)
+
+options(pillar.min_title_chars = Inf)
+```
+
+
+
+
+
+
+
+
+Especially for large amounts of data or large grids of parameters, the time and resources needed to tune statistical models can quickly become a barrier to getting machine learning models deployed.
+
 ## Grid search
 
 In many examples online demonstrating machine learning with tidymodels, [grid search](https://www.tidymodels.org/learn/work/tune-svm/) via [`tune_grid()`](https://tune.tidymodels.org/reference/tune_grid.html) is the workhorse behind tuning hyperparameters. `tune_grid()` computes a set of performance metrics for a set of candidate model parameters across resamples of data; the parameters that result in the most performant models can then be used to [train a model on the entire training set](https://tune.tidymodels.org/reference/fit_best.html). We'll quickly put together an example grid search with `tune_grid()` to benchmark how long it takes before introducing two strategies to speed the process up—parallel processing and racing via ANOVA.
 
 We'll make use of the [`ames` housing data](https://modeldata.tidymodels.org/reference/ames.html) included as part of the tidymodels meta-package to demonstrate hyperparameter tuning with grid search.
+
+
+
+
+
+
+
 
 ```{r load-tidymodels, message = FALSE}
 library(tidymodels)
@@ -12,13 +48,41 @@ library(tidymodels)
 ames
 ```
 
+
+
+
+
+
+
+
 The data set contains information on 2,930 properties in Ames, Iowa. We'll model the [log home sale price](https://www.tmwr.org/ames#exploring-features-of-homes-in-ames) using predictors related a home's location, size, and condition.
+
+
+
+
+
+
+
 
 ```{r ames-sale-price}
 ames <- ames %>% mutate(Sale_Price = log10(Sale_Price))
 ```
 
+
+
+
+
+
+
+
 First, [splitting the data into training and testing sets](https://rsample.tidymodels.org/reference/initial_split.html) and then resampling the training set using [v-fold cross-validation](https://rsample.tidymodels.org/reference/vfold_cv.html):
+
+
+
+
+
+
+
 
 ```{r split-ames}
 set.seed(1)
@@ -30,7 +94,21 @@ set.seed(2)
 ames_folds <- vfold_cv(ames_train, v = 20)
 ```
 
+
+
+
+
+
+
+
 Then, we'll define a [boosted tree](https://parsnip.tidymodels.org/reference/boost_tree.html) ensemble model. We first load the [bonsai](https://bonsai.tidymodels.org/) package, which defines parsnip wrappers for the gradient boosting framework [LightGBM](https://lightgbm.readthedocs.io/en/stable/) (among others), and then define a model specification using [parsnip](https://parsnip.tidymodels.org/).
+
+
+
+
+
+
+
 
 ```{r bt-spec}
 library(bonsai)
@@ -41,9 +119,23 @@ bt_spec <-
   set_mode("regression")
 ```
 
+
+
+
+
+
+
+
 We tune a number of [main model parameters](https://parsnip.tidymodels.org/reference/set_engine.html#details) as well as the [engine parameter](https://parsnip.tidymodels.org/reference/set_engine.html#details) `num_leaves`. [Rather than tuning the number of trees](https://stats.stackexchange.com/questions/348245/do-we-have-to-tune-the-number-of-trees-in-a-random-forest), we tune `stop_iter`, the number of boosting iterations without improvement before stopping training.
 
 We'll also use a [recipe](https://recipes.tidymodels.org/) to pre-process the data. This one is adapted from the book [Tidy Modeling with R](https://www.tmwr.org/):
+
+
+
+
+
+
+
 
 ```{r bt-rec}
 bt_rec <- 
@@ -56,21 +148,63 @@ bt_rec <-
   step_ns(Latitude, Longitude, deg_free = tune())
 ```
 
+
+
+
+
+
+
+
 Note that we tune the degrees of freedom `deg_free` parameter of the [natural spline step](https://recipes.tidymodels.org/reference/step_ns.html).
 
 Bundling the model and preprocessing together into a [workflow](https://workflows.tidymodels.org/):
+
+
+
+
+
+
+
 
 ```{r bt-wflow}
 bt_wflow <- workflow(bt_rec, bt_spec)
 ```
 
+
+
+
+
+
+
+
 Each argument we've tagged to `tune()` is now represented in the workflow. We can summarize that set of parameters needing tuning by [extracting them](https://workflows.tidymodels.org/reference/extract-workflow.html) from the workflow:
+
+
+
+
+
+
+
 
 ```{r extract-param-set}
 extract_parameter_set_dials(bt_wflow)
 ```
 
+
+
+
+
+
+
+
 A grid search involves taking candidate values for each of these parameters and evaluating their resulting performance against resamples of the data. A *model configuration* is a workflow with a specific value sampled for each tuning parameter; we're searching for the model configuration that results in the best possible performance. We'll carry out a grid search across 50 model configurations with tidymodels using `tune_grid()` and time how long it takes using `system.time()`.
+
+
+
+
+
+
+
 
 ```{r bt-res-grid, cache = TRUE}
 set.seed(3)
@@ -80,19 +214,61 @@ bt_time_grid <- system.time(
 )
 ```
 
+
+
+
+
+
+
+
 `bt_res_grid` is an object that gives us insight into various aspects of the tuning process like resampling variation, performance metrics, and issues in model fitting.
+
+
+
+
+
+
+
 
 ```{r print-grid}
 bt_res_grid
 ```
 
+
+
+
+
+
+
+
 Various helper functions allow us to quickly learn from this output. For example, plotting the resampled performance for each tuning parameter:
+
+
+
+
+
+
+
 
 ```{r autoplot-grid, fig.alt = "A faceted ggplot2 dot plot. Rows correspond to two different error metrics, root mean squared error and R squared, and four columns correspond to the different tuning parameters mentioned above. The learning rate seems to be a driving factor in performance; smaller learning rates seem to consistently result in smaller errors."}
 autoplot(bt_res_grid)
 ```
 
+
+
+
+
+
+
+
 Or, picking out the best tuning parameter combination according to the [root mean squared error](https://yardstick.tidymodels.org/reference/rmse.html) (RMSE):
+
+
+
+
+
+
+
 
 ```{r collect-metrics-grid}
 collect_metrics(bt_res_grid) %>%
@@ -109,6 +285,13 @@ bt_res_grid_rmse_best <-
   `[`(1)
 ```
 
+
+
+
+
+
+
+
 Our best validation set RMSE averaged out to `r format(round(bt_res_grid_rmse_best, 3), scientific = FALSE)`.
 
 For each of the 50 model configurations, the configuration was fitted `r nrow(ames_folds)` (once for each fold) times. That's `r 50 * nrow(ames_folds)` model fits!
@@ -121,13 +304,34 @@ In these previous examples, we've evaluated 50 model configurations against 20 r
 
 [Racing via ANOVA](https://arxiv.org/abs/1405.6974) models, implemented in the [`tune_race_anova()`](https://finetune.tidymodels.org/reference/tune_race_anova.html#details) function in finetune, works by fitting each model configuration to only a few of the resamples and then, at each additional resample, removing model configurations that are unlikely to be more performant than the others.
 
+
+
+
+
+
+
+
 ```{r load-finetune}
 library(finetune)
 ```
 
+
+
+
+
+
+
+
 Visualization helpers in the finetune package are super effective for developing intuition on this process, so let's go ahead and tune using racing and then use the output to learn more about the process.
 
 Now, tuning using racing:
+
+
+
+
+
+
+
 
 ```{r bt-time-race, cache = TRUE}
 set.seed(5)
@@ -137,17 +341,52 @@ bt_time_race <- system.time(
 )
 ```
 
+
+
+
+
+
+
+
 The resulting object `bt_res_race` looks quite similar to the typical grid search output:
+
+
+
+
+
+
+
 
 ```{r print-race}
 bt_res_race
 ```
 
+
+
+
+
+
+
+
 The `plot_race()` helper visualizes the racing process:
+
+
+
+
+
+
+
 
 ```{r plot-race, fig.alt = "A ggplot2 line plot, with resample number on the x axis and root mean squared error on the y axis. For resamples 1 through 3, 50 lines show the distributions of error for each model configuration. After the 3rd resample, a vast majority of the lines disappear, and only the lines associated with the smallest error remain. Moving from left to right along the x axis, lines gradually disappear, until only one line is left, which stretches horizontally all the way to resample 20."}
 plot_race(bt_res_race) + labs(x = "Resample #")
 ```
+
+
+
+
+
+
+
 
 In this plot, we see 50 differently colored lines, each corresponding to a model configuration. For a given resample, each model configuration has an associated RMSE, plotted on the y axis.
 
@@ -161,6 +400,13 @@ So, after the burn-in period, we determine that many of the model configurations
 
 The analogous plot for a regular grid search, like that generating `bt_res_grid`, would just have 50 lines stretching all the way across the x axis. *Every* model configuration is fully resampled:
 
+
+
+
+
+
+
+
 ```{r plot-grid, echo = FALSE, fig.alt = "A ggplot2 line plot like the one above, except that all 50 lines stretch all the way across the x axis. The lines vary slightly as they move from left to right, and tend not to cross each other."}
 metric <- tune::.get_tune_metric_names(bt_res_grid)[1]
 rs <- bt_res_grid %>% dplyr::select(id, .metrics) %>% dplyr::mutate(.order = 1:nrow(.)) %>% tidyr::unnest(cols = .metrics) %>% 
@@ -171,6 +417,13 @@ purrr::map_dfr(.order, ~finetune:::stage_results(.x, rs)) %>% ggplot2::ggplot(gg
     show.legend = FALSE) + labs(x = "Resample #") + 
     ggplot2::ylab(metric)
 ```
+
+
+
+
+
+
+
 
 A little silly.
 
@@ -185,3 +438,4 @@ Again, on its own, this method is really powerful in cutting down on time-to-tun
 ### Simulated Annealing
 
 ### Bayesian Optimization
+

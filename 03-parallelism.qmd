@@ -1,7 +1,17 @@
 # Parallel computing
 
-In summary, this book has no content whatsoever.
+## Across-models
 
-```{r}
-1 + 1
-```
+### Sequential
+
+### Socket Clusters
+
+### Forking
+
+## Within-models
+
+### OpenMP
+
+### GPU Training
+
+## Within and Across
