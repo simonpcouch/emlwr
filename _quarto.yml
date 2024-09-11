@@ -9,9 +9,9 @@ book:
   chapters:
     - index.qmd
     - 01-intro.qmd
-    - 02-models.qmd
+#    - 02-models.qmd
     - 03-parallelism.qmd
-    - 04-search.qmd
+#    - 04-search.qmd
     - 05-submodel.qmd
     - references.qmd
     
@@ -19,7 +19,16 @@ bibliography: references.bib
 
 format:
   html:
-    theme: cosmo
+    theme: [cosmo]
+    mainfont: 'Montserrat'
+    fig-width: 6
+    fig-height: 4.25
+    fig-align: center
+    tbl-cap-location: bottom
+    fig-cap-location: bottom
+    message: false
+    warning: false
+    
   pdf:
     documentclass: scrreprt
 
