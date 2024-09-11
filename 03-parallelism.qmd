@@ -210,7 +210,7 @@ t_par
 
 No dice! As we know from earlier on, though, we'll start to see a payoff when model fits take long enough to outweigh the overhead of sending data back and forth between workers. But, but! Remember the high-mileage lesson: this overhead is greater for distributed systems. Let's demonstrate this.
 
-I'll first run this experiment for numbers of rows $100, 1000, ..., 1,000,000$ both sequentially and via socket clusters on my laptop, recording the timings as I do so. Then, I'll do the same thing on a hosted service, and we'll compare results.
+I'll first run this experiment for numbers of rows $100, 1000, ..., 1,000,000$ both sequentially and via socket clusters on my laptop, recording the timings as I do so. Then, I'll do the same thing on a popular data science hosted service, and we'll compare results.
 
 ```{r}
 #| label: bench-press-time_resample_bt
@@ -275,10 +275,11 @@ timings <-
 ```{r}
 #| label: print-timings
 timings %>%
-  select(n_rows, plan, median, system)
+  select(n_rows, plan, median, system) %>%
+  head()
 ```
 
-There's one timing per unique combination of number of rows, parallelism plan, and system. Based on these timings, we can calculate the factor of speedup for sequential evaluation versus its parallel analogue.
+There's one timing per unique combination of number of rows, parallelism plan, and system (`"laptop"` vs `"cloud"`). Based on these timings, we can calculate the factor of speedup for sequential evaluation versus its parallel analogue.
 
 ```{r}
 #| label: plot-timings
