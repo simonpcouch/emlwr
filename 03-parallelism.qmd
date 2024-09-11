@@ -134,6 +134,10 @@ While GPU support is available for both libraries in R, it's not as straightforw
 
 ## Within and Across {#sec-within-and-across}
 
+## Strategy
+
+Choosing n cores and `parallel_over`...
+
 ## Distributed Computing
 
 So far in this chapter, I've mostly focused on the performance considerations for distributing computations across cores on a single computer. Distributed computing "in the cloud," where data is shipped off for processing on several different computers, is a different ball-game. That conversation is mostly outside of the scope of this book, but I do want to give some high-level intuition on how local parallelism differs from distributed parallelism.
@@ -294,3 +298,5 @@ timings %>%
 ```
 
 In this plot, a signed speedup value of 2 would mean that the socket cluster (i.e., parallel) approach was twice as fast, while a value of -2 would mean that the sequential approach ran twice as fast as the socket cluster approach. In general, larger numbers of rows (and thus longer-running model fits) tend to be associated with greater speedups as a result of switching to parallel computing. For local clusters on my laptop, the overhead of passing data around is small enough that I start to see a payoff when switching to parallel computing for only 1000 rows. As for the cloud system, though, model fits have to take a *long* time before switching to parallel computing begins to reduce elapsed times.
+
+The conclusion to draw here is not that one ought not to use hosted setups for parallel computing. Aside from the other many benefits of doing data analysis in hosted environments, some of these environments enable "massively parallel" computing, or, in other words, a ton of cores. In the example shown in this chapter, we fitted a relatively small number of models, so we wouldn't necessarily benefit (and would likely see a slowdown) from scaling up the number of cores utilized. If we had instead wanted to tune that boosted tree over 1,000 proposed hyperparameter combinations—requiring 10,000 model fits with a 10-fold resampling scheme—we would likely be much better off utilizing a distributed system with higher latency (and maybe even less performant individual cores) and 1,000 or 10,000 cores.
