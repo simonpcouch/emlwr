@@ -1,20 +1,25 @@
 # The submodel trick {#sec-submodel}
 
 ```{r}
-#| label: get-eval-fits-submodel
+#| label: setup-common-05
 #| include: false
-# Sys.setenv(emlwr.eval_fits = "true")
+source("includes/common.R")
+```
+
+```{r}
+#| label: setup-05
+#| include: false
 if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
   eval_fits <- FALSE
 } else {
   eval_fits <- TRUE
 }
-```
 
-```{r}
-#| label: load-pkgs-submodel
-#| include: false
-
+if (!eval_fits) {
+  data_files <- list.files("data/05-submodel", full.names = TRUE)
+  data_files <- data_files[grepl("\\.Rda", data_files)]
+  loaded <- lapply(data_files, load)
+}
 ```
 
 In @sec-speedy-go, I created a custom `grid` of parameters, rather than relying on tidymodels' default grid generation, to enable something I referred to as the "submodel trick." The submodel trick allows us to evaluate many more models than we actually fit; given that model fitting is the most computationally intensive operation when resampling models (by far), cutting out a good few of those fits results in substantial time savings. This chapter will explain what the submodel trick is, demonstrating its individual contribution to the speedup we saw in @sec-speedy-go along the way. Then, I'll explain how users can use the submodel trick in their own analyses to speed up the model development process.

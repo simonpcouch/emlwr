@@ -1,15 +1,24 @@
 # Introduction {#sec-intro}
 
 ```{r}
-#| label: get-eval-fits
+#| label: setup-common-01
 #| include: false
-library(bench)
+source("includes/common.R")
+```
 
-# Sys.setenv(emlwr.eval_fits = "true")
+```{r}
+#| label: setup-01
+#| include: false
 if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
   eval_fits <- FALSE
 } else {
   eval_fits <- TRUE
+}
+
+if (!eval_fits) {
+  data_files <- list.files("data/01-intro", full.names = TRUE)
+  data_files <- data_files[grepl("\\.Rda", data_files)]
+  loaded <- lapply(data_files, load)
 }
 ```
 

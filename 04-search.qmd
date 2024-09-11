@@ -1,5 +1,27 @@
 # Search {#sec-search}
 
+```{r}
+#| label: setup-common-04
+#| include: false
+source("includes/common.R")
+```
+
+```{r}
+#| label: setup-04
+#| include: false
+if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
+  eval_fits <- FALSE
+} else {
+  eval_fits <- TRUE
+}
+
+if (!eval_fits) {
+  data_files <- list.files("data/04-search", full.names = TRUE)
+  data_files <- data_files[grepl("\\.Rda", data_files)]
+  loaded <- lapply(data_files, load)
+}
+```
+
 ## Grid search
 
 In many examples online demonstrating machine learning with tidymodels, [grid search](https://www.tidymodels.org/learn/work/tune-svm/) via [`tune_grid()`](https://tune.tidymodels.org/reference/tune_grid.html) is the workhorse behind tuning hyperparameters. `tune_grid()` computes a set of performance metrics for a set of candidate model parameters across resamples of data; the parameters that result in the most performant models can then be used to [train a model on the entire training set](https://tune.tidymodels.org/reference/fit_best.html). We'll quickly put together an example grid search with `tune_grid()` to benchmark how long it takes before introducing two strategies to speed the process up—parallel processing and racing via ANOVA.

@@ -11,15 +11,26 @@
 \
 <!--# also, need to rewrite to fit when `eval_fits` and not otherwise. -->
 
-```{r }
-#| label: load-data
+```{r}
+#| label: setup-common-02
 #| include: false
-load("data/02-models/cran_benchmarks_parsnip.Rda")
-load("data/02-models/dev_benchmarks_parsnip.Rda")
-load("data/02-models/cran_benchmarks_tidymodels.Rda")
-load("data/02-models/dev_benchmarks_tidymodels.Rda")
-load("data/02-models/benchmarks_parsnip.Rda")
-load("data/02-models/benchmarks_tidymodels.Rda")
+source("includes/common.R")
+```
+
+```{r}
+#| label: setup-02
+#| include: false
+if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
+  eval_fits <- FALSE
+} else {
+  eval_fits <- TRUE
+}
+
+if (!eval_fits) {
+  data_files <- list.files("data/02-models", full.names = TRUE)
+  data_files <- data_files[grepl("\\.Rda", data_files)]
+  loaded <- lapply(data_files, load)
+}
 ```
 
 While the tidymodels team develops the infrastructure that users interact with directly, under the hood, we send calls out to other people's modeling packages—or modeling *engines*—that provide the actual implementations that estimate parameters, generate predictions, etc. The process looks something like this:
