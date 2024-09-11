@@ -3,8 +3,6 @@
 ```{r}
 #| label: get-eval-fits
 #| include: false
-#| warning: false
-#| message: false
 library(bench)
 
 # Sys.setenv(emlwr.eval_fits = "true")
@@ -71,8 +69,6 @@ I'll carry out a grid search using `tune_grid()`, trying out a bunch of differen
 
 ```{r}
 #| label: bm-basic
-#| message: false
-#| warning: false
 #| eval: !expr eval_fits
 set.seed(1)
 
@@ -152,8 +148,6 @@ Finally, I'll **give up early on poorly-performing models**: Rather than using g
 
 ```{r}
 #| label: bm-speedy
-#| warning: false
-#| message: false
 #| eval: !expr eval_fits
 set.seed(1)
 

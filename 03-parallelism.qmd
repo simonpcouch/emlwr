@@ -7,8 +7,6 @@ Above all, my question is: how can I reduce the time to train machine learning m
 ```{r}
 #| label: setup-03
 #| include: false
-#| warning: false
-#| message: false
 if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
   eval_fits <- FALSE
 } else {
