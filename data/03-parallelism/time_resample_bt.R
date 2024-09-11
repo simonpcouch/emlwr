@@ -1,13 +1,11 @@
 # A script to replicate the timings for the Distributed Computing subsection
 # on a cloud service.
 # install.packages(c("future", "tidymodels", "xgboost", "bench"))
-
-library(future)
-library(tidymodels)
+source("includes/common.R")
 
 time_resample_bt <- function(n_rows, plan) {
   set.seed(1)
-  d <- sim_regression(n_rows)
+  d <- simulate_regression(n_rows)
 
   suppressWarnings(
     plan(plan, workers = 4) 
