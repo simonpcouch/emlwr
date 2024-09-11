@@ -245,14 +245,9 @@ t_laptop <-
 #| label: save-t_laptop
 #| eval: !expr eval_fits
 #| include: false
-t_seq$memory <- NULL
-t_seq$result <- NULL
-
-t_par$memory <- NULL
-t_par$result <- NULL
-
-t_laptop$memory <- NULL
-t_laptop$result <- NULL
+t_seq <- trim_bench_mark(t_seq)
+t_par <- trim_bench_mark(t_par)
+t_laptop <- trim_bench_mark(t_laptop)
 
 save(t_seq, t_par, t_laptop, file = "data/03-parallelism/t_laptop.Rda")
 ```

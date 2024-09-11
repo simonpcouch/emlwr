@@ -97,6 +97,7 @@ bm_basic <-
 #| label: get-bm-basic
 #| include: false
 if (identical(eval_fits, "true")) {
+  bm_basic <- trim_bench_mark(bm_basic)
   save(bm_basic, file = "data/01-intro/bm_basic.Rda")
 } else {
   load("data/01-intro/bm_basic.Rda")
@@ -176,6 +177,7 @@ bm_speedy <-
 #| label: get-bm-speedy
 #| include: false
 if (identical(eval_fits, "true")) {
+  bm_speedy <- trim_bench_mark(bm_speedy)
   save(bm_speedy, file = "data/01-intro/bm_speedy.Rda")
 } else {
   load("data/01-intro/bm_speedy.Rda")
@@ -212,6 +214,7 @@ fit_basic <-
 #| label: get-fit-basic
 #| include: false
 if (identical(eval_fits, "true")) {
+  fit_basic <- trim_bench_mark(fit_basic)
   save(fit_basic, file = "data/01-intro/fit_basic.Rda")
 } else {
   load("data/01-intro/fit_basic.Rda")
@@ -238,6 +241,7 @@ fit_speedy <-
 #| label: get-fit-speedy
 #| include: false
 if (identical(eval_fits, "true")) {
+  fit_speedy <- trim_bench_mark(fit_speedy)
   save(fit_speedy, file = "data/01-intro/fit_speedy.Rda")
 } else {
   load("data/01-intro/fit_speedy.Rda")

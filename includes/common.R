@@ -19,3 +19,10 @@ knit_print.bench_mark <- function(x, ..., options) {
 print.bench_mark <- function(x, ...) {
   knit_print.bench_mark(x, ..., options = NULL)
 }
+
+trim_bench_mark <- function(bench_mark) {
+  bench_mark$memory <- NULL
+  bench_mark$result <- NULL
+  
+  bench_mark
+}

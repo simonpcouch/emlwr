@@ -126,6 +126,7 @@ bm_grid_regular <-
 #| label: get-bm-grid-regular
 #| include: false
 if (identical(eval_fits, "true")) {
+  bm_grid_regular <- trim_bench_mark(bm_grid_regular)
   save(bm_grid_regular, file = "data/05-submodel/bm_grid_regular.Rda")
 } else {
   library(bench)
@@ -241,6 +242,7 @@ bm_grid_regular_go_brrr <-
 #| label: get-bm-grid-regular-go-brrr
 #| include: false
 if (identical(eval_fits, "true")) {
+  bm_grid_regular_go_brrr <- trim_bench_mark(bm_grid_regular_go_brrr)
   save(bm_grid_regular_go_brrr, file = "data/05-submodel/bm_grid_regular_go_brrr.Rda")
 } else {
   load("data/05-submodel/bm_grid_regular_go_brrr.Rda")
