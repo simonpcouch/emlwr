@@ -5,7 +5,7 @@ book:
   title: "Efficient Machine Learning with R"
   subtitle: "Low-Compute Predictive Modeling with tidymodels"
   author: "Simon P. Couch"
-  date: "3/21/2024"
+#  date: "3/21/2024"
   chapters:
     - index.qmd
     - 01-intro.qmd
