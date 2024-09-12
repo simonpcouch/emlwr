@@ -34,33 +34,27 @@ First, loading a few needed packages:
 #| label: load-pkgs
 library(tidymodels)
 library(future)
-library(readmission)
 library(finetune)
 library(bonsai)
 ```
 
-For the purposes of this example, we'll use a dataset giving hospital readmission data for patients with Type I diabetes. The dataset includes clinical care data from 130 U.S. hospitals from years 1999-2008. Each row describes a patient "encounter" (loosely, an inpatient hospital stay).
+For the purposes of this example, we'll simulate a data set of 100,000 rows and 18 columns. The first column, `class`, is a binary outcome, and the remaining variables are a mix of numerics and factors.
 
 ```{r}
-#| label: readmission-print
-readmission
+#| label: d-print
+set.seed(1)
+d <- simulate_classification(1e5)
 ```
-
-The first variable in this data, `readmitted`, gives whether the patient was readmitted within 30 days of discharge. We'd like to predict readmission using the remaining information in the dataset: demographic characteristics, insurance provider, medications taken, etc.
-
-::: callout-note
-For a more in-depth analysis of this data, see @strack2014 and @couch24, as well as @sec-datasets.
-:::
 
 We'll first split the data into training and testing sets before generating a set of 10 folds from the training data for cross-validation.
 
 ```{r}
-#| label: readmission-split
+#| label: d-split
 set.seed(1)
-readmission_split <- initial_split(readmission)
-readmission_train <- training(readmission_split)
-readmission_test <- testing(readmission_split)
-readmission_folds <- vfold_cv(readmission_train)
+d_split <- initial_split(d)
+d_train <- training(d_split)
+d_test <- testing(d_split)
+d_folds <- vfold_cv(d_train)
 ```
 
 ### A first go {#sec-first-go}
@@ -86,8 +80,8 @@ bm_basic <-
     basic = 
       tune_grid(
         object = bt,
-        preprocessor = readmitted ~ .,
-        resamples = readmission_folds,
+        preprocessor = class ~ .,
+        resamples = d_folds,
         grid = 12
       )
   )
@@ -115,9 +109,9 @@ bm_basic
 
 Holy smokes! `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` hours is a good while. What all did `tune_grid()` do, though?
 
-First, let's break down how many model fits actually happened. Since I've supplied `grid = 12`, we're evaluating 12 possible model configurations. Each of those model configurations is evaluated against `readmission_folds`, a `r nrow(readmission_folds)`-fold cross validation object, meaning that each configuration is fitted `r nrow(readmission_folds)` times. That's `r nrow(readmission_folds) * 12` model fits!
+First, let's break down how many model fits actually happened. Since I've supplied `grid = 12`, we're evaluating 12 possible model configurations. Each of those model configurations is evaluated against `readmission_folds`, a `r nrow(d_folds)`-fold cross validation object, meaning that each configuration is fitted `r nrow(d_folds)` times. That's `r nrow(d_folds) * 12` model fits!
 
-Further, consider that those fits happen on `r nrow(readmission_folds)-1`/`r nrow(readmission_folds)`ths of the training data, or `r nrow(readmission_folds$splits[[1]])` rows.
+Further, consider that those fits happen on `r nrow(d_folds)-1`/`r nrow(d_folds)`ths of the training data, or `r nrow(d_folds$splits[[1]])` rows.
 
 <!--# TODO: The above doesn't seem to be in-lining correctly? -->
 
@@ -166,8 +160,8 @@ bm_speedy <-
     speedy = 
       tune_race_anova(
         object = bt_lgb,
-        preprocessor = readmitted ~ .,
-        resamples = readmission_folds,
+        preprocessor = class ~ .,
+        resamples = d_folds,
         grid = bt_grid
       )
   )
@@ -206,8 +200,8 @@ The first thing I'd wonder when seeing this result is how much of a penalty in p
 #| eval: !expr eval_fits
 fit_basic <- 
   select_best(bm_basic$result[[1]], metric = "roc_auc") %>%
-  finalize_workflow(workflow(readmitted ~ ., bt), parameters = .) %>%
-  last_fit(split = readmission_split)
+  finalize_workflow(workflow(class ~ ., bt), parameters = .) %>%
+  last_fit(split = d_split)
 ```
 
 ```{r}
@@ -233,15 +227,14 @@ As for the quicker approach:
 #| eval: !expr eval_fits
 fit_speedy <- 
   select_best(bm_speedy$result[[1]], metric = "roc_auc") %>%
-  finalize_workflow(workflow(readmitted ~ ., bt), parameters = .) %>%
-  last_fit(split = readmission_split)
+  finalize_workflow(workflow(class ~ ., bt), parameters = .) %>%
+  last_fit(split = d_split)
 ```
 
 ```{r}
 #| label: get-fit-speedy
 #| include: false
 if (identical(eval_fits, "true")) {
-  fit_speedy <- trim_bench_mark(fit_speedy)
   save(fit_speedy, file = "data/01-intro/fit_speedy.Rda")
 } else {
   load("data/01-intro/fit_speedy.Rda")
@@ -297,7 +290,7 @@ The next question is then *how could tidymodels cut down on evaluation time for 
 
 ![](figures/basic_resample.png){#fig-basic-resample}
 
-@fig-basic-resample depicts this process, where we evaluate all \``r nrow(readmission_folds) * 12` models in order. Each white dot in the engine portion of the evaluation time represents another round of fitting and predicting with engine. Remember that in reality, for even modest dataset sizes, the green portions representing tidymodels overhead are much smaller by proportion than represented.
+@fig-basic-resample depicts this process, where we evaluate all \``r nrow(d_folds) * 12` models in order. Each white dot in the engine portion of the evaluation time represents another round of fitting and predicting with engine. Remember that in reality, for even modest dataset sizes, the green portions representing tidymodels overhead are much smaller by proportion than represented.
 
 In @sec-speedy-go, the first thing I did was introduce a parallel backend. Distributing engine fits across available cores is itself a gamechanger, as illustrated in @fig-parallel-resample.
 
