@@ -17,8 +17,12 @@ if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
 
 if (!eval_fits) {
   data_files <- list.files("data/05-submodel", full.names = TRUE)
-  data_files <- data_files[grepl("\\.Rda", data_files)]
-  loaded <- lapply(data_files, load)
+  data_files <- data_files[grepl("\\.rds", data_files)]
+
+  for (data_file in data_files) {
+    obj_name <- gsub(".rds", "", basename(data_file))
+    assign(obj_name, qread(data_file), rlang::current_env())
+  }
 }
 ```
 
@@ -29,8 +33,8 @@ In @sec-speedy-go, I created a custom `grid` of parameters, rather than relying 
 ```{r}
 #| label: get-bm-basic-submodel
 #| include: false
-load("data/01-intro/bm_basic.Rda")
-load("data/01-intro/bm_speedy.Rda")
+bm_basic <- qread("data/01-intro/bm_basic.rds")
+bm_speedy <- qread("data/01-intro/bm_speedy.rds")
 ```
 
 Recall that, in @sec-first-go, we resampled an XGBoost boosted tree model to predict whether patients would be readmitted within 30 days after an inpatient hospital stay. Using default settings with no optimizations, the model took `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` hours to resample. With a switch in computation engine, implementation of parallel processing, change in search strategy, *and enablement of the submodel trick*, the time to resample was knocked down to `r round(as.numeric(bm_speedy$median[[1]]) / 60, 2)` minutes. What is the submodel trick, though, and what was its individual contribution to that speedup?
@@ -127,10 +131,9 @@ bm_grid_regular <-
 #| include: false
 if (identical(eval_fits, "true")) {
   bm_grid_regular <- trim_bench_mark(bm_grid_regular)
-  save(bm_grid_regular, file = "data/05-submodel/bm_grid_regular.Rda")
+  qsave(bm_grid_regular, file = "data/05-submodel/bm_grid_regular.rds")
 } else {
-  library(bench)
-  load("data/05-submodel/bm_grid_regular.Rda")
+  bm_grid_regular <- qread("data/05-submodel/bm_grid_regular.rds")
 }
 ```
 
@@ -243,9 +246,9 @@ bm_grid_regular_go_brrr <-
 #| include: false
 if (identical(eval_fits, "true")) {
   bm_grid_regular_go_brrr <- trim_bench_mark(bm_grid_regular_go_brrr)
-  save(bm_grid_regular_go_brrr, file = "data/05-submodel/bm_grid_regular_go_brrr.Rda")
+  qsave(bm_grid_regular_go_brrr, file = "data/05-submodel/bm_grid_regular_go_brrr.rds")
 } else {
-  load("data/05-submodel/bm_grid_regular_go_brrr.Rda")
+  bm_grid_regular_go_brrr <- qread("data/05-submodel/bm_grid_regular_go_brrr.rds")
 }
 ```
 
