@@ -46,7 +46,7 @@ Why do I say "in theory"? The orchestration of splitting up that work is actuall
 
 -   **Getting data from one place to another**: Each of us has likely spent minutes or even hours waiting for a call to `load()` on a big old `.RData` object to complete. In that situation, data is being brought in from our hard disk or a remote database (or even elsewhere in memory) into memory allocated by our R process. R is a single-process program, so in order to train multiple models simultaneously, we need multiple R processes, each able to access the training data. We then have two options: one would be to somehow allow each of those R processes to share one copy of the data (this is the idea behind forking, described in @sec-forking), the other to send a copy of the data to each process (the idea behind socket clusters, described in @sec-socket-clusters). The former *sounds* nice but can become a headache quite quickly. The latter *sounds* computationally expensive but, with enough memory and sufficiently low latency in copying data (as would be the case with a set of clusters living on one laptop), can often outperform forking for local workflows.
 
--   **Load balancing**: Imagine I have some machine learning model with a hyperparameter $p$, and that the computational complexity of that model is such that, with hyperparameter value $p$, the model takes $p$ minutes to train. I am trying out values of $p$ in $1, 2, 3, ..., 40$ and distributing model training across 5 cores. Without the knowledge of how $p$ affects training times, I might send models with $p$ in $1, 2, 3, ...8$ off to the first core, $9, 10, 11, ..., 16$ off to the second core, and so on. In this case, the first core would finish up all of its fits in a little over half an hour while the last would take almost 5 hours. In this example, I've taken the penalty on overhead of sending all of the training data off to each core, but in the end, one core ends up doing the majority of the work anyway. In this case, too, we were lucky that the computational complexity of model fits relative to this parameter were roughly linear—it's not uncommon for model fit times to have a quadratic or geometric relationship with the values of important hyperparameters. A critical reader might have two questions. The first: if the computational complexity relative to this parameter is known, why don't you just batch the values of $p$ up such that each worker will take approximately the same amount of time? This is a reasonable question, and it relates to the hard problem of *chunking*. In some situations, related to individual parameters, it really is just about this simple to determine the relationship between parameter values and fit times. In reality, those relationships tend not to be quite so clear-cut, and even when they are, the implications of that parameter value for fit times often depend on the values of other parameters; a pairing of some parameter value $p$ with some other value of a different parameter $q$ might cause instability in some gradient process or otherwise, making the problem of estimating the fit time of a model given some set of parameter values a pretty difficult problem for some model types. The second question: couldn't you just send each of the cores a single parameter value and have them let the parent R process know they're done, at which point they'll receive another parameter value to get to work on evaluating? That way, the workers that happen to end up with a quicker-fitting values earlier on won't sit idle waiting for other cores to finish. This approach is called *asynchronous* (or "async") and, in some situations, can be quite helpful. Remember, though, that this requires getting data (in the form of the communication that a given worker is done evaluating a model, and maybe passing along some performance metric values) back and forth much more often. If the overhead of that communication exceeds the time that synchronous workers had spent idle, waiting for busier cores to finish running, then the asynchronous approach will result in a net slowdown.
+-   **Load balancing**: Imagine I have some machine learning model with a hyperparameter $p$, and that the computational complexity of that model is such that, with hyperparameter value $p$, the model takes $p$ minutes to train. I am trying out values of $p$ in $1, 2, 3, ..., 40$ and distributing model training across 5 cores. Without the knowledge of how $p$ affects training times, I might send models with $p$ in $1, 2, 3, ...8$ off to the first core, $9, 10, 11, ..., 16$ off to the second core, and so on. In this case, the first core would finish up all of its fits in a little over half an hour while the last would take almost 5 hours. In this example, I've taken the penalty on overhead of sending all of the training data off to each core, but in the end, one core ends up doing the majority of the work anyway. In this case, too, we were lucky that the computational complexity of model fits relative to this parameter were roughly linear—it's not uncommon for model fit times to have a quadratic or geometric relationship with the values of important hyperparameters. A critical reader might have two questions. The first: if the computational complexity relative to this parameter is known, why don't you just batch the values of $p$ up such that each worker will take approximately the same amount of time? This is a reasonable question, and it relates to the hard problem of *chunking*. In some situations, related to individual parameters, it really is just about this simple to determine the relationship between parameter values and fit times. In reality, those relationships tend not to be quite so clear-cut, and even when they are, the implications of that parameter value for fit times often depend on the values of other parameters; a pairing of some parameter value $p$ with some other value of a different parameter $q$ might cause instability in some gradient descent process or otherwise, making the problem of estimating the fit time of a model given some set of parameter values a pretty difficult problem for some model types. The second question: couldn't you just send each of the cores a single parameter value and have them let the parent R process know they're done, at which point they'll receive another parameter value to get to work on evaluating? That way, the workers that happen to end up with a quicker-fitting values earlier on won't sit idle waiting for other cores to finish. This approach is called *asynchronous* (or "async") and, in some situations, can be quite helpful. Remember, though, that this requires getting data (in the form of the communication that a given worker is done evaluating a model, and maybe passing along some performance metric values) back and forth much more often. If the overhead of that communication exceeds the time that synchronous workers had spent idle, waiting for busier cores to finish running, then the asynchronous approach will result in a net slowdown.
 
 There are two dominant approaches to distributing model fits across local cores that I've hinted at already: forking and socket clusters. We'll delve further into the weeds of each of those approaches in the coming subsections. At a high level, though, the folk knowledge is that forking is subject to less overhead in sending data back and forth, but has some quirks that make it less portable (more plainly, it's not available on Windows) and a bit unstable thanks to a less-than-friendly relationship with R's garbage collector. As for load balancing, the choice between these two parallelism techniques isn't really relevant.
 
@@ -55,28 +55,231 @@ Before I spend time experimenting with these techniques, I want to quickly situa
 | Technique | future | foreach | base | Synonyms |
 |---------------|---------------|---------------|---------------|---------------|
 | Sequential | `sequential()` |  |  | Serial |
-| Forking | `multicore()` | doMC | `mclapply()` |  |
+| Forking | `multicore()` | doMC | `mclapply()` | Process forking |
 | Socket Clusters | `multisession()` | doParallel | `parLapply()` | Parallel Socket Clusters (PSOCK), Cluster, Socket |
 
 ### Sequential {#sec-sequential}
 
-<!--# example -->
+Generally, in this chapter, I'm writing about various approaches to parallel computing. I'll compare each of those approaches to each, but also to the sequential (or "not parallel") approach. Sequential evaluation means evaluating model fits *in sequence*, or one after the other.
+
+To demonstrate the impacts of different parallelism approaches throughout this chapter, we'll always start the conversation with a short experiment. I'll define a function that tracks the elapsed time to resample a boosted tree ensemble against simulated data, given a number of rows to simulate and a parallelism approach.
+
+```{r}
+#| label: time_resample_bt
+time_resample_bt <- function(n_rows, plan) {
+  # simulate data with n_rows rows
+  set.seed(1)
+  d <- simulate_regression(n_rows)
+  
+  # set up a parallelism plan
+  # set `workers = 4`, which will be ignored for `plan = "sequential"`.
+  if (plan == "multicore") {
+    rlang::local_options(parallelly.fork.enable = TRUE)
+  }
+  if (plan == "multisession") {
+    rlang::local_options(future.globals.maxSize = 1024*1024^2) # 1gb
+  }
+  suppressWarnings(
+    plan(plan, workers = 4) 
+  )
+  
+  # track the elapsed time to...
+  bench::mark(
+    resample =
+      fit_resamples(
+        # ...evaluate a boosted tree ensemble...
+        boost_tree("regression"),
+        # ...modeling the outcome using all predictors...
+        outcome ~ .,
+        # ...against a 10-fold cross-validation of `d`.
+        vfold_cv(d, v = 10)
+      ),
+    memory = FALSE
+  )
+}
+```
+
+Here's a quick example, simulating 100 rows of data and evaluating its resamples sequentially:
+
+```{r}
+#| label: t_seq
+#| eval: !expr eval_fits
+t_seq <- time_resample_bt(100, "sequential")
+
+t_seq
+```
+
+```{r}
+#| label: t_seq_print
+#| eval: !expr (!eval_fits)
+t_seq
+```
+
+In total, the whole process took `r round(t_seq$median[1], 2)` seconds on my laptop. This expression, among other things, fits a model for each resample on $n * \frac{v-1}{v} = 100 * \frac{9}{10} = 90$ rows, meaning that even if the model fits took up 100% of the evaluation time in total, they take `r round(t_seq$median[1] / 10, 3)` seconds each. In other words, these fits are quite fast. As such, the overhead of distributing computations across cores would have to be quite minimal in order to see speedups with computations done in parallel. Scaling up the number of rows in the training data, though, results in elapsed times becoming a bit more cumbersome; in the following code, we'll resample models on datasets with 100 to a million rows, keeping track of the elapsed time for each iteration.
+
+```{r}
+#| label: bench-press-time_resample_bt-seq
+#| eval: !expr eval_fits
+press_seq <-
+  bench::press(
+    time_resample_bt(n_rows, "sequential"),
+    n_rows = 10^(2:6)
+  )
+```
+
+```{r}
+#| label: save-bench-press-time-seq
+#| include: false
+if (eval_fits) {
+  press_seq <- trim_bench_mark(press_seq)
+  qsave(press_seq, file = "data/03-parallelism/press_seq.rds")
+} else {
+  press_seq <- qread(file = "data/03-parallelism/press_seq.rds")
+}
+```
+
+For now, the graph we can put together with this data isn't super interesting:
+
+```{r}
+#| label: plot-press-seq
+ggplot(press_seq) +
+  aes(x = n_rows, y = median) +
+  scale_x_log10() +
+  geom_line() +
+  labs(y = "Log(Elapsed Time)", x = "Number of Rows")
+```
+
+More rows means a longer fit time—what a thrill! In the following sections, we'll compare this timing to those resulting from different parallelism approaches.
 
 ### Forking {#sec-forking}
 
-Process forking is a mechanism where an R process creates an exact copy of itself, called a "child" process (or "worker.") Initially, workers share memory with the original ("parent") process, meaning that there's no overhead resulting from creating multiple copies of training data to send out to workers.
+Process forking is a mechanism where an R process creates an exact copy of itself, called a "child" process (or "worker.") Initially, workers share memory with the original ("parent") process, meaning that there's no overhead resulting from creating multiple copies of training data to send out to workers. So, in the case of tidymodels, each worker needs to have some modeling packages loaded and some training data available to get started on evaluating a model workflow against resample; those packages and data are already available in the parent process, so tidymodels should see very little overhead in shipping data off to workers with forking.
 
 <!--# example -->
 
 There are a few notable drawbacks of process forking:
 
--   There's no direct way to "fork" a process from one machine to another, so forking is available only on a single machine. To distribute computations across multiple machines, practitioners will need to make use of socket clusters.
+-   There's no direct way to "fork" a process from one machine to another, so forking is available only on a single machine. To distribute computations across multiple machines, practitioners will need to make use of socket clusters (described in the following section @sec-socket-clusters).
 
 -   Forking is based on the operating system command `fork`, available only on Unix-alikes (i.e. macOS and Linux). Windows users are out of luck.
 
 -   In practice, memory that is initially shared often ends up ultimately copied due to R's garbage collection. "\[I\]f the garbage collector starts running in one of the forked \[workers\], or the \[parent\] process, then that originally shared memory can no longer be shared and the operating system starts copying memory blocks into each \[worker\]. Since the garbage collector runs whenever it wants to, there is no simple way to avoid this" [@pkgfuture].
 
+Let's rerun that experiment from the previous section using forking and compare timings.
+
+```{r}
+#| label: bench-press-time_resample_bt-fork
+#| eval: !expr eval_fits
+press_fork <-
+  bench::press(
+    time_resample_bt(n_rows, "multicore"),
+    n_rows = 10^(2:6)
+  )
+```
+
+```{r}
+#| label: save-bench-press-time-fork
+#| include: false
+if (eval_fits) {
+  press_fork <- trim_bench_mark(press_fork)
+  qsave(press_fork, file = "data/03-parallelism/press_fork.rds")
+} else {
+  press_fork <- qread(file = "data/03-parallelism/press_fork.rds")
+}
+```
+
+We can make the plot from the last section a bit more interesting now.
+
+```{r}
+#| label: plot-press-seq-fork
+bind_rows(
+  mutate(press_seq, Approach = "Sequential"),
+  mutate(press_fork, Approach = "Forking")
+) %>%
+  ggplot() +
+  aes(x = n_rows, y = median, col = Approach) +
+  scale_x_log10() +
+  geom_line() +
+  labs(y = "Log(Elapsed Time)", x = "Number of Rows")
+```
+
+Well, if that ain't by the book! For the smallest training dataset, `n = 100`, distributing computations across cores resulted in a new slowdown. Very quickly, though, forking meets up with the sequential approach in elapsed time, and by the time we've made it to more realistic dataset sizes, forking almost always wins. In case the log scale is tripping you up, here are the raw timings for the largest dataset:
+
+```{r}
+#| label: print-longest-running-2
+#| echo: false
+bind_rows(
+  mutate(press_seq, Approach = "Sequential"),
+  mutate(press_fork, Approach = "Forking")
+) %>%
+  select(median, Approach) %>%
+  arrange(n_rows) %>%
+  tail(2)
+```
+
+<!--# but, what the heck? doesn't forking take little overhead?  -->
+
+Another angle from which to poke at this is *how much time did we lose to overhead*? Said another way, if I distributed these computations across 4 cores, then I should see a 4-fold speedup in a perfect world. If I divide the time it takes to resample this model sequentially by 4, how does it compare to the timing I observe with forking?
+
+```{r}
+#| label: plot-press-seq-fork-adj
+bind_rows(
+  mutate(press_seq, Approach = "Sequential"),
+  mutate(press_fork, Approach = "Forking")
+) %>%
+  mutate(median_adj = case_when(
+    Approach == "Sequential" ~ median / 4,
+    .default = median
+  )) %>%
+  ggplot() +
+  aes(x = n_rows, y = median_adj, col = Approach) +
+  scale_x_log10() +
+  geom_line() +
+  labs(y = "Log(Elapsed Time Per Core)", x = "Number of Rows")
+```
+
+Per core, no parallel approach will ever be faster than sequential. (If it is, there's a performance bug in your code!) As the computations that happen in workers take longer and longer, though, the overhead shrinks as a proportion of the total elapsed time.
+
 ### Socket Clusters {#sec-socket-clusters}
+
+<!--# some exposition -->
+
+Let's see how this plays out in practice. Returning to the same experiment from before:
+
+```{r}
+#| label: bench-press-time_resample_bt-sc
+#| eval: !expr eval_fits
+press_sc <-
+  bench::press(
+    time_resample_bt(n_rows, "multisession"),
+    n_rows = 10^(2:6)
+  )
+```
+
+```{r}
+#| label: save-bench-press-time-sc
+#| include: false
+if (eval_fits) {
+  press_sc <- trim_bench_mark(press_sc)
+  qsave(press_sc, file = "data/03-parallelism/press_sc.rds")
+} else {
+  press_sc <- qread(file = "data/03-parallelism/press_sc.rds")
+}
+```
+
+```{r}
+#| label: plot-press-seq-fork-sc
+bind_rows(
+  mutate(press_seq, Approach = "Sequential"),
+  mutate(press_fork, Approach = "Forking"),
+  mutate(press_sc, Approach = "Socket Clusters")
+) %>%
+  ggplot() +
+  aes(x = n_rows, y = median, col = Approach) +
+  scale_x_log10() +
+  geom_line() +
+  labs(y = "Log(Elapsed Time)", x = "Number of Rows")
+```
 
 ## Within-models {#sec-within-models}
 
@@ -147,54 +350,6 @@ Choosing n cores and `parallel_over`...
 So far in this chapter, I've mostly focused on the performance considerations for distributing computations across cores on a single computer. Distributed computing "in the cloud," where data is shipped off for processing on several different computers, is a different ball-game. That conversation is mostly outside of the scope of this book, but I do want to give some high-level intuition on how local parallelism differs from distributed parallelism.
 
 The idea that will get you the most mileage in reasoning about distributed parallelism is this: the overhead of sending data back and forth is much more substantial in distributed computing than it is in the local context.
-
-We can demonstrate this with a short experiment. Let's define a function that tracks the elapsed time resample a boosted tree ensemble against simulated data, given a number of rows to simulate and a parallelism approach.
-
-```{r}
-#| label: time_resample_bt
-time_resample_bt <- function(n_rows, plan) {
-  # simulate data with n_rows rows
-  set.seed(1)
-  d <- simulate_regression(n_rows)
-  
-  # set up a parallelism plan
-  # set `workers = 4`, which will be ignored for `plan = "sequential"`.
-  suppressWarnings(
-    plan(plan, workers = 4) 
-  )
-  
-  # track the elapsed time to...
-  bench::mark(
-    resample =
-      fit_resamples(
-        # ...evaluate a boosted tree ensemble...
-        boost_tree("regression"),
-        # ...modeling the outcome using all predictors...
-        outcome ~ .,
-        # ...against a 10-fold cross-validation of `d`.
-        vfold_cv(d, v = 10)
-      )
-  )
-}
-```
-
-Here's a quick example, simulating 100 rows of data and evaluating its resamples sequentially:
-
-```{r}
-#| label: t_seq
-#| eval: !expr eval_fits
-t_seq <- time_resample_bt(100, "sequential")
-
-t_seq
-```
-
-```{r}
-#| label: t_seq_print
-#| eval: !expr (!eval_fits)
-t_seq
-```
-
-In total, the whole process took `r t_seq$median[1]` on my laptop. This expression, among other things, fits a model for each resample on $n * \frac{v-1}{v} = 100 * \frac{9}{10} = 90$ rows, meaning that even if the model fits took up 100% of the evaluation time in total, they take `r t_seq$median[1] / 10` each. In other words, these fits are quite fast.
 
 In order for me to benefit from distributing these computations across cores, the overhead of sending data out to workers has to be so minimal that it doesn't overtake the time saved in distributing model fits across cores. Let's see how this plays out on my laptop, first:
 
