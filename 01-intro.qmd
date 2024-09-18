@@ -132,6 +132,7 @@ While this tuning process could benefit from distributing across many more cores
 Then, we'll **use a clever grid**: The tidymodels framework enables something called the "submodel trick," a technique that will allow us to predict from many more models than we actually fit. Instead of just supplying `grid = 12`, I'll construct the grid myself.
 
 ```{r}
+set.seed(1)
 bt_grid <-
   bt %>%
   extract_parameter_set_dials() %>% 
