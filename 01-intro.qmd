@@ -109,7 +109,7 @@ bm_basic
 
 Holy smokes! `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` hours is a good while. What all did `tune_grid()` do, though?
 
-First, let's break down how many model fits actually happened. Since I've supplied `grid = 12`, we're evaluating 12 possible model configurations. Each of those model configurations is evaluated against `readmission_folds`, a `r nrow(d_folds)`-fold cross validation object, meaning that each configuration is fitted `r nrow(d_folds)` times. That's `r nrow(d_folds) * 12` model fits!
+First, let's break down how many model fits actually happened. Since I've supplied `grid = 12`, we're evaluating 12 possible model configurations. Each of those model configurations is evaluated against `d_folds`, a `r nrow(d_folds)`-fold cross validation object, meaning that each configuration is fitted `r nrow(d_folds)` times. That's `r nrow(d_folds) * 12` model fits!
 
 Further, consider that those fits happen on `r nrow(d_folds)-1`/`r nrow(d_folds)`ths of the training data, or `r nrow(d_folds$splits[[1]])` rows.
 
@@ -286,7 +286,7 @@ As shown in @fig-fit-scale, the proportion of evaluation time that overhead is r
 
 Since the absolute overhead of tidymodels' translation is relatively constant, overhead is only a substantial portion of evaluation time when models fit or predict *very* quickly. For a linear model fitted on 30 data points with `lm()`, this overhead is [continuously benchmarked](https://github.com/tidymodels/parsnip/blob/11a3ab942f131e9d612d4d37c4b77273be064aaf/tests/testthat/test_fit_interfaces.R#L171) to remain under 2/3. That is, absolute worst-case, fitting a model with tidymodels takes three times longer than using the engine interface itself. However, this overhead approaches fractions of a percent for fits on even 10,000 rows for many engines. Thus, a focus on reducing the evaluation time of overhead is valuable in the sense that the framework ought not to unintentionally introduce regressions that cause overhead to scale with the size of training data, but in general, the hard part of reducing evaluation time when evaluating models is reducing the evaluation time for computations carried out by the modeling engine.
 
-The next question is then *how could tidymodels cut down on evaluation time for modeling engines that it doesn't own?* To answer this question, let's revisit the applied example from @sec-first-go. In that first example, the code does some translation to the engine's syntax, sets up some error handling, and then fits and predicts from `r nrow(readmission_folds) * 12` models.
+The next question is then *how could tidymodels cut down on evaluation time for modeling engines that it doesn't own?* To answer this question, let's revisit the applied example from @sec-first-go. In that first example, the code does some translation to the engine's syntax, sets up some error handling, and then fits and predicts from `r nrow(d_folds) * 12` models.
 
 ![](figures/basic_resample.png){#fig-basic-resample}
 
