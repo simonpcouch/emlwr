@@ -21,8 +21,12 @@ if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
 
 if (!eval_fits) {
   data_files <- list.files("data/03-parallelism", full.names = TRUE)
-  data_files <- data_files[grepl("\\.Rda", data_files)]
-  loaded <- lapply(data_files, load, envir = rlang::current_env())
+  data_files <- data_files[grepl("\\.rds", data_files)]
+
+  for (data_file in data_files) {
+    obj_name <- gsub(".rds", "", basename(data_file))
+    assign(obj_name, qread(data_file), rlang::current_env())
+  }
 }
 ```
 
@@ -49,7 +53,7 @@ There are two dominant approaches to distributing model fits across local cores 
 Before I spend time experimenting with these techniques, I want to quickly situate the terminology I'm using here in the greater context of discussions of parallel computing with R. "Sequential," "forking," and "socket clusters" are my preferred terms for the techniques I'll now write about, but there's quite a bit of diversity in the terminology folks use to refer to them. I've also called out keywords (as in, functions or packages) related to these techniques in various generations of parallel computing frameworks in R. In "base," I refer to functions in the parallel package, building on popular packages multicore (first on CRAN in 2009, inspiring `mclapply()`) and snow (first on CRAN in 2003, inspiring `parLapply()`) and included in base installations of R from 2011 onward [@pkgparallel].
 
 | Technique | future | foreach | base | Synonyms |
-|----|----|----|----|----|
+|---------------|---------------|---------------|---------------|---------------|
 | Sequential | `sequential()` |  |  | Serial |
 | Forking | `multicore()` | doMC | `mclapply()` |  |
 | Socket Clusters | `multisession()` | doParallel | `parLapply()` | Parallel Socket Clusters (PSOCK), Cluster, Socket |
@@ -226,12 +230,12 @@ bench::press(
 #| label: t_laptop
 #| eval: !expr eval_fits
 #| include: false
-if (!file.exists("data/03-parallelism/t_cloud.Rda")) {
+if (!file.exists("data/03-parallelism/t_cloud.rds")) {
   cli::cli_abort(
     c(
       "Can't evaluate fits for this chapter without data from the
        cloud system.",
-      "See `data/03-parallelism/time_resample_bt.Rda`."
+      "See `data/03-parallelism/time_resample_bt.R`."
     )
   )
 }
@@ -252,7 +256,9 @@ t_seq <- trim_bench_mark(t_seq)
 t_par <- trim_bench_mark(t_par)
 t_laptop <- trim_bench_mark(t_laptop)
 
-save(t_seq, t_par, t_laptop, file = "data/03-parallelism/t_laptop.Rda")
+qsave(t_seq, file = "data/03-parallelism/t_seq.rds")
+qsave(t_par, file = "data/03-parallelism/t_par.rds")
+qsave(t_laptop, file = "data/03-parallelism/t_laptop.rds")
 ```
 
 The resulting timings are in the object `timings` and look like this:

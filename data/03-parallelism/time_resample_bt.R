@@ -38,4 +38,4 @@ t_cloud$result <- NULL
 t_cloud$memory <- NULL
 t_cloud$result <- NULL
 
-save(t_cloud, file = "t_cloud.Rda")
+qsave(t_cloud, file = "t_cloud.rds")
