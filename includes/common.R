@@ -3,6 +3,7 @@ library(tidymodels)
 library(tidyverse)
 library(future)
 library(bench)
+library(qs)
 
 library(knitr)
 

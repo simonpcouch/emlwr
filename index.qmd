@@ -10,8 +10,9 @@ Welcome to *Efficient Machine Learning with R*! This is a book about predictive 
 
 ```{r}
 #| include: false
-load("data/01-intro/bm_basic.Rda")
-load("data/01-intro/bm_speedy.Rda")
+library(qs)
+bm_basic <- qread("data/01-intro/bm_basic.rds")
+bm_speedy <- qread("data/01-intro/bm_speedy.rds")
 ```
 
 -   The **Introduction** demonstrates a `r round(as.numeric(bm_basic[["median"]][[1]]) / as.numeric(bm_speedy[["median"]][[1]]))`-fold speedup with an applied example. By adapting a grid search on a canonical model to use a more performant modeling engine, hooking into a parallel computing framework, transitioning to an optimized search strategy, and defining the grid to search over carefully, the section shows that users can drastically cut down on tuning times without sacrificing predictive performance. The following chapters then explore those optimizations in further details.
