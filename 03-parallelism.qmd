@@ -212,7 +212,7 @@ bind_rows(
   mutate(press_seq, Approach = "Sequential"),
   mutate(press_fork, Approach = "Forking")
 ) %>%
-  select(median, Approach) %>%
+  select(median, Approach, n_rows) %>%
   arrange(n_rows) %>%
   tail(2)
 ```
@@ -280,6 +280,8 @@ bind_rows(
   geom_line() +
   labs(y = "Log(Elapsed Time)", x = "Number of Rows")
 ```
+
+<!--# what about memory usage? -->
 
 ## Within-models {#sec-within-models}
 
