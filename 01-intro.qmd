@@ -389,3 +389,5 @@ d_reg
 ```
 
 The left-most column, `outcome`, is a numeric outcome, and the remaining 15 columns are a mix of numeric and factor. The same story related to correlation and tricky factor imbalances goes for the regression dataset. Demonstrating that is homework.
+
+<!--# todo: this isn't "real" data -->
