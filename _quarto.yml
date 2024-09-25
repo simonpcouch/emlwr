@@ -13,6 +13,7 @@ book:
     - 03-parallelism.qmd
 #    - 04-search.qmd
     - 05-submodel.qmd
+    - 06-extras.qmd
     - references.qmd
     
 bibliography: references.bib
