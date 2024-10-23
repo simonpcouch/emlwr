@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.1">
+<meta name="generator" content="quarto-1.5.57">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>References – Efficient Machine Learning with R</title>
+<title>4&nbsp; Sparsity – Efficient Machine Learning with R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,26 +20,7 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-}
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -49,6 +30,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
+<link href="./references.html" rel="next">
 <link href="./05-submodel.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -99,7 +81,7 @@ div.csl-indent {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./references.html">References</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./06-extras.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Sparsity</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -150,7 +132,13 @@ div.csl-indent {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./references.html" class="sidebar-item-text sidebar-link active">
+  <a href="./06-extras.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Sparsity</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">References</span></a>
   </div>
 </li>
@@ -167,7 +155,7 @@ div.csl-indent {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">References</h1>
+<h1 class="title"><span id="sec-sparsity" class="quarto-section-identifier"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Sparsity</span></span></h1>
 </div>
 
 
@@ -184,49 +172,6 @@ div.csl-indent {
 </header>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
-<div id="ref-pkgfuture" class="csl-entry" role="listitem">
-Bengtsson, Henrik. 2021. <span>“<span class="nocase">A Unifying
-Framework for Parallel and Distributed Processing in R using
-Futures</span>.”</span> <em><span>The R Journal</span></em> 13 (2):
-273–91. <a href="https://doi.org/10.32614/RJ-2021-048">https://doi.org/10.32614/RJ-2021-048</a>.
-</div>
-<div id="ref-dupuy2015" class="csl-entry" role="listitem">
-Dupuy, Delphine, Céline Helbert, and Jessica Franco. 2015.
-<span>“DiceDesign and DiceEval: Two r Packages for Design and Analysis
-of Computer Experiments.”</span> <em>Journal of Statistical
-Software</em> 65 (11).
-</div>
-<div id="ref-kuhn2022" class="csl-entry" role="listitem">
-Kuhn, Max, and Julia Silge. 2022. <em>Tidy Modeling with
-<span>R</span></em>. " O’Reilly Media, Inc.".
-</div>
-<div id="ref-mckay1979" class="csl-entry" role="listitem">
-McKay, Michael D, Richard J Beckman, and William J Conover. 2000.
-<span>“A Comparison of Three Methods for Selecting Values of Input
-Variables in the Analysis of Output from a Computer Code.”</span>
-<em>Technometrics</em> 42 (1): 55–61.
-</div>
-<div id="ref-pkgparallel" class="csl-entry" role="listitem">
-R Core Team. 2024. <em>R: A Language and Environment for Statistical
-Computing</em>. Vienna, Austria: R Foundation for Statistical Computing.
-<a href="https://www.R-project.org/">https://www.R-project.org/</a>.
-</div>
-<div id="ref-santner2003" class="csl-entry" role="listitem">
-Santner, Thomas J, Brian J Williams, William I Notz, and Brain J
-Williams. 2003. <em>The Design and Analysis of Computer
-Experiments</em>. Vol. 1. Springer.
-</div>
-<div id="ref-stein1987" class="csl-entry" role="listitem">
-Stein, Michael. 1987. <span>“Large Sample Properties of Simulations
-Using Latin Hypercube Sampling.”</span> <em>Technometrics</em> 29 (2):
-143–51.
-</div>
-<div id="ref-wickham2023" class="csl-entry" role="listitem">
-Wickham, Hadley, Mine Çetinkaya-Rundel, and Garrett Grolemund. 2023.
-<em><span>R</span> for Data Science</em>. " O’Reilly Media, Inc.".
-</div>
-</div>
 
 
 
@@ -658,6 +603,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="./references.html" class="pagination-link" aria-label="References">
+        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->
