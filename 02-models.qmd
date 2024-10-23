@@ -67,7 +67,7 @@ The time that steps **1)** and **3)** take is relatively independent of the dime
 
 So, while the *absolute* time allotted to steps **1)** and **3)** is fixed, the *portion* of total time to fit a model with tidymodels that is "overhead" depends on how quick the engine code itself is. How quick is a logistic regression with `glm()` on 100 data points?
 
-```{r, cache = TRUE}
+```{r}
 #| label: bench-mark-glm
 bench::mark(
   fit = glm(class ~ ., family = binomial, data = d)

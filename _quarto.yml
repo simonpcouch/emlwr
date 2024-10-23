@@ -10,11 +10,15 @@ book:
   chapters:
     - index.qmd
     - 01-intro.qmd
-#    - 02-models.qmd
-    - 03-parallelism.qmd
-#    - 04-search.qmd
-    - 05-submodel.qmd
-    - 06-extras.qmd
+    - part: part-fundamentals.qmd
+      chapters:
+      - 02-models.qmd
+      - 03-parallelism.qmd
+      - 04-search.qmd
+      - 05-submodel.qmd
+    - part: part-advanced.qmd
+      chapters:
+      - 06-extras.qmd
     - references.qmd
     
 bibliography: references.bib

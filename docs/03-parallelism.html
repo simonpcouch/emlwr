@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>2&nbsp; Parallel computing – Efficient Machine Learning with R</title>
+<title>3&nbsp; Parallel computing – Efficient Machine Learning with R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -84,8 +84,8 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./05-submodel.html" rel="next">
-<link href="./01-intro.html" rel="prev">
+<link href="./04-search.html" rel="next">
+<link href="./02-models.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -164,7 +164,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./03-parallelism.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Parallel computing</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./03-parallelism.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -201,24 +201,58 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./part-fundamentals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Fundamentals</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./03-parallelism.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Parallel computing</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-search.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Search</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./05-submodel.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">The submodel trick</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./part-advanced.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Advanced</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./06-extras.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Sparsity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Preprocessing</span></span></a>
   </div>
 </li>
+      </ul>
+  </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
@@ -235,29 +269,29 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#sec-across-models" id="toc-sec-across-models" class="nav-link active" data-scroll-target="#sec-across-models"><span class="header-section-number">2.1</span> Across-models</a>
+  <li><a href="#sec-across-models" id="toc-sec-across-models" class="nav-link active" data-scroll-target="#sec-across-models"><span class="header-section-number">3.1</span> Across-models</a>
   <ul class="collapse">
-  <li><a href="#sec-sequential" id="toc-sec-sequential" class="nav-link" data-scroll-target="#sec-sequential"><span class="header-section-number">2.1.1</span> Sequential</a></li>
-  <li><a href="#sec-forking" id="toc-sec-forking" class="nav-link" data-scroll-target="#sec-forking"><span class="header-section-number">2.1.2</span> Forking</a></li>
-  <li><a href="#sec-socket-clusters" id="toc-sec-socket-clusters" class="nav-link" data-scroll-target="#sec-socket-clusters"><span class="header-section-number">2.1.3</span> Socket Clusters</a></li>
+  <li><a href="#sec-sequential" id="toc-sec-sequential" class="nav-link" data-scroll-target="#sec-sequential"><span class="header-section-number">3.1.1</span> Sequential</a></li>
+  <li><a href="#sec-forking" id="toc-sec-forking" class="nav-link" data-scroll-target="#sec-forking"><span class="header-section-number">3.1.2</span> Forking</a></li>
+  <li><a href="#sec-socket-clusters" id="toc-sec-socket-clusters" class="nav-link" data-scroll-target="#sec-socket-clusters"><span class="header-section-number">3.1.3</span> Socket Clusters</a></li>
   </ul></li>
-  <li><a href="#sec-within-models" id="toc-sec-within-models" class="nav-link" data-scroll-target="#sec-within-models"><span class="header-section-number">2.2</span> Within-models</a>
+  <li><a href="#sec-within-models" id="toc-sec-within-models" class="nav-link" data-scroll-target="#sec-within-models"><span class="header-section-number">3.2</span> Within-models</a>
   <ul class="collapse">
-  <li><a href="#sec-openmp" id="toc-sec-openmp" class="nav-link" data-scroll-target="#sec-openmp"><span class="header-section-number">2.2.1</span> CPU</a></li>
-  <li><a href="#sec-gpu-training" id="toc-sec-gpu-training" class="nav-link" data-scroll-target="#sec-gpu-training"><span class="header-section-number">2.2.2</span> GPU</a></li>
+  <li><a href="#sec-openmp" id="toc-sec-openmp" class="nav-link" data-scroll-target="#sec-openmp"><span class="header-section-number">3.2.1</span> CPU</a></li>
+  <li><a href="#sec-gpu-training" id="toc-sec-gpu-training" class="nav-link" data-scroll-target="#sec-gpu-training"><span class="header-section-number">3.2.2</span> GPU</a></li>
   </ul></li>
-  <li><a href="#sec-within-and-across" id="toc-sec-within-and-across" class="nav-link" data-scroll-target="#sec-within-and-across"><span class="header-section-number">2.3</span> Within and Across</a></li>
-  <li><a href="#strategy" id="toc-strategy" class="nav-link" data-scroll-target="#strategy"><span class="header-section-number">2.4</span> Strategy</a></li>
-  <li><a href="#distributed-computing" id="toc-distributed-computing" class="nav-link" data-scroll-target="#distributed-computing"><span class="header-section-number">2.5</span> Distributed Computing</a></li>
+  <li><a href="#sec-within-and-across" id="toc-sec-within-and-across" class="nav-link" data-scroll-target="#sec-within-and-across"><span class="header-section-number">3.3</span> Within and Across</a></li>
+  <li><a href="#strategy" id="toc-strategy" class="nav-link" data-scroll-target="#strategy"><span class="header-section-number">3.4</span> Strategy</a></li>
+  <li><a href="#distributed-computing" id="toc-distributed-computing" class="nav-link" data-scroll-target="#distributed-computing"><span class="header-section-number">3.5</span> Distributed Computing</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./03-parallelism.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Parallel computing</span></h1>
+<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></h1>
 </div>
 
 
@@ -276,8 +310,8 @@ window.Quarto = {
 
 <p>…</p>
 <p>Above all, my question is: how can I reduce the time to train machine learning models by utilizing the handful of CPU cores (and maybe even the snazzy GPU) on my laptop?</p>
-<section id="sec-across-models" class="level2" data-number="2.1">
-<h2 data-number="2.1" class="anchored" data-anchor-id="sec-across-models"><span class="header-section-number">2.1</span> Across-models</h2>
+<section id="sec-across-models" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="sec-across-models"><span class="header-section-number">3.1</span> Across-models</h2>
 <p>In <a href="01-intro.html" class="quarto-xref"><span>Chapter 1</span></a>, one of the changes I made to greatly speed up that resampling process was to introduce an across-models parallel backend. By “across-models,” I mean that each individual model fit happens on a single CPU core, but I allot each of the CPU cores I’ve reserved for training a number of model fits to take care of.</p>
 <p>Phrased another way, in the case of “sequential” training, all 120 model fits happened one after the other.</p>
 <div id="fig-basic-resample-2" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -286,7 +320,7 @@ window.Quarto = {
 <img src="figures/basic_resample.png" id="fig-basic-resample-2" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-basic-resample-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2.1
+Figure&nbsp;3.1
 </figcaption>
 </figure>
 </div>
@@ -297,13 +331,13 @@ Figure&nbsp;2.1
 <img src="figures/parallel_resample.png" id="fig-parallel-resample-2" class="img-fluid figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-parallel-resample-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2.2
+Figure&nbsp;3.2
 </figcaption>
 </figure>
 </div>
 <p>Why do I say “in theory”? The orchestration of splitting up that work is actually a very, very difficult problem, for two main reasons:</p>
 <ul>
-<li><p><strong>Getting data from one place to another</strong>: Each of us has likely spent minutes or even hours waiting for a call to <code>load()</code> on a big old <code>.RData</code> object to complete. In that situation, data is being brought in from our hard disk or a remote database (or even elsewhere in memory) into memory allocated by our R process. R is a single-process program, so in order to train multiple models simultaneously, we need multiple R processes, each able to access the training data. We then have two options: one would be to somehow allow each of those R processes to share one copy of the data (this is the idea behind forking, described in <a href="#sec-forking" class="quarto-xref"><span>Section 2.1.2</span></a>), the other to send a copy of the data to each process (the idea behind socket clusters, described in <a href="#sec-socket-clusters" class="quarto-xref"><span>Section 2.1.3</span></a>). The former <em>sounds</em> nice but can become a headache quite quickly. The latter <em>sounds</em> computationally expensive but, with enough memory and sufficiently low latency in copying data (as would be the case with a set of clusters living on one laptop), can often outperform forking for local workflows.</p></li>
+<li><p><strong>Getting data from one place to another</strong>: Each of us has likely spent minutes or even hours waiting for a call to <code>load()</code> on a big old <code>.RData</code> object to complete. In that situation, data is being brought in from our hard disk or a remote database (or even elsewhere in memory) into memory allocated by our R process. R is a single-process program, so in order to train multiple models simultaneously, we need multiple R processes, each able to access the training data. We then have two options: one would be to somehow allow each of those R processes to share one copy of the data (this is the idea behind forking, described in <a href="#sec-forking" class="quarto-xref"><span>Section 3.1.2</span></a>), the other to send a copy of the data to each process (the idea behind socket clusters, described in <a href="#sec-socket-clusters" class="quarto-xref"><span>Section 3.1.3</span></a>). The former <em>sounds</em> nice but can become a headache quite quickly. The latter <em>sounds</em> computationally expensive but, with enough memory and sufficiently low latency in copying data (as would be the case with a set of clusters living on one laptop), can often outperform forking for local workflows.</p></li>
 <li><p><strong>Load balancing</strong>: Imagine I have some machine learning model with a hyperparameter <span class="math inline">\(p\)</span>, and that the computational complexity of that model is such that, with hyperparameter value <span class="math inline">\(p\)</span>, the model takes <span class="math inline">\(p\)</span> minutes to train. I am trying out values of <span class="math inline">\(p\)</span> in <span class="math inline">\(1, 2, 3, ..., 40\)</span> and distributing model training across 5 cores. Without the knowledge of how <span class="math inline">\(p\)</span> affects training times, I might send models with <span class="math inline">\(p\)</span> in <span class="math inline">\(1, 2, 3, ...8\)</span> off to the first core, <span class="math inline">\(9, 10, 11, ..., 16\)</span> off to the second core, and so on. In this case, the first core would finish up all of its fits in a little over half an hour while the last would take almost 5 hours. In this example, I’ve taken the penalty on overhead of sending all of the training data off to each core, but in the end, one core ends up doing the majority of the work anyway. In this case, too, we were lucky that the computational complexity of model fits relative to this parameter were roughly linear—it’s not uncommon for model fit times to have a quadratic or geometric relationship with the values of important hyperparameters. A critical reader might have two questions. The first: if the computational complexity relative to this parameter is known, why don’t you just batch the values of <span class="math inline">\(p\)</span> up such that each worker will take approximately the same amount of time? This is a reasonable question, and it relates to the hard problem of <em>chunking</em>. In some situations, related to individual parameters, it really is just about this simple to determine the relationship between parameter values and fit times. In reality, those relationships tend not to be quite so clear-cut, and even when they are, the implications of that parameter value for fit times often depend on the values of other parameters; a pairing of some parameter value <span class="math inline">\(p\)</span> with some other value of a different parameter <span class="math inline">\(q\)</span> might cause instability in some gradient descent process or otherwise, making the problem of estimating the fit time of a model given some set of parameter values a pretty difficult problem for some model types. The second question: couldn’t you just send each of the cores a single parameter value and have them let the parent R process know they’re done, at which point they’ll receive another parameter value to get to work on evaluating? That way, the workers that happen to end up with a quicker-fitting values earlier on won’t sit idle waiting for other cores to finish. This approach is called <em>asynchronous</em> (or “async”) and, in some situations, can be quite helpful. Remember, though, that this requires getting data (in the form of the communication that a given worker is done evaluating a model, and maybe passing along some performance metric values) back and forth much more often. If the overhead of that communication exceeds the time that synchronous workers had spent idle, waiting for busier cores to finish running, then the asynchronous approach will result in a net slowdown.</p></li>
 </ul>
 <p>There are two dominant approaches to distributing model fits across local cores that I’ve hinted at already: forking and socket clusters. We’ll delve further into the weeds of each of those approaches in the coming subsections. At a high level, though, the folk knowledge is that forking is subject to less overhead in sending data back and forth, but has some quirks that make it less portable (more plainly, it’s not available on Windows) and a bit unstable thanks to a less-than-friendly relationship with R’s garbage collector. As for load balancing, the choice between these two parallelism techniques isn’t really relevant.</p>
@@ -349,8 +383,8 @@ Figure&nbsp;2.2
 </tr>
 </tbody>
 </table>
-<section id="sec-sequential" class="level3" data-number="2.1.1">
-<h3 data-number="2.1.1" class="anchored" data-anchor-id="sec-sequential"><span class="header-section-number">2.1.1</span> Sequential</h3>
+<section id="sec-sequential" class="level3" data-number="3.1.1">
+<h3 data-number="3.1.1" class="anchored" data-anchor-id="sec-sequential"><span class="header-section-number">3.1.1</span> Sequential</h3>
 <p>Generally, in this chapter, I’m writing about various approaches to parallel computing. I’ll compare each of those approaches to each, but also to the sequential (or “not parallel”) approach. Sequential evaluation means evaluating model fits <em>in sequence</em>, or one after the other.</p>
 <p>To demonstrate the impacts of different parallelism approaches throughout this chapter, we’ll always start the conversation with a short experiment. I’ll define a function that tracks the elapsed time to resample a boosted tree ensemble against simulated data, given a number of rows to simulate and a parallelism approach.</p>
 <div class="cell">
@@ -426,13 +460,13 @@ Figure&nbsp;2.2
 </div>
 <p>More rows means a longer fit time—what a thrill! In the following sections, we’ll compare this timing to those resulting from different parallelism approaches.</p>
 </section>
-<section id="sec-forking" class="level3" data-number="2.1.2">
-<h3 data-number="2.1.2" class="anchored" data-anchor-id="sec-forking"><span class="header-section-number">2.1.2</span> Forking</h3>
+<section id="sec-forking" class="level3" data-number="3.1.2">
+<h3 data-number="3.1.2" class="anchored" data-anchor-id="sec-forking"><span class="header-section-number">3.1.2</span> Forking</h3>
 <p>Process forking is a mechanism where an R process creates an exact copy of itself, called a “child” process (or “worker.”) Initially, workers share memory with the original (“parent”) process, meaning that there’s no overhead resulting from creating multiple copies of training data to send out to workers. So, in the case of tidymodels, each worker needs to have some modeling packages loaded and some training data available to get started on evaluating a model workflow against resample; those packages and data are already available in the parent process, so tidymodels should see very little overhead in shipping data off to workers with forking.</p>
 <!--# example -->
 <p>There are a few notable drawbacks of process forking:</p>
 <ul>
-<li><p>There’s no direct way to “fork” a process from one machine to another, so forking is available only on a single machine. To distribute computations across multiple machines, practitioners will need to make use of socket clusters (described in the following section <a href="#sec-socket-clusters" class="quarto-xref"><span>Section 2.1.3</span></a>).</p></li>
+<li><p>There’s no direct way to “fork” a process from one machine to another, so forking is available only on a single machine. To distribute computations across multiple machines, practitioners will need to make use of socket clusters (described in the following section <a href="#sec-socket-clusters" class="quarto-xref"><span>Section 3.1.3</span></a>).</p></li>
 <li><p>Forking is based on the operating system command <code>fork</code>, available only on Unix-alikes (i.e.&nbsp;macOS and Linux). Windows users are out of luck.</p></li>
 <li><p>In practice, memory that is initially shared often ends up ultimately copied due to R’s garbage collection. “[I]f the garbage collector starts running in one of the forked [workers], or the [parent] process, then that originally shared memory can no longer be shared and the operating system starts copying memory blocks into each [worker]. Since the garbage collector runs whenever it wants to, there is no simple way to avoid this” <span class="citation" data-cites="pkgfuture">(<a href="references.html#ref-pkgfuture" role="doc-biblioref">Bengtsson 2021</a>)</span>.</p></li>
 </ul>
@@ -499,8 +533,8 @@ Figure&nbsp;2.2
 </div>
 <p>Per core, no parallel approach will ever be faster than sequential. (If it is, there’s a performance bug in your code!) As the computations that happen in workers take longer and longer, though, the overhead shrinks as a proportion of the total elapsed time.</p>
 </section>
-<section id="sec-socket-clusters" class="level3" data-number="2.1.3">
-<h3 data-number="2.1.3" class="anchored" data-anchor-id="sec-socket-clusters"><span class="header-section-number">2.1.3</span> Socket Clusters</h3>
+<section id="sec-socket-clusters" class="level3" data-number="3.1.3">
+<h3 data-number="3.1.3" class="anchored" data-anchor-id="sec-socket-clusters"><span class="header-section-number">3.1.3</span> Socket Clusters</h3>
 <!--# some exposition -->
 <p>Let’s see how this plays out in practice. Returning to the same experiment from before:</p>
 <div class="cell">
@@ -532,14 +566,14 @@ Figure&nbsp;2.2
 <!--# what about memory usage? -->
 </section>
 </section>
-<section id="sec-within-models" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="sec-within-models"><span class="header-section-number">2.2</span> Within-models</h2>
-<p>I’ve only written so far about across-model parallelism, where multiple CPU cores are used to train a set of models but individual model fits happen on a single core. For most machine learning models available via tidymodels, this is the only type of parallelism possible. However, some of the most well-used modeling engines in tidymodels, like XGBoost and LightGBM, allow for distributing the computations to train a <em>single</em> model across several CPU cores (or even on GPUs). This begs the question, then, of whether tidymodels users should always stick to across-model parallelism, to within-model parallelism for the models it’s available for, or to a hybrid of both. We’ll focus first on the former two options in this subsection and then explore their interactions in <a href="#sec-within-and-across" class="quarto-xref"><span>Section 2.3</span></a>.</p>
-<section id="sec-openmp" class="level3" data-number="2.2.1">
-<h3 data-number="2.2.1" class="anchored" data-anchor-id="sec-openmp"><span class="header-section-number">2.2.1</span> CPU</h3>
+<section id="sec-within-models" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="sec-within-models"><span class="header-section-number">3.2</span> Within-models</h2>
+<p>I’ve only written so far about across-model parallelism, where multiple CPU cores are used to train a set of models but individual model fits happen on a single core. For most machine learning models available via tidymodels, this is the only type of parallelism possible. However, some of the most well-used modeling engines in tidymodels, like XGBoost and LightGBM, allow for distributing the computations to train a <em>single</em> model across several CPU cores (or even on GPUs). This begs the question, then, of whether tidymodels users should always stick to across-model parallelism, to within-model parallelism for the models it’s available for, or to a hybrid of both. We’ll focus first on the former two options in this subsection and then explore their interactions in <a href="#sec-within-and-across" class="quarto-xref"><span>Section 3.3</span></a>.</p>
+<section id="sec-openmp" class="level3" data-number="3.2.1">
+<h3 data-number="3.2.1" class="anchored" data-anchor-id="sec-openmp"><span class="header-section-number">3.2.1</span> CPU</h3>
 </section>
-<section id="sec-gpu-training" class="level3" data-number="2.2.2">
-<h3 data-number="2.2.2" class="anchored" data-anchor-id="sec-gpu-training"><span class="header-section-number">2.2.2</span> GPU</h3>
+<section id="sec-gpu-training" class="level3" data-number="3.2.2">
+<h3 data-number="3.2.2" class="anchored" data-anchor-id="sec-gpu-training"><span class="header-section-number">3.2.2</span> GPU</h3>
 <p>XGBoost parallelizes at a finer level (individual trees and split finding), while LightGBM parallelizes at a coarser level (features and data subsets).</p>
 <p>XGBoost</p>
 <ul>
@@ -577,15 +611,15 @@ Figure&nbsp;2.2
 <p>While GPU support is available for both libraries in R, it’s not as straightforward to use as in Python. The R ecosystem generally has less robust GPU support compared to Python, which can make GPU-accelerated machine learning in R more challenging to set up and use.</p>
 </section>
 </section>
-<section id="sec-within-and-across" class="level2" data-number="2.3">
-<h2 data-number="2.3" class="anchored" data-anchor-id="sec-within-and-across"><span class="header-section-number">2.3</span> Within and Across</h2>
+<section id="sec-within-and-across" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="sec-within-and-across"><span class="header-section-number">3.3</span> Within and Across</h2>
 </section>
-<section id="strategy" class="level2" data-number="2.4">
-<h2 data-number="2.4" class="anchored" data-anchor-id="strategy"><span class="header-section-number">2.4</span> Strategy</h2>
+<section id="strategy" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="strategy"><span class="header-section-number">3.4</span> Strategy</h2>
 <p>Choosing n cores and <code>parallel_over</code>…</p>
 </section>
-<section id="distributed-computing" class="level2" data-number="2.5">
-<h2 data-number="2.5" class="anchored" data-anchor-id="distributed-computing"><span class="header-section-number">2.5</span> Distributed Computing</h2>
+<section id="distributed-computing" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="distributed-computing"><span class="header-section-number">3.5</span> Distributed Computing</h2>
 <p>So far in this chapter, I’ve mostly focused on the performance considerations for distributing computations across cores on a single computer. Distributed computing “in the cloud,” where data is shipped off for processing on several different computers, is a different ball-game. That conversation is mostly outside of the scope of this book, but I do want to give some high-level intuition on how local parallelism differs from distributed parallelism.</p>
 <p>The idea that will get you the most mileage in reasoning about distributed parallelism is this: the overhead of sending data back and forth is much more substantial in distributed computing than it is in the local context.</p>
 <p>In order for me to benefit from distributing these computations across cores, the overhead of sending data out to workers has to be so minimal that it doesn’t overtake the time saved in distributing model fits across cores. Let’s see how this plays out on my laptop, first:</p>
@@ -1092,13 +1126,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./01-intro.html" class="pagination-link" aria-label="Introduction">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span>
+      <a href="./02-models.html" class="pagination-link" aria-label="Models">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./05-submodel.html" class="pagination-link" aria-label="The submodel trick">
-        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">The submodel trick</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./04-search.html" class="pagination-link" aria-label="Search">
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Search</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

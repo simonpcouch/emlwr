@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>3&nbsp; The submodel trick – Efficient Machine Learning with R</title>
+<title>5&nbsp; The submodel trick – Efficient Machine Learning with R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -84,8 +84,8 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./06-extras.html" rel="next">
-<link href="./03-parallelism.html" rel="prev">
+<link href="./part-advanced.html" rel="next">
+<link href="./04-search.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -164,7 +164,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./05-submodel.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">The submodel trick</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./05-submodel.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -201,24 +201,58 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./part-fundamentals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Fundamentals</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./03-parallelism.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Parallel computing</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-search.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Search</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./05-submodel.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">The submodel trick</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./part-advanced.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Advanced</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./06-extras.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Sparsity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Preprocessing</span></span></a>
   </div>
 </li>
+      </ul>
+  </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
@@ -235,15 +269,15 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#demonstration" id="toc-demonstration" class="nav-link active" data-scroll-target="#demonstration"><span class="header-section-number">3.1</span> Demonstration</a>
+  <li><a href="#demonstration" id="toc-demonstration" class="nav-link active" data-scroll-target="#demonstration"><span class="header-section-number">5.1</span> Demonstration</a>
   <ul class="collapse">
-  <li><a href="#grids" id="toc-grids" class="nav-link" data-scroll-target="#grids"><span class="header-section-number">3.1.1</span> Grids</a></li>
-  <li><a href="#the-trick" id="toc-the-trick" class="nav-link" data-scroll-target="#the-trick"><span class="header-section-number">3.1.2</span> The trick</a></li>
-  <li><a href="#at-its-most-extreme" id="toc-at-its-most-extreme" class="nav-link" data-scroll-target="#at-its-most-extreme"><span class="header-section-number">3.1.3</span> At its most extreme</a></li>
+  <li><a href="#grids" id="toc-grids" class="nav-link" data-scroll-target="#grids"><span class="header-section-number">5.1.1</span> Grids</a></li>
+  <li><a href="#the-trick" id="toc-the-trick" class="nav-link" data-scroll-target="#the-trick"><span class="header-section-number">5.1.2</span> The trick</a></li>
+  <li><a href="#at-its-most-extreme" id="toc-at-its-most-extreme" class="nav-link" data-scroll-target="#at-its-most-extreme"><span class="header-section-number">5.1.3</span> At its most extreme</a></li>
   </ul></li>
-  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview"><span class="header-section-number">3.2</span> Overview</a>
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview"><span class="header-section-number">5.2</span> Overview</a>
   <ul class="collapse">
-  <li><a href="#sec-supported-arguments" id="toc-sec-supported-arguments" class="nav-link" data-scroll-target="#sec-supported-arguments"><span class="header-section-number">3.2.1</span> Supported parameters</a></li>
+  <li><a href="#sec-supported-arguments" id="toc-sec-supported-arguments" class="nav-link" data-scroll-target="#sec-supported-arguments"><span class="header-section-number">5.2.1</span> Supported parameters</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -251,9 +285,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./05-submodel.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-submodel" class="quarto-section-identifier"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">The submodel trick</span></span></h1>
+<h1 class="title"><span id="sec-submodel" class="quarto-section-identifier"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></span></h1>
 </div>
 
 
@@ -271,8 +305,8 @@ window.Quarto = {
 
 
 <p>In <a href="01-intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a>, I created a custom <code>grid</code> of parameters, rather than relying on tidymodels’ default grid generation, to enable something I referred to as the “submodel trick.” The submodel trick allows us to evaluate many more models than we actually fit; given that model fitting is the most computationally intensive operation when resampling models (by far), cutting out a good few of those fits results in substantial time savings. This chapter will explain what the submodel trick is, demonstrating its individual contribution to the speedup we saw in <a href="01-intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a> along the way. Then, I’ll explain how users can use the submodel trick in their own analyses to speed up the model development process.</p>
-<section id="demonstration" class="level2" data-number="3.1">
-<h2 data-number="3.1" class="anchored" data-anchor-id="demonstration"><span class="header-section-number">3.1</span> Demonstration</h2>
+<section id="demonstration" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="demonstration"><span class="header-section-number">5.1</span> Demonstration</h2>
 <p>Recall that, in <a href="01-intro.html#sec-first-go" class="quarto-xref"><span>Section 1.1.2</span></a>, we resampled an XGBoost boosted tree model to predict whether patients would be readmitted within 30 days after an inpatient hospital stay. Using default settings with no optimizations, the model took 3.68 hours to resample. With a switch in computation engine, implementation of parallel processing, change in search strategy, <em>and enablement of the submodel trick</em>, the time to resample was knocked down to 1.52 minutes. What is the submodel trick, though, and what was its individual contribution to that speedup?</p>
 <p>First, loading packages and setting up resamples and the model specification as before:</p>
 <div class="cell">
@@ -292,8 +326,8 @@ window.Quarto = {
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">boost_tree</span>(<span class="at">learn_rate =</span> <span class="fu">tune</span>(), <span class="at">trees =</span> <span class="fu">tune</span>()) <span class="sc">%&gt;%</span></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"classification"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="grids" class="level3" data-number="3.1.1">
-<h3 data-number="3.1.1" class="anchored" data-anchor-id="grids"><span class="header-section-number">3.1.1</span> Grids</h3>
+<section id="grids" class="level3" data-number="5.1.1">
+<h3 data-number="5.1.1" class="anchored" data-anchor-id="grids"><span class="header-section-number">5.1.1</span> Grids</h3>
 <p>If I just pass these resamples and model specification to <code>tune_grid()</code>, as I did in <a href="01-intro.html#sec-first-go" class="quarto-xref"><span>Section 1.1.2</span></a>, tidymodels will take care of generating the grid of parameters to evaluate itself. By default, tidymodels generates grids of parameters using an experimental design called a latin hypercube <span class="citation" data-cites="mckay1979 dupuy2015">(<a href="references.html#ref-mckay1979" role="doc-biblioref">McKay, Beckman, and Conover 2000</a>; <a href="references.html#ref-dupuy2015" role="doc-biblioref">Dupuy, Helbert, and Franco 2015</a>)</span>. We can use the function <code>grid_latin_hypercube()</code> from the dials package to replicate the same grid that <code>tune_grid()</code> had generated under the hood:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
@@ -406,8 +440,8 @@ window.Quarto = {
 <p>See? Have some faith in me!</p>
 <p>Changing only the <code>grid</code> argument (and even increasing the number of proposed <code>grid</code> points), we’ve decreased the time to evaluate against resamples from 3.68 to 1.23 hours, or a speedup of -99.67%.</p>
 </section>
-<section id="the-trick" class="level3" data-number="3.1.2">
-<h3 data-number="3.1.2" class="anchored" data-anchor-id="the-trick"><span class="header-section-number">3.1.2</span> The trick</h3>
+<section id="the-trick" class="level3" data-number="5.1.2">
+<h3 data-number="5.1.2" class="anchored" data-anchor-id="the-trick"><span class="header-section-number">5.1.2</span> The trick</h3>
 <p>Passing this regular grid allowed <code>tune_grid()</code> to use what the tidymodels team refers to as the “submodel trick,” where many more models can be evaluated than were actually fit.</p>
 <p>To best understand how the submodel trick works, let’s refresh on how boosted trees work. The training process begins with a simple decision tree, and subsequent trees are added iteratively, each one correcting the errors of the previous trees by focusing more on the data points associated with the greatest error. The final model is a weighted sum of all the individual trees, where each tree contributes to reducing the overall error.</p>
 <p>So, for example, to train a boosted tree model with 2000 trees, we first need to train a boosted tree model with 1 tree. Then, we need to take that model, figure out where it made its largest errors, and train a second tree that aims to correct those errors. So on, until the, say, 667-th tree, and so on until the 1333-rd tree, and so on until, finally, the 2000-th tree. <em>Picking up what I’m putting down?</em> Along the way to training a boosted tree with 2000 trees, we happened to train a bunch of other models we might be interested in evaluating: what we call <em>submodels</em>. So, in the example of <code>bt_grid_regular</code>, for a given <code>learn_rate</code>, we only need to train the model with the maximum <code>trees</code>. In this example, that’s a quarter of the model fits.</p>
@@ -475,8 +509,8 @@ Note
 </div>
 <p>The above pseudocode admittedly requires some generosity (or mental gymnastics) to interpret, but the idea is that if <code>fit()</code>ting is indeed the majority of the time spent in resampling, and <code>models_to_fit</code> contains many fewer elements than <code>models</code> in the preceding pseudocode blocks, we should see substantial speedups.</p>
 </section>
-<section id="at-its-most-extreme" class="level3" data-number="3.1.3">
-<h3 data-number="3.1.3" class="anchored" data-anchor-id="at-its-most-extreme"><span class="header-section-number">3.1.3</span> At its most extreme</h3>
+<section id="at-its-most-extreme" class="level3" data-number="5.1.3">
+<h3 data-number="5.1.3" class="anchored" data-anchor-id="at-its-most-extreme"><span class="header-section-number">5.1.3</span> At its most extreme</h3>
 <p>In the applied example above, we saw a relatively modest speedup. If we want to really show off the power of the submodel trick, in terms of time spent resampling per model evaluated, we can come up with a somewhat silly grid:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>bt_grid_regular_go_brrr <span class="ot">&lt;-</span></span>
@@ -534,18 +568,18 @@ Note
 <p>Whether this difference in timing is of practical significance to a user is debatable. In the context where we generated <code>bm_grid_regular</code>, where the grid of points searched over is relatively comparable (and thus similarly likely to identify a performant model) yet the decreased number of model fits gave rise to a reasonable speedup—-99.67%—is undoubtedly impactful for many typical use cases of tidymodels. The more eye-popping per-grid-point speedups, as with <code>bm_grid_regular_go_brrr</code>, are more so a fun trick than a practical tool for most use cases.</p>
 </section>
 </section>
-<section id="overview" class="level2" data-number="3.2">
-<h2 data-number="3.2" class="anchored" data-anchor-id="overview"><span class="header-section-number">3.2</span> Overview</h2>
+<section id="overview" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="overview"><span class="header-section-number">5.2</span> Overview</h2>
 <p>I’ve demonstrated the impact of the submodel trick in the above section through one example context, tuning <code>trees</code> in an XGBoost boosted tree model. The submodel trick can be found in many places across the tidymodels framework, though.</p>
 <p>Submodels are defined with respect to a given model parameter, e.g.&nbsp;<code>trees</code> in <code>boost_tree()</code>. While a given parameter often defines a submodel regardless of modeling engine for a given model type—e.g.&nbsp;<code>trees</code> defines submodels for <code>boost_tree()</code> models regardless of whether the model is fitted with <code>engine = "xgboost"</code> or <code>engine = "lightgbm"</code>—there are some exceptions. Many tidymodels users undoubtedly tune models using arguments that define submodels without even knowing it. Some common examples include:</p>
 <ul>
 <li><p><code>penalty</code> in <code>linear_reg()</code>, <code>logistic_reg()</code>, and <code>multinom_reg()</code>, which controls the amount of regularization in linear models.</p></li>
 <li><p><code>neighbors</code> in <code>nearest_neighbor()</code>, the number of training data points nearest the point to be predicted that are factored into the prediction.</p></li>
 </ul>
-<p>Again, some modeling engines for each of these model types do not actually support prediction from submodels from the noted parameter. See <a href="#sec-supported-arguments" class="quarto-xref"><span>Section 3.2.1</span></a> for a complete table of currently supported arguments defining submodels in tidymodels.</p>
+<p>Again, some modeling engines for each of these model types do not actually support prediction from submodels from the noted parameter. See <a href="#sec-supported-arguments" class="quarto-xref"><span>Section 5.2.1</span></a> for a complete table of currently supported arguments defining submodels in tidymodels.</p>
 <p>In the above example, we had to manually specify a grid like <code>bt_regular_grid</code> in order for tidymodels to use a grid that can take advantage of the submodel trick. This reflects the frameworks’ general prioritization of predictive performance over computational performance in its design and defaults; latin hypercubes have better statistical properties when it comes to discovering performant hyperparameter combinations than a regular grid <span class="citation" data-cites="mckay1979 stein1987 santner2003">(<a href="references.html#ref-mckay1979" role="doc-biblioref">McKay, Beckman, and Conover 2000</a>; <a href="references.html#ref-stein1987" role="doc-biblioref">Stein 1987</a>; <a href="references.html#ref-santner2003" role="doc-biblioref">Santner et al. 2003</a>)</span>. However, note that in the case where a model is being tuned over only one argument, the submodel trick will kick in regardless of the sampling approach being used: regardless of how a set of univariate points are distributed, the most extreme parameter value (e.g.&nbsp;the max <code>trees</code>) can be used to generate predictions for values across the distribution.</p>
-<section id="sec-supported-arguments" class="level3" data-number="3.2.1">
-<h3 data-number="3.2.1" class="anchored" data-anchor-id="sec-supported-arguments"><span class="header-section-number">3.2.1</span> Supported parameters</h3>
+<section id="sec-supported-arguments" class="level3" data-number="5.2.1">
+<h3 data-number="5.2.1" class="anchored" data-anchor-id="sec-supported-arguments"><span class="header-section-number">5.2.1</span> Supported parameters</h3>
 <p>A number of tuning parameters support the submodel trick:</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -1069,13 +1103,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./03-parallelism.html" class="pagination-link" aria-label="Parallel computing">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Parallel computing</span></span>
+      <a href="./04-search.html" class="pagination-link" aria-label="Search">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Search</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./06-extras.html" class="pagination-link" aria-label="Sparsity">
-        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Sparsity</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./part-advanced.html" class="pagination-link" aria-label="Advanced">
+        <span class="nav-page-text">Advanced</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

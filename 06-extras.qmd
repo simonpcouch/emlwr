@@ -1,1 +1,11 @@
+Various additional sections that will be split into their own proper chapters later.
+
+# Extras
+
+## Preprocessing {#sec-preprocessing}
+
 ## Sparsity {#sec-sparsity}
+
+## GPU Training {#sec-gpu-training}
+
+## Stacking {#sec-stacking}
