@@ -7,7 +7,6 @@
 
 /.quarto/
 *.psd
-_book/
 
 temp_fits/
 
