@@ -199,7 +199,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./06-extras.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Preprocessing</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Extras</span></span></a>
   </div>
 </li>
       </ul>
@@ -278,16 +278,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code># A tibble: 100 × 18
    class   two_factor_1 two_factor_2 non_linear_1 non_linear_2 non_linear_3
    &lt;fct&gt;   &lt;fct&gt;               &lt;dbl&gt; &lt;fct&gt;               &lt;dbl&gt;        &lt;dbl&gt;
- 1 class_1 level_1            1.75   level_4           0.361          0.231
- 2 class_2 level_1           -0.0230 level_2           0.0840         0.609
- 3 class_2 level_4           -2.32   level_4           0.273          0.495
- 4 class_2 level_1            0.315  level_2           0.559          0.952
- 5 class_2 level_4            0.701  level_2           0.249          0.321
- 6 class_2 level_1            0.593  level_2           0.701          0.935
- 7 class_1 level_1            0.871  level_2           0.373          0.986
- 8 class_1 level_4            0.656  level_3           0.543          0.258
- 9 class_1 level_1            1.94   level_2           0.506          0.424
-10 class_2 level_1           -0.585  level_5           0.00916        0.207
+ 1 class_2 level_4            -1.24  level_4             0.720       0.0605
+ 2 class_2 level_2             0.152 level_2             0.344       0.133 
+ 3 class_2 level_2            -0.183 level_2             0.319       0.546 
+ 4 class_1 level_4            -1.20  level_2             0.203       0.241 
+ 5 class_2 level_4            -2.39  level_2             0.886       0.216 
+ 6 class_1 level_4            -2.12  level_2             0.853       0.194 
+ 7 class_2 level_1             1.28  level_1             0.699       0.231 
+ 8 class_2 level_2             0.154 level_5             0.781       0.155 
+ 9 class_2 level_1            -0.242 level_2             0.460       0.829 
+10 class_2 level_1             0.640 level_2             0.186       0.184 
 # ℹ 90 more rows
 # ℹ 12 more variables: linear_01 &lt;dbl&gt;, linear_02 &lt;dbl&gt;, linear_03 &lt;dbl&gt;,
 #   linear_04 &lt;dbl&gt;, linear_05 &lt;dbl&gt;, linear_06 &lt;dbl&gt;, linear_07 &lt;dbl&gt;,
@@ -306,24 +306,24 @@ Call:  stats::glm(formula = class ~ ., family = stats::binomial, data = data)
 
 Coefficients:
         (Intercept)  two_factor_1level_2  two_factor_1level_3  
-            2.07900             -2.25506             -0.65084  
-two_factor_1level_4         two_factor_2  non_linear_1level_2  
-           -3.41669             -1.12578              0.85830  
-non_linear_1level_3  non_linear_1level_4  non_linear_1level_5  
-           -1.29977              0.91646              1.45017  
-       non_linear_2         non_linear_3            linear_01  
-            0.82405             -0.51534              0.48283  
-          linear_02            linear_03            linear_04  
-           -0.47137              0.27891             -0.59696  
-          linear_05            linear_06            linear_07  
-           -0.02195              0.37964             -0.41534  
-          linear_08            linear_09  
-           -0.05485             -0.23599  
- [ reached getOption("max.print") -- omitted 7 entries ]
+            5.68248             -1.02645             14.06291  
+two_factor_1level_4  two_factor_1level_5         two_factor_2  
+           -6.11905            -26.54198             -1.50189  
+non_linear_1level_2  non_linear_1level_3  non_linear_1level_4  
+           -0.79756              1.40318             -1.35883  
+non_linear_1level_5         non_linear_2         non_linear_3  
+           -1.14212             -0.94989             -1.21873  
+          linear_01            linear_02            linear_03  
+            0.22267              0.15364             -0.33461  
+          linear_04            linear_05            linear_06  
+            0.35500             -0.18050             -0.64993  
+          linear_07            linear_08  
+            0.10407              0.09085  
+ [ reached getOption("max.print") -- omitted 12 entries ]
 
-Degrees of Freedom: 99 Total (i.e. Null);  73 Residual
-Null Deviance:      125.4 
-Residual Deviance: 79.45    AIC: 133.5</code></pre>
+Degrees of Freedom: 99 Total (i.e. Null);  68 Residual
+Null Deviance:      137.2 
+Residual Deviance: 71.76    AIC: 135.8</code></pre>
 </div>
 </div>
 <p>The default engine for a logistic regression in tidymodels is <code>stats::glm()</code>. So, in the style of the above graphic, this code:</p>
@@ -344,7 +344,7 @@ Residual Deviance: 79.45    AIC: 133.5</code></pre>
 <pre><code># A tibble: 1 × 2
   expression   median
 * &lt;bch:expr&gt; &lt;bch:tm&gt;
-1 fit          2.58ms</code></pre>
+1 fit          3.27ms</code></pre>
 </div>
 </div>
 <p>About a millisecond. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
@@ -357,7 +357,7 @@ Residual Deviance: 79.45    AIC: 133.5</code></pre>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">check =</span> <span class="cn">FALSE</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.7715381 milliseconds, or 22.7% of the total elapsed time.</p>
+<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.8672935 milliseconds, or 21.3% of the total elapsed time.</p>
 <p>So, to fit a boosted tree model on 1,000,000 data points, step <strong>2)</strong> might take a few seconds. Steps <strong>1)</strong> and <strong>3)</strong> don’t care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let’s quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip’s wrapper around it.</p>
 <div class="cell">
 <div class="cell-output-display">
