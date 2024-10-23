@@ -294,7 +294,9 @@ Then, switching out computational engines for a more performant alternative furt
 
 Finally, as depicted in @fig-parallel-resample-opt2, the submodel trick described in @sec-submodel and racing described in @sec-search eliminate a substantial portion of the engine fits.
 
-![](figures/parallel_resample_opt2.png)The tidymodels team devotes substantial energy to ensuring support for the most performant parallelization technologies, modeling engines, model-specific optimizations, and search techniques. This book will demonstrate how to best make use of these features to reduce the time needed to evaluate machine learning models.
+![](figures/parallel_resample_opt2.png)
+
+The tidymodels team devotes substantial energy to ensuring support for the most performant parallelization technologies, modeling engines, model-specific optimizations, and search techniques. This book will demonstrate how to best make use of these features to reduce the time needed to evaluate machine learning models.
 
 ## Datasets {#sec-datasets}
 
