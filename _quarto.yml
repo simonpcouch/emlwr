@@ -21,7 +21,7 @@ bibliography: references.bib
 
 format:
   html:
-    theme: [cosmo]
+    theme: [cosmo, emlwr.scss]
     mainfont: 'Montserrat'
     fig-width: 6
     fig-height: 4.25

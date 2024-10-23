@@ -1,0 +1,73 @@
+/*-- scss:defaults --*/
+
+$rust: #c46938;
+$forest: #3d6c56;
+$charcoal: #1a162d;
+
+$body-bg: white;
+$body-color: $charcoal;
+$link-color: $rust;
+$code-bg: lighten($charcoal, 85%);
+$code-color: $rust;
+$code-block-bg: lighten($charcoal, 85%);
+$code-block-border-left: $forest;
+$btn-primary-bg: $rust;
+$btn-secondary-bg: $forest;
+
+$navbar-fg: $charcoal;
+$navbar-hl: $rust;
+$sidebar-fg: $charcoal;
+$sidebar-hl: $rust;
+
+$callout-color-note: $forest;
+$callout-color-tip: $forest;
+$callout-color-caution: $rust;
+$callout-color-warning: $rust;
+$callout-color-important: $forest;
+
+$code-block-bg-alpha: -0.9;
+
+$secondary: $forest;
+$text-muted: lighten($charcoal, 25%);
+
+/*-- scss:rules --*/
+
+.sourceCode {
+  .fu { color: $rust; }
+  .st { color: $forest; }
+  .fl, .dv { color: darken($rust, 10%); }
+  .co { 
+    color: lighten($charcoal, 40%);
+    font-style: italic;
+  }
+  .va, .at { color: darken($forest, 5%); }
+  .kw { 
+    color: $rust;
+    font-weight: 500;
+  }
+  .op { color: $charcoal; }
+  .cn { color: darken($forest, 10%); }
+}
+
+table {
+  th {
+    background-color: $code-bg;
+  }
+  tr:nth-child(even) {
+    background-color: lighten($code-bg, 2%);
+  }
+}
+
+.header-section-number {
+  color: $secondary;
+}
+
+.panel-caption,
+.figure-caption,
+.subfigure-caption,
+.table-caption,
+figcaption,
+caption,
+.quarto-float-caption {
+  color: $forest;
+}
