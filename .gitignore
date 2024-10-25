@@ -12,3 +12,4 @@ docs/*.pdf
 temp_fits/
 
 *_files
+!/docs/*_files/
