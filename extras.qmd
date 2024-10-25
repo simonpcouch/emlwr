@@ -1,9 +1,0 @@
-Various additional sections that will be split into their own proper chapters later.
-
-# Extras
-
-## Preprocessing {#sec-preprocessing}
-
-## Sparsity {#sec-sparsity}
-
-## Stacking {#sec-stacking}

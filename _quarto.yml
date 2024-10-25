@@ -19,7 +19,9 @@ book:
       - submodel.qmd
     - part: "Beyond the Basics"
       chapters:
-      - extras.qmd
+      - preprocessing.qmd
+      - sparsity.qmd
+      - stacking.qmd
     - references.qmd
   google-analytics: "G-C5VQ0DLJJW"
     

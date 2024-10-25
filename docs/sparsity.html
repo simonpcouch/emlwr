@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>2&nbsp; Models – Efficient Machine Learning with R</title>
+<title>7&nbsp; Sparsity – Efficient Machine Learning with R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,40 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -64,8 +30,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./parallelism.html" rel="next">
-<link href="./intro.html" rel="prev">
+<link href="./stacking.html" rel="next">
+<link href="./preprocessing.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -124,7 +90,7 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./models.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./models.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./preprocessing.html">Beyond the Basics</a></li><li class="breadcrumb-item"><a href="./sparsity.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Sparsity</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -172,7 +138,7 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./models.html" class="sidebar-item-text sidebar-link active">
+  <a href="./models.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></span></a>
   </div>
 </li>
@@ -213,7 +179,7 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./sparsity.html" class="sidebar-item-text sidebar-link">
+  <a href="./sparsity.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Sparsity</span></span></a>
   </div>
 </li>
@@ -236,29 +202,15 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
-   
-  <ul>
-  <li><a href="#tidymodels-overhead" id="toc-tidymodels-overhead" class="nav-link active" data-scroll-target="#tidymodels-overhead"><span class="header-section-number">2.1</span> Tidymodels overhead</a></li>
-  <li><a href="#benchmarks" id="toc-benchmarks" class="nav-link" data-scroll-target="#benchmarks"><span class="header-section-number">2.2</span> Benchmarks</a>
-  <ul class="collapse">
-  <li><a href="#linear-models" id="toc-linear-models" class="nav-link" data-scroll-target="#linear-models"><span class="header-section-number">2.2.1</span> Linear models</a></li>
-  <li><a href="#decision-trees" id="toc-decision-trees" class="nav-link" data-scroll-target="#decision-trees"><span class="header-section-number">2.2.2</span> Decision trees</a></li>
-  <li><a href="#boosted-trees" id="toc-boosted-trees" class="nav-link" data-scroll-target="#boosted-trees"><span class="header-section-number">2.2.3</span> Boosted trees</a></li>
-  <li><a href="#random-forests" id="toc-random-forests" class="nav-link" data-scroll-target="#random-forests"><span class="header-section-number">2.2.4</span> Random forests</a></li>
-  <li><a href="#support-vector-machines" id="toc-support-vector-machines" class="nav-link" data-scroll-target="#support-vector-machines"><span class="header-section-number">2.2.5</span> Support vector machines</a></li>
-  </ul></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./models.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./models.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./preprocessing.html">Beyond the Basics</a></li><li class="breadcrumb-item"><a href="./sparsity.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Sparsity</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-models" class="quarto-section-identifier"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></span></h1>
+<h1 class="title"><span id="sec-sparsity" class="quarto-section-identifier"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Sparsity</span></span></h1>
 </div>
 
 
@@ -275,160 +227,8 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 </header>
 
 
-<!--# Going to take some work for this not to feel super rote.  -->
-<!--# I do want some kind of content that's, like, tables of timings for every ___ engine fitted on a bunch of numbers of rows.  -->
-<div class="callout callout-style-default callout-caution callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Caution
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>This chapter still has a long way to go. I’d recommend exploring other portions of the draft in the meantime.</p>
-</div>
-</div>
-<section id="tidymodels-overhead" class="level2" data-number="2.1">
-<h2 data-number="2.1" class="anchored" data-anchor-id="tidymodels-overhead"><span class="header-section-number">2.1</span> Tidymodels overhead</h2>
-<!--# TODO: currently this talks about the difference between CRAN and dev (at the time) packages. rephrase to just focus on the now. -->
-<p><br>
-<!--# also, need to rewrite to fit when `eval_fits` and not otherwise. --></p>
-<p>While the tidymodels team develops the infrastructure that users interact with directly, under the hood, we send calls out to other people’s modeling packages—or modeling <em>engines</em>—that provide the actual implementations that estimate parameters, generate predictions, etc. The process looks something like this:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="figures/translate_diagram.png" class="img-fluid figure-img"></p>
-<figcaption>A graphic representing the tidymodels interface. In order, step 1 “translate”, step 2 “call”, and step 3 “translate”, outline the process of translating from the standardized tidymodels interface to an engine’s specific interface, calling the modeling engine, and translating back to the standardized tidymodels interface. Step 1 and step 3 are in green, while step 2 is in orange.</figcaption>
-</figure>
-</div>
-<p>When thinking about the time allotted to each of the three steps above, we refer to the “translate” steps in green as the <em>tidymodels overhead</em>. The time it takes to “translate” interfaces in steps <strong>1)</strong> and <strong>3)</strong> is within our control, while the time the modeling engine takes to do it’s thing in step <strong>2)</strong> is not.</p>
-<p>Let’s demonstrate with an example classification problem. Generating some random data:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">simulate_classification</span>(<span class="at">n_rows =</span> <span class="dv">100</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>d</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 100 × 18
-   class   two_factor_1 two_factor_2 non_linear_1 non_linear_2 non_linear_3
-   &lt;fct&gt;   &lt;fct&gt;               &lt;dbl&gt; &lt;fct&gt;               &lt;dbl&gt;        &lt;dbl&gt;
- 1 class_2 level_1          -1.17    level_1             0.554        0.814
- 2 class_1 level_1           0.261   level_2             0.688        0.929
- 3 class_2 level_1          -1.61    level_1             0.658        0.147
- 4 class_1 level_1           2.14    level_1             0.663        0.750
- 5 class_2 level_1           0.0360  level_1             0.472        0.976
- 6 class_1 level_2          -0.00837 level_1             0.970        0.975
- 7 class_2 level_1           1.05    level_2             0.402        0.351
- 8 class_1 level_1           1.49    level_1             0.850        0.394
- 9 class_2 level_1           0.967   level_2             0.757        0.951
-10 class_2 level_2           0.603   level_1             0.533        0.107
-# ℹ 90 more rows
-# ℹ 12 more variables: linear_01 &lt;dbl&gt;, linear_02 &lt;dbl&gt;, linear_03 &lt;dbl&gt;,
-#   linear_04 &lt;dbl&gt;, linear_05 &lt;dbl&gt;, linear_06 &lt;dbl&gt;, linear_07 &lt;dbl&gt;,
-#   linear_08 &lt;dbl&gt;, linear_09 &lt;dbl&gt;, linear_10 &lt;fct&gt;, linear_11 &lt;fct&gt;,
-#   linear_12 &lt;fct&gt;</code></pre>
-</div>
-</div>
-<p>…we’d like to model the <code>class</code> using the remainder of the variables in this dataset using a logistic regression. We can using the following code to do so:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fit</span>(<span class="fu">logistic_reg</span>(), class <span class="sc">~</span> ., d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>parsnip model object
 
 
-Call:  stats::glm(formula = class ~ ., family = stats::binomial, data = data)
-
-Coefficients:
-        (Intercept)  two_factor_1level_2         two_factor_2  
-           7.080808            -7.463598            -2.821078  
-non_linear_1level_2         non_linear_2         non_linear_3  
-           0.550041            -0.878752            -2.039599  
-          linear_01            linear_02            linear_03  
-          -0.153653            -0.273809            -0.005318  
-          linear_04            linear_05            linear_06  
-           1.248566             0.880917            -0.112520  
-          linear_07            linear_08            linear_09  
-          -0.925063             1.261782            -1.251249  
-   linear_10level_2     linear_10level_3     linear_10level_4  
-         -18.020101            -3.242219            -1.336644  
-   linear_11level_2     linear_11level_3  
-          -0.640718            -4.402850  
- [ reached getOption("max.print") -- omitted 4 entries ]
-
-Degrees of Freedom: 99 Total (i.e. Null);  76 Residual
-Null Deviance:      134.6 
-Residual Deviance: 54.75    AIC: 102.8</code></pre>
-</div>
-</div>
-<p>The default engine for a logistic regression in tidymodels is <code>stats::glm()</code>. So, in the style of the above graphic, this code:</p>
-<ol type="1">
-<li>Translates the tidymodels code, which is consistent across engines, to the format that is specific to the chosen engine. In this case, there’s not a whole lot to do: it passes the preprocessor as <code>formula</code>, the data as <code>data</code>, and picks a <code>family</code> of <code>stats::binomial</code>.</li>
-<li>Calls <code>stats::glm()</code> and collects its output.</li>
-<li>Translates the output of <code>stats::glm()</code> back into a standardized model fit object.</li>
-</ol>
-<p>Again, we can control what happens in steps <strong>1)</strong> and <strong>3)</strong>, but step <strong>2)</strong> belongs to the <code>stats</code> package.</p>
-<p>The time that steps <strong>1)</strong> and <strong>3)</strong> take is relatively independent of the dimensionality of the training data. That is, regardless of whether we train on one hundred or a million data points, <em>our</em> code (as in, the translation) takes about the same time to run. Regardless of training set size, our code pushes around small, relational data structures to determine how to correctly interface with a given engine. The time it takes to run step <strong>2)</strong>, though, depends almost completely on the size of the data. Depending on the modeling engine, modeling 10 times as much data could result in step <strong>2)</strong> taking twice as long, or 10x as long, or 100x as long as the original fit.</p>
-<p>So, while the <em>absolute</em> time allotted to steps <strong>1)</strong> and <strong>3)</strong> is fixed, the <em>portion</em> of total time to fit a model with tidymodels that is “overhead” depends on how quick the engine code itself is. How quick is a logistic regression with <code>glm()</code> on 100 data points?</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>bench<span class="sc">::</span><span class="fu">mark</span>(</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">fit =</span> <span class="fu">glm</span>(class <span class="sc">~</span> ., <span class="at">family =</span> binomial, <span class="at">data =</span> d)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(expression, median)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1 × 2
-  expression   median
-* &lt;bch:expr&gt; &lt;bch:tm&gt;
-1 fit          2.45ms</code></pre>
-</div>
-</div>
-<p>About a millisecond. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
-<p>In practice, the overhead here has hovered around a millisecond or two for the last couple years, and machine learning practitioners usually fit much more computationally expensive models than a logistic regression on 100 data points. You’ll just have to believe me on that second point. Regarding the first:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>bm_logistic_reg <span class="ot">&lt;-</span> </span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  bench<span class="sc">::</span><span class="fu">mark</span>(</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">parsnip =</span> <span class="fu">fit</span>(<span class="fu">logistic_reg</span>(), class <span class="sc">~</span> ., d),</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">stats =</span> <span class="fu">glm</span>(class <span class="sc">~</span> ., <span class="at">family =</span> binomial, <span class="at">data =</span> d),</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">check =</span> <span class="cn">FALSE</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.7948261 milliseconds, or 25.4% of the total elapsed time.</p>
-<p>So, to fit a boosted tree model on 1,000,000 data points, step <strong>2)</strong> might take a few seconds. Steps <strong>1)</strong> and <strong>3)</strong> don’t care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let’s quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip’s wrapper around it.</p>
-<div class="cell">
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="models_files/figure-html/plot-press-boost-tree-1.png" class="img-fluid figure-img" width="576"></p>
-<figcaption>TODO: write caption</figcaption>
-</figure>
-</div>
-</div>
-</div>
-<p>This graph shows the gist of tidymodels’ overhead for modeling engines: as dataset size and model complexity grow larger, model fitting and prediction take up increasingly large proportions of the total evaluation time.</p>
-<p><a href="intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a> showed a number of ways users can cut down on the evaluation time of their tidymodels code. Making use of parallelism, reducing the total number of model fits needed to search a given grid, and carefully constructing that grid to search over are all major parts of the story</p>
-<!--# should this chapter go after everything else? -->
-</section>
-<section id="benchmarks" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="benchmarks"><span class="header-section-number">2.2</span> Benchmarks</h2>
-<section id="linear-models" class="level3" data-number="2.2.1">
-<h3 data-number="2.2.1" class="anchored" data-anchor-id="linear-models"><span class="header-section-number">2.2.1</span> Linear models</h3>
-</section>
-<section id="decision-trees" class="level3" data-number="2.2.2">
-<h3 data-number="2.2.2" class="anchored" data-anchor-id="decision-trees"><span class="header-section-number">2.2.2</span> Decision trees</h3>
-</section>
-<section id="boosted-trees" class="level3" data-number="2.2.3">
-<h3 data-number="2.2.3" class="anchored" data-anchor-id="boosted-trees"><span class="header-section-number">2.2.3</span> Boosted trees</h3>
-<p>XGBoost and LightGBM – comparison timings for the same thing but from the Python interface?</p>
-</section>
-<section id="random-forests" class="level3" data-number="2.2.4">
-<h3 data-number="2.2.4" class="anchored" data-anchor-id="random-forests"><span class="header-section-number">2.2.4</span> Random forests</h3>
-</section>
-<section id="support-vector-machines" class="level3" data-number="2.2.5">
-<h3 data-number="2.2.5" class="anchored" data-anchor-id="support-vector-machines"><span class="header-section-number">2.2.5</span> Support vector machines</h3>
-
-
-</section>
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -853,13 +653,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./intro.html" class="pagination-link" aria-label="Introduction">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span>
+      <a href="./preprocessing.html" class="pagination-link" aria-label="Preprocessing">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Preprocessing</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./parallelism.html" class="pagination-link" aria-label="Parallel computing">
-        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./stacking.html" class="pagination-link" aria-label="Stacking">
+        <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Stacking</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
