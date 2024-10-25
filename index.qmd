@@ -1,3 +1,7 @@
+---
+toc: false
+---
+
 # I'm glad you're here. {.unnumbered}
 
 Welcome to *Efficient Machine Learning with R*! This is a book about predictive modeling with tidymodels, focused on reducing the time and memory required to train machine learning models without sacrificing predictive performance.
