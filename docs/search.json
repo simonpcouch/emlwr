@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Efficient Machine Learning with R",
     "section": "",
-    "text": "Welcome🐛\nWelcome to Efficient Machine Learning with R! This is a book about predictive modeling with tidymodels, focused on reducing the time and memory required to train machine learning models without sacrificing predictive performance.\nThis book assumes familiarity with data analysis with the tidyverse as well as the basics of machine learning with tidymodels: fitting models with parsnip, resampling data with rsample, and tuning model parameters with tune. For more on tidy data analysis, see (Wickham, Çetinkaya-Rundel, and Grolemund 2023). For the basics of predictive modeling with tidymodels, see (Kuhn and Silge 2022).",
+    "text": "Welcome🐛\nWelcome to Efficient Machine Learning with R! This is a book about predictive modeling with tidymodels, focused on reducing the time and memory required to train machine learning models without sacrificing predictive performance.\nThis book assumes familiarity with data analysis with the tidyverse as well as the basics of machine learning with tidymodels: fitting models with parsnip, resampling data with rsample, and tuning model parameters with tune. For more on tidy data analysis, see Wickham, Çetinkaya-Rundel, and Grolemund (2023). For the basics of predictive modeling with tidymodels, see Kuhn and Silge (2022).",
     "crumbs": [
       "Welcome🐛"
     ]
