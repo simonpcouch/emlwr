@@ -1,4 +1,4 @@
-# Parallel computing
+# Parallel computing {#sec-parallel-computing}
 
 ::: callout-caution
 While sections @sec-across-models and @sec-distributed-computing are early drafts, they're relatively complete and should be coherent for readers. The remainder of this chapter has a long way to go.

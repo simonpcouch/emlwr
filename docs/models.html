@@ -246,7 +246,7 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./models.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./models.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></h1>
+<h1 class="title"><span id="sec-models" class="quarto-section-identifier"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></span></h1>
 </div>
 
 
@@ -367,7 +367,7 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 1 × 2
   expression   median
 * &lt;bch:expr&gt; &lt;bch:tm&gt;
-1 fit           2.4ms</code></pre>
+1 fit          2.45ms</code></pre>
 </div>
 </div>
 <p>About a millisecond. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
@@ -380,7 +380,7 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">check =</span> <span class="cn">FALSE</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.9072275 milliseconds, or 27.6% of the total elapsed time.</p>
+<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.7948261 milliseconds, or 25.4% of the total elapsed time.</p>
 <p>So, to fit a boosted tree model on 1,000,000 data points, step <strong>2)</strong> might take a few seconds. Steps <strong>1)</strong> and <strong>3)</strong> don’t care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let’s quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip’s wrapper around it.</p>
 <div class="cell">
 <div class="cell-output-display">

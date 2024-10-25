@@ -21,17 +21,17 @@ bm_basic <- qread("data/01-intro/bm_basic.rds")
 bm_speedy <- qread("data/01-intro/bm_speedy.rds")
 ```
 
--   The **Introduction** demonstrates a `r round(as.numeric(bm_basic[["median"]][[1]]) / as.numeric(bm_speedy[["median"]][[1]]))`-fold speedup with an applied example. By adapting a grid search on a canonical model to use a more performant modeling engine, hooking into a parallel computing framework, transitioning to an optimized search strategy, and defining the grid to search over carefully, the section shows that users can drastically cut down on tuning times without sacrificing predictive performance. The following chapters then explore those optimizations in further details.
+-   @sec-intro demonstrates a `r round(as.numeric(bm_basic[["median"]][[1]]) / as.numeric(bm_speedy[["median"]][[1]]))`-fold speedup with an applied example. By adapting a grid search on a canonical model to use a more performant modeling engine, hooking into a parallel computing framework, transitioning to an optimized search strategy, and defining the grid to search over carefully, the section shows that users can drastically cut down on tuning times without sacrificing predictive performance. The following chapters then explore those optimizations in further details.
 
--   The **Models** chapter explore timings to resample various different modeling engines. The chapter compares implementations both within and across model types.
+-   @sec-models explores timings to resample various different modeling engines. The chapter compares implementations both within and across model types.
 
     <!--# should we call out threading here? too early for predictive vs computational performance discussion? -->
 
--   **Parallelism** compares various approaches to distributing model computations across CPU cores. We'll explore two different across-model parallel computing frameworks supported by tidymodels—process forking and socket clusters—and explore their relationship to within-model parallelization.
+-   @sec-parallel-computing compares various approaches to distributing model computations across CPU cores. We'll explore two different across-model parallel computing frameworks supported by tidymodels—process forking and socket clusters—and explore their relationship to within-model parallelization.
 
--   Then, **Search** explores various alternatives to grid search that can reduce the total number of model fits required to search a given grid space by only resampling models that seem to have a chance at being the "best."
+-   Then, @sec-search explores various alternatives to grid search that can reduce the total number of model fits required to search a given grid space by only resampling models that seem to have a chance at being the "best."
 
--   Finally, **Submodels** investigates approaches to designing grids that can further reduce the total number of model fits required to search a given grid space by generating predictions from one model that can be used to evaluate several.
+-   Finally, @sec-submodel investigates approaches to designing grids that can further reduce the total number of model fits required to search a given grid space by generating predictions from one model that can be used to evaluate several.
 
 The optimizations discussed in those aforementioned chapters can, on their own, substantially reduce the time to evaluate machine learning models with tidymodels. Depending on the problem context, some modeling workflows may benefit from more specialized optimizations. The following chapters discuss some of those use cases:
 
