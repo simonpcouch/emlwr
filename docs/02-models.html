@@ -287,16 +287,16 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 <pre><code># A tibble: 100 × 18
    class   two_factor_1 two_factor_2 non_linear_1 non_linear_2 non_linear_3
    &lt;fct&gt;   &lt;fct&gt;               &lt;dbl&gt; &lt;fct&gt;               &lt;dbl&gt;        &lt;dbl&gt;
- 1 class_2 level_1             0.913 level_1            0.226         0.927
- 2 class_2 level_2            -0.256 level_2            0.606         0.120
- 3 class_1 level_1             3.12  level_1            0.942         0.416
- 4 class_1 level_3            -0.544 level_1            0.901         0.211
- 5 class_1 level_3            -1.02  level_2            0.379         0.803
- 6 class_1 level_4            -2.21  level_1            0.603         0.595
- 7 class_1 level_3            -0.237 level_1            0.132         0.657
- 8 class_2 level_2             0.967 level_2            0.223         0.158
- 9 class_1 level_1             2.11  level_1            0.356         0.964
-10 class_2 level_2            -0.103 level_1            0.0463        0.595
+ 1 class_2 level_1             0.643 level_2             0.219       0.285 
+ 2 class_2 level_3             0.182 level_3             0.324       0.504 
+ 3 class_2 level_1             1.29  level_4             0.195       0.267 
+ 4 class_2 level_2            -0.577 level_4             0.407       0.345 
+ 5 class_1 level_4            -3.37  level_3             0.429       0.747 
+ 6 class_1 level_1             1.65  level_3             0.990       0.296 
+ 7 class_1 level_1             2.00  level_1             0.657       0.218 
+ 8 class_2 level_1            -1.04  level_4             0.517       0.221 
+ 9 class_1 level_1             3.03  level_3             0.683       0.0802
+10 class_1 level_3            -0.475 level_3             0.594       0.455 
 # ℹ 90 more rows
 # ℹ 12 more variables: linear_01 &lt;dbl&gt;, linear_02 &lt;dbl&gt;, linear_03 &lt;dbl&gt;,
 #   linear_04 &lt;dbl&gt;, linear_05 &lt;dbl&gt;, linear_06 &lt;dbl&gt;, linear_07 &lt;dbl&gt;,
@@ -315,24 +315,24 @@ Call:  stats::glm(formula = class ~ ., family = stats::binomial, data = data)
 
 Coefficients:
         (Intercept)  two_factor_1level_2  two_factor_1level_3  
-           1370.020             -325.017             -980.170  
+            5.11038             -2.02106             -5.01914  
 two_factor_1level_4         two_factor_2  non_linear_1level_2  
-          -2043.162             -515.706              278.952  
+          -10.54529             -2.86317             -0.97449  
+non_linear_1level_3  non_linear_1level_4  non_linear_1level_5  
+           -1.19212              0.43490              2.34267  
        non_linear_2         non_linear_3            linear_01  
-           -486.362             -699.630              -64.256  
+           -1.91699             -1.76264              0.63196  
           linear_02            linear_03            linear_04  
-           -124.288             -169.539               -0.955  
+           -0.53112             -0.20955              0.12159  
           linear_05            linear_06            linear_07  
-             60.951               33.414              -43.051  
-          linear_08            linear_09     linear_10level_2  
-             82.319              -39.286              -74.515  
-   linear_11level_2     linear_11level_3  
-            360.718              122.837  
- [ reached getOption("max.print") -- omitted 2 entries ]
+           -0.10563             -0.88619              0.61433  
+          linear_08            linear_09  
+            0.99386             -0.03596  
+ [ reached getOption("max.print") -- omitted 4 entries ]
 
-Degrees of Freedom: 99 Total (i.e. Null);  78 Residual
-Null Deviance:      133.7 
-Residual Deviance: 1.503e-07    AIC: 44</code></pre>
+Degrees of Freedom: 99 Total (i.e. Null);  76 Residual
+Null Deviance:      138.5 
+Residual Deviance: 61.21    AIC: 109.2</code></pre>
 </div>
 </div>
 <p>The default engine for a logistic regression in tidymodels is <code>stats::glm()</code>. So, in the style of the above graphic, this code:</p>
@@ -353,7 +353,7 @@ Residual Deviance: 1.503e-07    AIC: 44</code></pre>
 <pre><code># A tibble: 1 × 2
   expression   median
 * &lt;bch:expr&gt; &lt;bch:tm&gt;
-1 fit          3.96ms</code></pre>
+1 fit          1.66ms</code></pre>
 </div>
 </div>
 <p>About a millisecond. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
@@ -366,7 +366,7 @@ Residual Deviance: 1.503e-07    AIC: 44</code></pre>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">check =</span> <span class="cn">FALSE</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 1.2362321 milliseconds, or 23.9% of the total elapsed time.</p>
+<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.8079461 milliseconds, or 32.8% of the total elapsed time.</p>
 <p>So, to fit a boosted tree model on 1,000,000 data points, step <strong>2)</strong> might take a few seconds. Steps <strong>1)</strong> and <strong>3)</strong> don’t care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let’s quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip’s wrapper around it.</p>
 <div class="cell">
 <div class="cell-output-display">

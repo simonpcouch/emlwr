@@ -145,7 +145,7 @@ For now, the graph we can put together with this data isn't super interesting:
 ggplot(press_seq) +
   aes(x = n_rows, y = median) +
   scale_x_log10() +
-  geom_line() +
+  geom_line(color = "#cd6f3d") +
   labs(y = "Log(Elapsed Time)", x = "Number of Rows")
 ```
 
