@@ -201,7 +201,7 @@ window.Quarto = {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Welcome</span></a>
+ <span class="menu-text">Welcome🐛</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -291,7 +291,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#sec-within-and-across" id="toc-sec-within-and-across" class="nav-link" data-scroll-target="#sec-within-and-across"><span class="header-section-number">3.3</span> Within and Across</a></li>
   <li><a href="#strategy" id="toc-strategy" class="nav-link" data-scroll-target="#strategy"><span class="header-section-number">3.4</span> Strategy</a></li>
-  <li><a href="#distributed-computing" id="toc-distributed-computing" class="nav-link" data-scroll-target="#distributed-computing"><span class="header-section-number">3.5</span> Distributed Computing</a></li>
+  <li><a href="#sec-distributed-computing" id="toc-sec-distributed-computing" class="nav-link" data-scroll-target="#sec-distributed-computing"><span class="header-section-number">3.5</span> Distributed Computing</a></li>
   </ul>
 </nav>
     </div>
@@ -317,8 +317,20 @@ window.Quarto = {
 </header>
 
 
-<p>…</p>
-<p>Above all, my question is: how can I reduce the time to train machine learning models by utilizing the handful of CPU cores (and maybe even the snazzy GPU) on my laptop?</p>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Caution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>While sections <a href="#sec-across-models" class="quarto-xref"><span>Section 3.1</span></a> and <a href="#sec-distributed-computing" class="quarto-xref"><span>Section 3.5</span></a> are early drafts, they’re relatively complete and should be coherent for readers. The remainder of this chapter has a long way to go.</p>
+</div>
+</div>
+<!-- Above all, my question is: how can I reduce the time to train machine learning models by utilizing the handful of CPU cores (and maybe even the snazzy GPU) on my laptop? -->
 <section id="sec-across-models" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="sec-across-models"><span class="header-section-number">3.1</span> Across-models</h2>
 <p>In <a href="01-intro.html" class="quarto-xref"><span>Chapter 1</span></a>, one of the changes I made to greatly speed up that resampling process was to introduce an across-models parallel backend. By “across-models,” I mean that each individual model fit happens on a single CPU core, but I allot each of the CPU cores I’ve reserved for training a number of model fits to take care of.</p>
@@ -631,8 +643,8 @@ Figure&nbsp;3.2
 <h2 data-number="3.4" class="anchored" data-anchor-id="strategy"><span class="header-section-number">3.4</span> Strategy</h2>
 <p>Choosing n cores and <code>parallel_over</code>…</p>
 </section>
-<section id="distributed-computing" class="level2" data-number="3.5">
-<h2 data-number="3.5" class="anchored" data-anchor-id="distributed-computing"><span class="header-section-number">3.5</span> Distributed Computing</h2>
+<section id="sec-distributed-computing" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="sec-distributed-computing"><span class="header-section-number">3.5</span> Distributed Computing</h2>
 <p>So far in this chapter, I’ve mostly focused on the performance considerations for distributing computations across cores on a single computer. Distributed computing “in the cloud,” where data is shipped off for processing on several different computers, is a different ball-game. That conversation is mostly outside of the scope of this book, but I do want to give some high-level intuition on how local parallelism differs from distributed parallelism.</p>
 <p>The idea that will get you the most mileage in reasoning about distributed parallelism is this: the overhead of sending data back and forth is much more substantial in distributed computing than it is in the local context.</p>
 <p>In order for me to benefit from distributing these computations across cores, the overhead of sending data out to workers has to be so minimal that it doesn’t overtake the time saved in distributing model fits across cores. Let’s see how this plays out on my laptop, first:</p>

@@ -1,5 +1,9 @@
 # Search {#sec-search}
 
+::: callout-caution
+Not much here yet! Come back later!
+:::
+
 ```{r}
 #| label: setup-common-04
 #| include: false

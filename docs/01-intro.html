@@ -201,7 +201,7 @@ window.Quarto = {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Welcome</span></a>
+ <span class="menu-text">Welcome🐛</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -285,9 +285,8 @@ window.Quarto = {
   <li><a href="#sec-speedy-go" id="toc-sec-speedy-go" class="nav-link" data-scroll-target="#sec-speedy-go"><span class="header-section-number">1.1.3</span> A speedy go</a></li>
   </ul></li>
   <li><a href="#our-approach" id="toc-our-approach" class="nav-link" data-scroll-target="#our-approach"><span class="header-section-number">1.2</span> Our approach</a></li>
-  <li><a href="#the-cost-of-slowness" id="toc-the-cost-of-slowness" class="nav-link" data-scroll-target="#the-cost-of-slowness"><span class="header-section-number">1.3</span> The cost of slowness</a></li>
-  <li><a href="#the-hard-part" id="toc-the-hard-part" class="nav-link" data-scroll-target="#the-hard-part"><span class="header-section-number">1.4</span> The hard part</a></li>
-  <li><a href="#sec-datasets" id="toc-sec-datasets" class="nav-link" data-scroll-target="#sec-datasets"><span class="header-section-number">1.5</span> Datasets</a></li>
+  <li><a href="#the-hard-part" id="toc-the-hard-part" class="nav-link" data-scroll-target="#the-hard-part"><span class="header-section-number">1.3</span> The hard part</a></li>
+  <li><a href="#sec-datasets" id="toc-sec-datasets" class="nav-link" data-scroll-target="#sec-datasets"><span class="header-section-number">1.4</span> Datasets</a></li>
   </ul>
 </nav>
     </div>
@@ -313,6 +312,19 @@ window.Quarto = {
 </header>
 
 
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>While this chapter is an early draft, it’s relatively complete and should be coherent for readers.</p>
+</div>
+</div>
 <section id="early-value" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="early-value"><span class="header-section-number">1.1</span> Early value</h2>
 <p>To demonstrate the impact that a couple small pieces of intuition can have on execution time when evaluating machine learning models, I’ll run through a quick model tuning example. On the first go, I’ll lean on tidymodels’ default values and a simple grid search, and on the second, I’ll pull a few tricks out from my sleeves that will drastically reduce the time to evaluate models while only negligibly decreasing predictive performance.</p>
@@ -481,14 +493,12 @@ Note
 <h2 data-number="1.2" class="anchored" data-anchor-id="our-approach"><span class="header-section-number">1.2</span> Our approach</h2>
 <p>This book is intended for tidymodels users who have been waiting too long for their code to run. I generally assume that users are familiar with data manipulation and visualization with the tidyverse as well as the basics of machine learning with tidymodels, like evaluating models against resamples using performance metrics. For the former, I recommend <span class="citation" data-cites="wickham2023">(<a href="references.html#ref-wickham2023" role="doc-biblioref">Wickham, Çetinkaya-Rundel, and Grolemund 2023</a>)</span> for getting up to speed—for the latter, <span class="citation" data-cites="kuhn2022">(<a href="references.html#ref-kuhn2022" role="doc-biblioref">Kuhn and Silge 2022</a>)</span>. If you’re generally comfortable with the content in those books, you’re ready to go.</p>
 <p>Modern laptops are remarkable. Users of tidymodels working on many machines made in the last few years are well-prepared to interactively develop machine learning models based on tens of millions of rows of data. That said, without the right information, it’s quite easy to mistakenly introduce performance issues that result in analyses on even tens of thousands of rows of data becoming too cumbersome to work with. Generally, the tidymodels framework attempts to guard users from making such mistakes and addressing them ourselves when they’re in our control. At the same time, many foundational and well-used approaches in classical machine learning have well-theorized adaptations that substantially cut down on the elapsed time while preserving predictive performance. The tidymodels framework implements many such adaptations and this book aims to surface them in a holistic and coherent way. Readers will come out of having read this book with a grab bag of one-liners that can cut down on elapsed time to develop machine learning models by orders of magnitude.</p>
+<!-- ## The cost of slowness -->
+<!-- All of this said, R is not known for its computational efficiency. If I really prioritize that, why am I writing a book about R? -->
+<!-- (i use R for many reasons. you evidently do, too. it is true that many modeling engines only implement some performance optimizations / hardware accelators for their python interfaces—at the same time, modeling engines in R are often interfaces to the same compiled code as that used from python.) <!--#  -->
 </section>
-<section id="the-cost-of-slowness" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="the-cost-of-slowness"><span class="header-section-number">1.3</span> The cost of slowness</h2>
-<p>All of this said, R is not known for its computational efficiency. If I really prioritize that, why am I writing a book about R?</p>
-<p>(i use R for many reasons. you evidently do, too. it is true that many modeling engines only implement some performance optimizations / hardware accelators for their python interfaces—at the same time, modeling engines in R are often interfaces to the same compiled code as that used from python.)</p>
-</section>
-<section id="the-hard-part" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="the-hard-part"><span class="header-section-number">1.4</span> The hard part</h2>
+<section id="the-hard-part" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="the-hard-part"><span class="header-section-number">1.3</span> The hard part</h2>
 <p>To better understand how to cut down on the time to evaluate models with tidymodels, we need to understand a bit about how tidymodels works.</p>
 <p>Like many other “unifying frameworks” for ML (mlr3, caret, scikit-learn(?)), the tidymodels framework itself does not implement the algorithms to train and predict from models. Instead, tidymodels provides a common interface to modeling <em>engines</em>: packages (or functions from packages) that provide the methods to <code>fit()</code> and <code>predict()</code>.</p>
 <div id="fig-fit-boost-tree" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -558,8 +568,8 @@ Figure&nbsp;1.4
 <p><img src="figures/parallel_resample_opt2.png" class="img-fluid"></p>
 <p>The tidymodels team devotes substantial energy to ensuring support for the most performant parallelization technologies, modeling engines, model-specific optimizations, and search techniques. This book will demonstrate how to best make use of these features to reduce the time needed to evaluate machine learning models.</p>
 </section>
-<section id="sec-datasets" class="level2" data-number="1.5">
-<h2 data-number="1.5" class="anchored" data-anchor-id="sec-datasets"><span class="header-section-number">1.5</span> Datasets</h2>
+<section id="sec-datasets" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="sec-datasets"><span class="header-section-number">1.4</span> Datasets</h2>
 <p>In <a href="#sec-setup" class="quarto-xref"><span>Section 1.1.1</span></a>, I used a function <code>simulate_classification()</code> to generate data. This is one of two functions, the other being <code>simulate_regression()</code>, that create the data underlying many of the experiments in this book.</p>
 <p>These two functions are adaptations of their similarly named friends <code>sim_classification()</code> and <code>sim_regression()</code> from the modeldata package. They make small changes to those function—namely, introducing factor predictors with some tricky distributions—that surface slowdowns with some modeling engines.</p>
 <p>Provided a number of rows, <code>sim_classification()</code> generates a tibble with that many rows and 16 columns:</p>
@@ -1099,8 +1109,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./index.html" class="pagination-link" aria-label="Welcome">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Welcome</span>
+      <a href="./index.html" class="pagination-link" aria-label="Welcome🐛">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Welcome🐛</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

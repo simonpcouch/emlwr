@@ -1,8 +1,10 @@
 # Parallel computing
 
-...
+::: callout-caution
+While sections @sec-across-models and @sec-distributed-computing are early drafts, they're relatively complete and should be coherent for readers. The remainder of this chapter has a long way to go.
+:::
 
-Above all, my question is: how can I reduce the time to train machine learning models by utilizing the handful of CPU cores (and maybe even the snazzy GPU) on my laptop?
+<!-- Above all, my question is: how can I reduce the time to train machine learning models by utilizing the handful of CPU cores (and maybe even the snazzy GPU) on my laptop? -->
 
 ```{r}
 #| label: setup-common-03
@@ -351,7 +353,7 @@ While GPU support is available for both libraries in R, it's not as straightforw
 
 Choosing n cores and `parallel_over`...
 
-## Distributed Computing
+## Distributed Computing {#sec-distributed-computing}
 
 So far in this chapter, I've mostly focused on the performance considerations for distributing computations across cores on a single computer. Distributed computing "in the cloud," where data is shipped off for processing on several different computers, is a different ball-game. That conversation is mostly outside of the scope of this book, but I do want to give some high-level intuition on how local parallelism differs from distributed parallelism.
 

@@ -16,6 +16,10 @@ if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
 }
 ```
 
+::: callout-note
+While this chapter is an early draft, it's relatively complete and should be coherent for readers.
+:::
+
 ## Early value
 
 To demonstrate the impact that a couple small pieces of intuition can have on execution time when evaluating machine learning models, I'll run through a quick model tuning example. On the first go, I'll lean on tidymodels' default values and a simple grid search, and on the second, I'll pull a few tricks out from my sleeves that will drastically reduce the time to evaluate models while only negligibly decreasing predictive performance.
@@ -248,11 +252,11 @@ This book is intended for tidymodels users who have been waiting too long for th
 
 Modern laptops are remarkable. Users of tidymodels working on many machines made in the last few years are well-prepared to interactively develop machine learning models based on tens of millions of rows of data. That said, without the right information, it's quite easy to mistakenly introduce performance issues that result in analyses on even tens of thousands of rows of data becoming too cumbersome to work with. Generally, the tidymodels framework attempts to guard users from making such mistakes and addressing them ourselves when they're in our control. At the same time, many foundational and well-used approaches in classical machine learning have well-theorized adaptations that substantially cut down on the elapsed time while preserving predictive performance. The tidymodels framework implements many such adaptations and this book aims to surface them in a holistic and coherent way. Readers will come out of having read this book with a grab bag of one-liners that can cut down on elapsed time to develop machine learning models by orders of magnitude.
 
-## The cost of slowness
+<!-- ## The cost of slowness -->
 
-All of this said, R is not known for its computational efficiency. If I really prioritize that, why am I writing a book about R?
+<!-- All of this said, R is not known for its computational efficiency. If I really prioritize that, why am I writing a book about R? -->
 
-(i use R for many reasons. you evidently do, too. it is true that many modeling engines only implement some performance optimizations / hardware accelators for their python interfaces—at the same time, modeling engines in R are often interfaces to the same compiled code as that used from python.)
+<!-- (i use R for many reasons. you evidently do, too. it is true that many modeling engines only implement some performance optimizations / hardware accelators for their python interfaces—at the same time, modeling engines in R are often interfaces to the same compiled code as that used from python.) <!--#  -->
 
 ## The hard part
 

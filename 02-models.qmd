@@ -4,6 +4,10 @@
 
 <!--# I do want some kind of content that's, like, tables of timings for every ___ engine fitted on a bunch of numbers of rows.  -->
 
+::: callout-caution
+This chapter still has a long way to go. I'd recommend exploring other portions of the draft in the meantime.
+:::
+
 ## Tidymodels overhead
 
 <!--# TODO: currently this talks about the difference between CRAN and dev (at the time) packages. rephrase to just focus on the now. -->

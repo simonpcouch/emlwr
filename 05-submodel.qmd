@@ -1,5 +1,9 @@
 # The submodel trick {#sec-submodel}
 
+::: callout-note
+While this chapter is an early draft, it's relatively complete and should be coherent for readers.
+:::
+
 ```{r}
 #| label: setup-common-05
 #| include: false

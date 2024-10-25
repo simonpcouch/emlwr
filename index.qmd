@@ -2,13 +2,15 @@
 toc: false
 ---
 
-# Welcome {#sec-welcome .unnumbered}
+# Welcome🐛 {#sec-welcome .unnumbered}
 
 Welcome to *Efficient Machine Learning with R*! This is a book about predictive modeling with tidymodels, focused on reducing the time and memory required to train machine learning models without sacrificing predictive performance.
 
--   This book assumes familiarity with data analysis with the tidyverse as well as the basics of machine learning with tidymodels: fitting models with parsnip, resampling data with rsample, and tuning model parameters with tune. For more on tidy data analysis, see [@wickham2023]. For the basics of predictive modeling with tidymodels, see [@kuhn2022].
+This book assumes familiarity with data analysis with the tidyverse as well as the basics of machine learning with tidymodels: fitting models with parsnip, resampling data with rsample, and tuning model parameters with tune. For more on tidy data analysis, see [@wickham2023]. For the basics of predictive modeling with tidymodels, see [@kuhn2022].
 
--   *Efficient Machine Learning with R* is staunchly empirical. While the scaling properties of many of the statistical and computational techniques described in this book are well-theorized, we'll observe that empirical timings often defy expectations based on that theory.
+::: callout-caution
+This book is in its early drafting stages; many portions of the book are unfinished and all of will go through significant revision and refinement. Keep an eye out for callout notes like this one to better understand the state of content you find here.
+:::
 
 ## Outline:
 
