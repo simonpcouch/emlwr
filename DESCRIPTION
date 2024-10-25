@@ -1,0 +1,11 @@
+Package: emlwr
+Title: Efficient Machine Learning with R
+Version: 0.0.1
+Authors@R: 
+    person("Simon", "Couch", , "simon.couch@posit.co", role = c("aut", "cre"))
+Description: Source code for the current draft of the book "Efficient Machine
+    Learning with R."
+License: CC BY-NC-SA 4.0
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
