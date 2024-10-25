@@ -361,6 +361,7 @@ Further, many of those factor variables have a class imbalance; that is, some le
 ```{r}
 #| label: factors-d-class
 #| echo: false
+#| fig-cap: "TODO: write caption"
 d_class %>%
   select(where(is.factor)) %>%
   summarize(across(everything(), ~list(table(.x)))) %>%

@@ -142,6 +142,7 @@ For now, the graph we can put together with this data isn't super interesting:
 
 ```{r}
 #| label: plot-press-seq
+#| fig-cap: "TODO: write caption"
 ggplot(press_seq) +
   aes(x = n_rows, y = median) +
   scale_x_log10() +
@@ -192,6 +193,7 @@ We can make the plot from the last section a bit more interesting now.
 
 ```{r}
 #| label: plot-press-seq-fork
+#| fig-cap: "TODO: write caption"
 bind_rows(
   mutate(press_seq, Approach = "Sequential"),
   mutate(press_fork, Approach = "Forking")
@@ -223,6 +225,7 @@ Another angle from which to poke at this is *how much time did we lose to overhe
 
 ```{r}
 #| label: plot-press-seq-fork-adj
+#| fig-cap: "TODO: write caption"
 bind_rows(
   mutate(press_seq, Approach = "Sequential"),
   mutate(press_fork, Approach = "Forking")
@@ -269,6 +272,7 @@ if (eval_fits) {
 
 ```{r}
 #| label: plot-press-seq-fork-sc
+#| fig-cap: "TODO: write caption"
 bind_rows(
   mutate(press_seq, Approach = "Sequential"),
   mutate(press_fork, Approach = "Forking"),
@@ -441,6 +445,7 @@ There's one timing per unique combination of number of rows, parallelism plan, a
 
 ```{r}
 #| label: plot-timings
+#| fig-cap: "TODO: write caption"
 timings %>%
   select(n_rows, plan, median, system) %>%
   pivot_wider(names_from = plan, values_from = median) %>%

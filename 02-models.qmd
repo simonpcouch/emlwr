@@ -132,6 +132,8 @@ if (eval_fits) {
 
 ```{r}
 #| echo: false
+#| label: "plot-press-boost-tree"
+#| fig-cap: "TODO: write caption"
 press_boost_tree %>%
   mutate(expression = as.character(expression)) %>%
   ggplot() +

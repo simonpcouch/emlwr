@@ -79,6 +79,8 @@ bt_grid_latin_hypercube
 Since we're working with a two-dimensional grid in this case, we can plot the resulting grid to get a sense for the distribution of values:
 
 ```{r}
+#| label: "plot-grid-latin-hypercube"
+#| fig-cap: "TODO: write caption"
 ggplot(bt_grid_latin_hypercube) +
   aes(x = trees, y = learn_rate) +
   geom_point()
@@ -100,6 +102,8 @@ bt_grid_regular
 Plotting in the same way:
 
 ```{r}
+#| label: "plot-grid-regular"
+#| fig-cap: "TODO: write caption"
 ggplot(bt_grid_regular) +
   aes(x = trees, y = learn_rate) +
   geom_point()
