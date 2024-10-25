@@ -11,13 +11,13 @@ book:
   chapters:
     - index.qmd
     - intro.qmd
-    - part: part-fundamentals.qmd
+    - part: "Fundamentals"
       chapters:
       - models.qmd
       - parallelism.qmd
       - search.qmd
       - submodel.qmd
-    - part: part-advanced.qmd
+    - part: "Beyond the Basics"
       chapters:
       - extras.qmd
     - references.qmd
