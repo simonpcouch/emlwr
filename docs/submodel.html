@@ -85,7 +85,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./part-advanced.html" rel="next">
-<link href="./04-search.html" rel="prev">
+<link href="./search.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -173,7 +173,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./05-submodel.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./submodel.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -206,7 +206,7 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./01-intro.html" class="sidebar-item-text sidebar-link">
+  <a href="./intro.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
   </div>
 </li>
@@ -221,25 +221,25 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./02-models.html" class="sidebar-item-text sidebar-link">
+  <a href="./models.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./03-parallelism.html" class="sidebar-item-text sidebar-link">
+  <a href="./parallelism.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./04-search.html" class="sidebar-item-text sidebar-link">
+  <a href="./search.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Search</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./05-submodel.html" class="sidebar-item-text sidebar-link active">
+  <a href="./submodel.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></span></a>
   </div>
 </li>
@@ -256,7 +256,7 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./06-extras.html" class="sidebar-item-text sidebar-link">
+  <a href="./extras.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Extras</span></span></a>
   </div>
 </li>
@@ -294,7 +294,7 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./05-submodel.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./submodel.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span id="sec-submodel" class="quarto-section-identifier"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></span></h1>
 </div>
@@ -326,10 +326,10 @@ Note
 <p>While this chapter is an early draft, it’s relatively complete and should be coherent for readers.</p>
 </div>
 </div>
-<p>In <a href="01-intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a>, I created a custom <code>grid</code> of parameters, rather than relying on tidymodels’ default grid generation, to enable something I referred to as the “submodel trick.” The submodel trick allows us to evaluate many more models than we actually fit; given that model fitting is the most computationally intensive operation when resampling models (by far), cutting out a good few of those fits results in substantial time savings. This chapter will explain what the submodel trick is, demonstrating its individual contribution to the speedup we saw in <a href="01-intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a> along the way. Then, I’ll explain how users can use the submodel trick in their own analyses to speed up the model development process.</p>
+<p>In <a href="intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a>, I created a custom <code>grid</code> of parameters, rather than relying on tidymodels’ default grid generation, to enable something I referred to as the “submodel trick.” The submodel trick allows us to evaluate many more models than we actually fit; given that model fitting is the most computationally intensive operation when resampling models (by far), cutting out a good few of those fits results in substantial time savings. This chapter will explain what the submodel trick is, demonstrating its individual contribution to the speedup we saw in <a href="intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a> along the way. Then, I’ll explain how users can use the submodel trick in their own analyses to speed up the model development process.</p>
 <section id="demonstration" class="level2" data-number="5.1">
 <h2 data-number="5.1" class="anchored" data-anchor-id="demonstration"><span class="header-section-number">5.1</span> Demonstration</h2>
-<p>Recall that, in <a href="01-intro.html#sec-first-go" class="quarto-xref"><span>Section 1.1.2</span></a>, we resampled an XGBoost boosted tree model to predict whether patients would be readmitted within 30 days after an inpatient hospital stay. Using default settings with no optimizations, the model took 3.68 hours to resample. With a switch in computation engine, implementation of parallel processing, change in search strategy, <em>and enablement of the submodel trick</em>, the time to resample was knocked down to 1.52 minutes. What is the submodel trick, though, and what was its individual contribution to that speedup?</p>
+<p>Recall that, in <a href="intro.html#sec-first-go" class="quarto-xref"><span>Section 1.1.2</span></a>, we resampled an XGBoost boosted tree model to predict whether patients would be readmitted within 30 days after an inpatient hospital stay. Using default settings with no optimizations, the model took 3.68 hours to resample. With a switch in computation engine, implementation of parallel processing, change in search strategy, <em>and enablement of the submodel trick</em>, the time to resample was knocked down to 1.52 minutes. What is the submodel trick, though, and what was its individual contribution to that speedup?</p>
 <p>First, loading packages and setting up resamples and the model specification as before:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages</span></span>
@@ -350,7 +350,7 @@ Note
 </div>
 <section id="grids" class="level3" data-number="5.1.1">
 <h3 data-number="5.1.1" class="anchored" data-anchor-id="grids"><span class="header-section-number">5.1.1</span> Grids</h3>
-<p>If I just pass these resamples and model specification to <code>tune_grid()</code>, as I did in <a href="01-intro.html#sec-first-go" class="quarto-xref"><span>Section 1.1.2</span></a>, tidymodels will take care of generating the grid of parameters to evaluate itself. By default, tidymodels generates grids of parameters using an experimental design called a latin hypercube <span class="citation" data-cites="mckay1979 dupuy2015">(<a href="references.html#ref-mckay1979" role="doc-biblioref">McKay, Beckman, and Conover 2000</a>; <a href="references.html#ref-dupuy2015" role="doc-biblioref">Dupuy, Helbert, and Franco 2015</a>)</span>. We can use the function <code>grid_latin_hypercube()</code> from the dials package to replicate the same grid that <code>tune_grid()</code> had generated under the hood:</p>
+<p>If I just pass these resamples and model specification to <code>tune_grid()</code>, as I did in <a href="intro.html#sec-first-go" class="quarto-xref"><span>Section 1.1.2</span></a>, tidymodels will take care of generating the grid of parameters to evaluate itself. By default, tidymodels generates grids of parameters using an experimental design called a latin hypercube <span class="citation" data-cites="mckay1979 dupuy2015">(<a href="references.html#ref-mckay1979" role="doc-biblioref">McKay, Beckman, and Conover 2000</a>; <a href="references.html#ref-dupuy2015" role="doc-biblioref">Dupuy, Helbert, and Franco 2015</a>)</span>. We can use the function <code>grid_latin_hypercube()</code> from the dials package to replicate the same grid that <code>tune_grid()</code> had generated under the hood:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>bt_grid_latin_hypercube <span class="ot">&lt;-</span> </span>
@@ -385,13 +385,13 @@ Note
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="05-submodel_files/figure-html/plot-grid-latin-hypercube-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="submodel_files/figure-html/plot-grid-latin-hypercube-1.png" class="img-fluid figure-img" width="576"></p>
 <figcaption>TODO: write caption</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>While the details of sampling using latin hypercubes are not important to understand this chapter, note that values are not repeated in a given dimension. Said another way, we get 12 unique values for <code>trees</code>, and 12 unique values for <code>learn_rate</code>. Juxtapose this with the design resulting from <code>grid_regular()</code> used in <a href="01-intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a>:</p>
+<p>While the details of sampling using latin hypercubes are not important to understand this chapter, note that values are not repeated in a given dimension. Said another way, we get 12 unique values for <code>trees</code>, and 12 unique values for <code>learn_rate</code>. Juxtapose this with the design resulting from <code>grid_regular()</code> used in <a href="intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>bt_grid_regular <span class="ot">&lt;-</span></span>
@@ -430,14 +430,14 @@ Note
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="05-submodel_files/figure-html/plot-grid-regular-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="submodel_files/figure-html/plot-grid-regular-1.png" class="img-fluid figure-img" width="576"></p>
 <figcaption>TODO: write caption</figcaption>
 </figure>
 </div>
 </div>
 </div>
 <p>The argument <code>levels = 4</code> indicates that <span class="math inline">\(4\)</span> values are generated individually for each parameter, and the resulting grid is created by pairing up each unique combination of those values.</p>
-<p>You may have noticed that this regular grid contains even more proposed points—<code>4 x 4 = 16</code>—than the latin hypercube with <code>size = 12</code>. A reasonable question, then: how on earth would the larger grid be resampled more quickly than the smaller one? It’s possible that I hid some slowdown resulting from this larger grid among the rest of the optimizations implemented in <a href="01-intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a>; lets test the effect of the change in grid by itself.</p>
+<p>You may have noticed that this regular grid contains even more proposed points—<code>4 x 4 = 16</code>—than the latin hypercube with <code>size = 12</code>. A reasonable question, then: how on earth would the larger grid be resampled more quickly than the smaller one? It’s possible that I hid some slowdown resulting from this larger grid among the rest of the optimizations implemented in <a href="intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a>; lets test the effect of the change in grid by itself.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1127,7 +1127,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./04-search.html" class="pagination-link" aria-label="Search">
+      <a href="./search.html" class="pagination-link" aria-label="Search">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Search</span></span>
       </a>          
   </div>

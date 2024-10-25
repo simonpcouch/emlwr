@@ -84,8 +84,8 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./04-search.html" rel="next">
-<link href="./02-models.html" rel="prev">
+<link href="./search.html" rel="next">
+<link href="./models.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -173,7 +173,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./03-parallelism.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./parallelism.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -206,7 +206,7 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./01-intro.html" class="sidebar-item-text sidebar-link">
+  <a href="./intro.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
   </div>
 </li>
@@ -221,25 +221,25 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./02-models.html" class="sidebar-item-text sidebar-link">
+  <a href="./models.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./03-parallelism.html" class="sidebar-item-text sidebar-link active">
+  <a href="./parallelism.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./04-search.html" class="sidebar-item-text sidebar-link">
+  <a href="./search.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Search</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./05-submodel.html" class="sidebar-item-text sidebar-link">
+  <a href="./submodel.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></span></a>
   </div>
 </li>
@@ -256,7 +256,7 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./06-extras.html" class="sidebar-item-text sidebar-link">
+  <a href="./extras.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Extras</span></span></a>
   </div>
 </li>
@@ -298,7 +298,7 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./03-parallelism.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-fundamentals.html">Fundamentals</a></li><li class="breadcrumb-item"><a href="./parallelism.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Parallel computing</span></h1>
 </div>
@@ -333,7 +333,7 @@ Caution
 <!-- Above all, my question is: how can I reduce the time to train machine learning models by utilizing the handful of CPU cores (and maybe even the snazzy GPU) on my laptop? -->
 <section id="sec-across-models" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="sec-across-models"><span class="header-section-number">3.1</span> Across-models</h2>
-<p>In <a href="01-intro.html" class="quarto-xref"><span>Chapter 1</span></a>, one of the changes I made to greatly speed up that resampling process was to introduce an across-models parallel backend. By “across-models,” I mean that each individual model fit happens on a single CPU core, but I allot each of the CPU cores I’ve reserved for training a number of model fits to take care of.</p>
+<p>In <a href="intro.html" class="quarto-xref"><span>Chapter 1</span></a>, one of the changes I made to greatly speed up that resampling process was to introduce an across-models parallel backend. By “across-models,” I mean that each individual model fit happens on a single CPU core, but I allot each of the CPU cores I’ve reserved for training a number of model fits to take care of.</p>
 <p>Phrased another way, in the case of “sequential” training, all 120 model fits happened one after the other.</p>
 <div id="fig-basic-resample-2" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
@@ -474,7 +474,7 @@ Figure&nbsp;3.2
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="03-parallelism_files/figure-html/plot-press-seq-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="parallelism_files/figure-html/plot-press-seq-1.png" class="img-fluid figure-img" width="576"></p>
 <figcaption>TODO: write caption</figcaption>
 </figure>
 </div>
@@ -514,7 +514,7 @@ Figure&nbsp;3.2
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="03-parallelism_files/figure-html/plot-press-seq-fork-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="parallelism_files/figure-html/plot-press-seq-fork-1.png" class="img-fluid figure-img" width="576"></p>
 <figcaption>TODO: write caption</figcaption>
 </figure>
 </div>
@@ -549,7 +549,7 @@ Figure&nbsp;3.2
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="03-parallelism_files/figure-html/plot-press-seq-fork-adj-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="parallelism_files/figure-html/plot-press-seq-fork-adj-1.png" class="img-fluid figure-img" width="576"></p>
 <figcaption>TODO: write caption</figcaption>
 </figure>
 </div>
@@ -582,7 +582,7 @@ Figure&nbsp;3.2
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="03-parallelism_files/figure-html/plot-press-seq-fork-sc-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="parallelism_files/figure-html/plot-press-seq-fork-sc-1.png" class="img-fluid figure-img" width="576"></p>
 <figcaption>TODO: write caption</figcaption>
 </figure>
 </div>
@@ -709,7 +709,7 @@ Figure&nbsp;3.2
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="03-parallelism_files/figure-html/plot-timings-1.png" class="img-fluid figure-img" width="576"></p>
+<p><img src="parallelism_files/figure-html/plot-timings-1.png" class="img-fluid figure-img" width="576"></p>
 <figcaption>TODO: write caption</figcaption>
 </figure>
 </div>
@@ -1152,12 +1152,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./02-models.html" class="pagination-link" aria-label="Models">
+      <a href="./models.html" class="pagination-link" aria-label="Models">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Models</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./04-search.html" class="pagination-link" aria-label="Search">
+      <a href="./search.html" class="pagination-link" aria-label="Search">
         <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Search</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
