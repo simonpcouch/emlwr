@@ -286,7 +286,7 @@ The next question is then *how could tidymodels cut down on elapsed time for mod
 
 ![](figures/basic_resample.png){#fig-basic-resample}
 
-@fig-basic-resample depicts this process, where we evaluate all \``r nrow(d_folds) * 12` models in order. Each white dot in the engine portion of the elapsed time represents another round of fitting and predicting with engine. Remember that in reality, for even modest dataset sizes, the green portions representing tidymodels overhead are much smaller by proportion than represented.
+@fig-basic-resample depicts this process, where we evaluate all `r nrow(d_folds) * 12` models in order. Each white dot in the engine portion of the elapsed time represents another round of fitting and predicting with engine. Remember that in reality, for even modest dataset sizes, the green portions representing tidymodels overhead are much smaller by proportion than represented.
 
 In @sec-speedy-go, the first thing I did was introduce a parallel backend. Distributing engine fits across available cores is itself a gamechanger, as illustrated in @fig-parallel-resample.
 
@@ -294,11 +294,11 @@ In @sec-speedy-go, the first thing I did was introduce a parallel backend. Distr
 
 Then, switching out computational engines for a more performant alternative further reduces elapsed time, as shown in @fig-parallel-resample-opt.
 
-![](figures/parallel_resample_opt.png)
+![](figures/parallel_resample_opt.png){#fig-parallel-resample-opt}
 
 Finally, as depicted in @fig-parallel-resample-opt2, the submodel trick described in @sec-submodel and racing described in @sec-search eliminate a substantial portion of the engine fits.
 
-![](figures/parallel_resample_opt2.png)
+![](figures/parallel_resample_opt2.png){#fig-parallel-resample-opt2}
 
 The tidymodels team devotes substantial energy to ensuring support for the most performant parallelization technologies, modeling engines, model-specific optimizations, and search techniques. This book will demonstrate how to best make use of these features to reduce the time needed to evaluate machine learning models.
 

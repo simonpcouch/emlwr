@@ -565,7 +565,7 @@ Figure&nbsp;1.3
 </figcaption>
 </figure>
 </div>
-<p><a href="#fig-basic-resample" class="quarto-xref">Figure&nbsp;<span>1.3</span></a> depicts this process, where we evaluate all `120 models in order. Each white dot in the engine portion of the elapsed time represents another round of fitting and predicting with engine. Remember that in reality, for even modest dataset sizes, the green portions representing tidymodels overhead are much smaller by proportion than represented.</p>
+<p><a href="#fig-basic-resample" class="quarto-xref">Figure&nbsp;<span>1.3</span></a> depicts this process, where we evaluate all 120 models in order. Each white dot in the engine portion of the elapsed time represents another round of fitting and predicting with engine. Remember that in reality, for even modest dataset sizes, the green portions representing tidymodels overhead are much smaller by proportion than represented.</p>
 <p>In <a href="#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a>, the first thing I did was introduce a parallel backend. Distributing engine fits across available cores is itself a gamechanger, as illustrated in <a href="#fig-parallel-resample" class="quarto-xref">Figure&nbsp;<span>1.4</span></a>.</p>
 <div id="fig-parallel-resample" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
@@ -577,10 +577,28 @@ Figure&nbsp;1.4
 </figcaption>
 </figure>
 </div>
-<p>Then, switching out computational engines for a more performant alternative further reduces elapsed time, as shown in <span class="quarto-unresolved-ref">?fig-parallel-resample-opt</span>.</p>
-<p><img src="figures/parallel_resample_opt.png" class="img-fluid"></p>
-<p>Finally, as depicted in <span class="quarto-unresolved-ref">?fig-parallel-resample-opt2</span>, the submodel trick described in <a href="submodel.html" class="quarto-xref"><span>Chapter 5</span></a> and racing described in <a href="search.html" class="quarto-xref"><span>Chapter 4</span></a> eliminate a substantial portion of the engine fits.</p>
-<p><img src="figures/parallel_resample_opt2.png" class="img-fluid"></p>
+<p>Then, switching out computational engines for a more performant alternative further reduces elapsed time, as shown in <a href="#fig-parallel-resample-opt" class="quarto-xref">Figure&nbsp;<span>1.5</span></a>.</p>
+<div id="fig-parallel-resample-opt" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-parallel-resample-opt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/parallel_resample_opt.png" id="fig-parallel-resample-opt" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-parallel-resample-opt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1.5
+</figcaption>
+</figure>
+</div>
+<p>Finally, as depicted in <a href="#fig-parallel-resample-opt2" class="quarto-xref">Figure&nbsp;<span>1.6</span></a>, the submodel trick described in <a href="submodel.html" class="quarto-xref"><span>Chapter 5</span></a> and racing described in <a href="search.html" class="quarto-xref"><span>Chapter 4</span></a> eliminate a substantial portion of the engine fits.</p>
+<div id="fig-parallel-resample-opt2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-parallel-resample-opt2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/parallel_resample_opt2.png" id="fig-parallel-resample-opt2" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-parallel-resample-opt2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1.6
+</figcaption>
+</figure>
+</div>
 <p>The tidymodels team devotes substantial energy to ensuring support for the most performant parallelization technologies, modeling engines, model-specific optimizations, and search techniques. This book will demonstrate how to best make use of these features to reduce the time needed to evaluate machine learning models.</p>
 </section>
 <section id="sec-datasets" class="level2" data-number="1.4">
