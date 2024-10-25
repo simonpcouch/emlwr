@@ -43,6 +43,7 @@ Let's demonstrate with an example classification problem. Generating some random
 
 ```{r}
 #| label: simulate-data
+set.seed(1)
 d <- simulate_classification(n_rows = 100)
 
 d
