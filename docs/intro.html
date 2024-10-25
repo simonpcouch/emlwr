@@ -256,8 +256,20 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./extras.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Extras</span></span></a>
+  <a href="./preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Preprocessing</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sparsity.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Sparsity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./stacking.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Stacking</span></span></a>
   </div>
 </li>
       </ul>
@@ -609,7 +621,7 @@ Figure&nbsp;1.4
 </div>
 </div>
 </div>
-<p>Secondly, there are a number of factor predictors. Some modeling engines experience slower training times with many factor predictors for a variety of reasons. For one, most modeling engines ultimately implement training routines on numeric matrices, requiring that factor predictors are somehow encoded as numbers. Most often in R, this is in the form of treatment contrasts, where an <span class="math inline">\(n\)</span>-length factor with <span class="math inline">\(l\)</span> levels is represented as an <span class="math inline">\(n ~x~ l-1\)</span> matrix composed of zeroes and ones. Each column is referred to as a dummy variable. The first column has value <span class="math inline">\(1\)</span> when the <span class="math inline">\(i\)</span>-th entry of the factor is the second level, zero otherwise. The second column has value <span class="math inline">\(1\)</span> when the <span class="math inline">\(i\)</span>-th entry of the factor is the third level, zero otherwise. We know that the <span class="math inline">\(i\)</span>-th entry of the first took its first level if all of the entries in the <span class="math inline">\(i\)</span>th column of the resulting matrix are zero. While this representation of a factor is relatively straightforward, it’s quite memory intensive; a factor with 100 levels ultimately will require a 99-column matrix to be allocated in order to be included in a model. While many modeling engines in R assume that factors will be encoded as treatment constrasts, different modeling engines have different approaches to processing factor variables, some more efficient than others. More on this in <a href="extras.html#sec-sparsity" class="quarto-xref"><span>Section 6.2</span></a>, in particular.</p>
+<p>Secondly, there are a number of factor predictors. Some modeling engines experience slower training times with many factor predictors for a variety of reasons. For one, most modeling engines ultimately implement training routines on numeric matrices, requiring that factor predictors are somehow encoded as numbers. Most often in R, this is in the form of treatment contrasts, where an <span class="math inline">\(n\)</span>-length factor with <span class="math inline">\(l\)</span> levels is represented as an <span class="math inline">\(n ~x~ l-1\)</span> matrix composed of zeroes and ones. Each column is referred to as a dummy variable. The first column has value <span class="math inline">\(1\)</span> when the <span class="math inline">\(i\)</span>-th entry of the factor is the second level, zero otherwise. The second column has value <span class="math inline">\(1\)</span> when the <span class="math inline">\(i\)</span>-th entry of the factor is the third level, zero otherwise. We know that the <span class="math inline">\(i\)</span>-th entry of the first took its first level if all of the entries in the <span class="math inline">\(i\)</span>th column of the resulting matrix are zero. While this representation of a factor is relatively straightforward, it’s quite memory intensive; a factor with 100 levels ultimately will require a 99-column matrix to be allocated in order to be included in a model. While many modeling engines in R assume that factors will be encoded as treatment constrasts, different modeling engines have different approaches to processing factor variables, some more efficient than others. More on this in <a href="sparsity.html" class="quarto-xref"><span>Chapter 7</span></a>, in particular.</p>
 <div class="columns">
 <div class="column" style="width:45%;">
 <p>Original factor</p>
