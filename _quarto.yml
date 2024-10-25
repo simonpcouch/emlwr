@@ -24,6 +24,7 @@ book:
       - stacking.qmd
     - references.qmd
   google-analytics: "G-C5VQ0DLJJW"
+  repo-url: "https://github.com/simonpcouch/emlwr"
     
 bibliography: references.bib
 
