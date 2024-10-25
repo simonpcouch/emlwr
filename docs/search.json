@@ -14,7 +14,7 @@
     "href": "index.html#outline",
     "title": "Efficient Machine Learning with R",
     "section": "Outline:",
-    "text": "Outline:\n\n1  Introduction demonstrates a 145-fold speedup with an applied example. By adapting a grid search on a canonical model to use a more performant modeling engine, hooking into a parallel computing framework, transitioning to an optimized search strategy, and defining the grid to search over carefully, the section shows that users can drastically cut down on tuning times without sacrificing predictive performance. The following chapters then explore those optimizations in further details.\n2  Models explores timings to resample various different modeling engines. The chapter compares implementations both within and across model types.\n\n3  Parallel computing compares various approaches to distributing model computations across CPU cores. We’ll explore two different across-model parallel computing frameworks supported by tidymodels—process forking and socket clusters—and explore their relationship to within-model parallelization.\nThen, 4  Search explores various alternatives to grid search that can reduce the total number of model fits required to search a given grid space by only resampling models that seem to have a chance at being the “best.”\nFinally, 5  The submodel trick investigates approaches to designing grids that can further reduce the total number of model fits required to search a given grid space by generating predictions from one model that can be used to evaluate several.\n\nThe optimizations discussed in those aforementioned chapters can, on their own, substantially reduce the time to evaluate machine learning models with tidymodels. Depending on the problem context, some modeling workflows may benefit from more specialized optimizations. The following chapters discuss some of those use cases:\n\nPreprocessing\nSparsity\nGPU Training\nStacking\n\n\n\n\n\nKuhn, Max, and Julia Silge. 2022. Tidy Modeling with R. \" O’Reilly Media, Inc.\".\n\n\nWickham, Hadley, Mine Çetinkaya-Rundel, and Garrett Grolemund. 2023. R for Data Science. \" O’Reilly Media, Inc.\".",
+    "text": "Outline:\n\n1  Introduction demonstrates a 145-fold speedup with an applied example. By adapting a grid search on a canonical model to use a more performant modeling engine, hooking into a parallel computing framework, transitioning to an optimized search strategy, and defining the grid to search over carefully, the section shows that users can drastically cut down on tuning times without sacrificing predictive performance. The following chapters then explore those optimizations in further details.\n2  Models explores timings to resample various different modeling engines. The chapter compares implementations both within and across model types.\n\n3  Parallel computing compares various approaches to distributing model computations across CPU cores. We’ll explore two different across-model parallel computing frameworks supported by tidymodels—process forking and socket clusters—and explore their relationship to within-model parallelization.\nThen, 4  Search explores various alternatives to grid search that can reduce the total number of model fits required to search a given grid space by only resampling models that seem to have a chance at being the “best.”\nFinally, 5  The submodel trick investigates approaches to designing grids that can further reduce the total number of model fits required to search a given grid space by generating predictions from one model that can be used to evaluate several.\n\nThe optimizations discussed in those aforementioned chapters can, on their own, substantially reduce the time to evaluate machine learning models with tidymodels. Depending on the problem context, some modeling workflows may benefit from more specialized optimizations. The following chapters discuss some of those use cases:\n\nPreprocessing\nSparsity\nStacking\n\n\n\n\n\nKuhn, Max, and Julia Silge. 2022. Tidy Modeling with R. \" O’Reilly Media, Inc.\".\n\n\nWickham, Hadley, Mine Çetinkaya-Rundel, and Garrett Grolemund. 2023. R for Data Science. \" O’Reilly Media, Inc.\".",
     "crumbs": [
       "Welcome🐛"
     ]
@@ -509,7 +509,7 @@
     "section": "",
     "text": "6.1 Preprocessing",
     "crumbs": [
-      "Advanced",
+      "Beyond the Basics",
       "<span class='chapter-number'>6</span>  <span class='chapter-title'>Extras</span>"
     ]
   },
@@ -520,7 +520,7 @@
     "section": "6.2 Sparsity",
     "text": "6.2 Sparsity",
     "crumbs": [
-      "Advanced",
+      "Beyond the Basics",
       "<span class='chapter-number'>6</span>  <span class='chapter-title'>Extras</span>"
     ]
   },
@@ -539,10 +539,10 @@
     "objectID": "extras.html#sec-stacking",
     "href": "extras.html#sec-stacking",
     "title": "6  Extras",
-    "section": "6.4 Stacking",
-    "text": "6.4 Stacking",
+    "section": "6.3 Stacking",
+    "text": "6.3 Stacking",
     "crumbs": [
-      "Advanced",
+      "Beyond the Basics",
       "<span class='chapter-number'>6</span>  <span class='chapter-title'>Extras</span>"
     ]
   }

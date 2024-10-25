@@ -31,7 +31,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./references.html" rel="next">
-<link href="./part-advanced.html" rel="prev">
+<link href="./submodel.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -90,7 +90,7 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-advanced.html">Advanced</a></li><li class="breadcrumb-item"><a href="./extras.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Extras</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./extras.html">Beyond the Basics</a></li><li class="breadcrumb-item"><a href="./extras.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Extras</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -129,7 +129,7 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="./part-fundamentals.html" class="sidebar-item-text sidebar-link">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">Fundamentals</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -164,8 +164,8 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="./part-advanced.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Advanced</span></a>
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Beyond the Basics</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -197,15 +197,14 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
   <ul>
   <li><a href="#sec-preprocessing" id="toc-sec-preprocessing" class="nav-link active" data-scroll-target="#sec-preprocessing"><span class="header-section-number">6.1</span> Preprocessing</a></li>
   <li><a href="#sec-sparsity" id="toc-sec-sparsity" class="nav-link" data-scroll-target="#sec-sparsity"><span class="header-section-number">6.2</span> Sparsity</a></li>
-  <li><a href="#sec-gpu-training" id="toc-sec-gpu-training" class="nav-link" data-scroll-target="#sec-gpu-training"><span class="header-section-number">6.3</span> GPU Training</a></li>
-  <li><a href="#sec-stacking" id="toc-sec-stacking" class="nav-link" data-scroll-target="#sec-stacking"><span class="header-section-number">6.4</span> Stacking</a></li>
+  <li><a href="#sec-stacking" id="toc-sec-stacking" class="nav-link" data-scroll-target="#sec-stacking"><span class="header-section-number">6.3</span> Stacking</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./part-advanced.html">Advanced</a></li><li class="breadcrumb-item"><a href="./extras.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Extras</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./extras.html">Beyond the Basics</a></li><li class="breadcrumb-item"><a href="./extras.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Extras</span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Extras</span></h1>
 </div>
@@ -231,11 +230,8 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 <section id="sec-sparsity" class="level2" data-number="6.2">
 <h2 data-number="6.2" class="anchored" data-anchor-id="sec-sparsity"><span class="header-section-number">6.2</span> Sparsity</h2>
 </section>
-<section id="sec-gpu-training" class="level2" data-number="6.3">
-<h2 data-number="6.3" class="anchored" data-anchor-id="sec-gpu-training"><span class="header-section-number">6.3</span> GPU Training</h2>
-</section>
-<section id="sec-stacking" class="level2" data-number="6.4">
-<h2 data-number="6.4" class="anchored" data-anchor-id="sec-stacking"><span class="header-section-number">6.4</span> Stacking</h2>
+<section id="sec-stacking" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="sec-stacking"><span class="header-section-number">6.3</span> Stacking</h2>
 
 
 </section>
@@ -663,8 +659,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./part-advanced.html" class="pagination-link" aria-label="Advanced">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Advanced</span>
+      <a href="./submodel.html" class="pagination-link" aria-label="The submodel trick">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">The submodel trick</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

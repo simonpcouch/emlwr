@@ -39,6 +39,4 @@ The optimizations discussed in those aforementioned chapters can, on their own, 
 
 -   **Sparsity**
 
--   **GPU Training**
-
 -   **Stacking**
