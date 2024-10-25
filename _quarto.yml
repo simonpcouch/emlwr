@@ -21,6 +21,7 @@ book:
       chapters:
       - 06-extras.qmd
     - references.qmd
+  google-analytics: "G-C5VQ0DLJJW"
     
 bibliography: references.bib
 
@@ -40,6 +41,3 @@ format:
     documentclass: scrreprt
 
 editor: visual
-
-website:
-  google-analytics: "G-C5VQ0DLJJW"
