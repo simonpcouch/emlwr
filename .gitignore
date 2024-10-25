@@ -13,3 +13,5 @@ temp_fits/
 
 *_files
 !/docs/*_files/
+
+*figure-pdf/
