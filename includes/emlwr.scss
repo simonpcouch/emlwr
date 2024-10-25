@@ -71,3 +71,17 @@ caption,
 .quarto-float-caption {
   color: $forest;
 }
+
+.quarto-title-breadcrumbs .breadcrumb {
+  li {
+    a {
+      color: $link-color;
+      &:hover {
+        color: darken($link-color, 10%);
+      }
+    }
+    &:last-of-type a {
+      color: $charcoal;
+    }
+  }
+}
