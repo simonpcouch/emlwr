@@ -1,6 +1,7 @@
 project:
   type: book
   output-dir: docs
+  post-render: includes/restore-cname.R
 
 book:
   title: "Efficient Machine Learning with R"
