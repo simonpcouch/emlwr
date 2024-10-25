@@ -12,7 +12,7 @@ This book assumes familiarity with data analysis with the tidyverse as well as t
 This book is in its early drafting stages; many portions of the book are unfinished and all of it will go through significant revision and refinement. Keep an eye out for callout notes like this one to better understand the state of content you find throughout the site.
 :::
 
-## Outline:
+## Outline
 
 ```{r}
 #| include: false
@@ -35,8 +35,10 @@ bm_speedy <- qread("data/01-intro/bm_speedy.rds")
 
 The optimizations discussed in those aforementioned chapters can, on their own, substantially reduce the time to evaluate machine learning models with tidymodels. Depending on the problem context, some modeling workflows may benefit from more specialized optimizations. The following chapters discuss some of those use cases:
 
--   **Preprocessing**
+-   @sec-preprocessing
 
--   **Sparsity**
+<!-- -->
 
--   **Stacking**
+-   @sec-sparsity
+
+-   @sec-stacking
