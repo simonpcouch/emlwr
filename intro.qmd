@@ -20,9 +20,9 @@ if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
 While this chapter is an early draft, it's relatively complete and should be coherent for readers.
 :::
 
-## Early value
+## Demonstration {#sec-demonstration}
 
-To demonstrate the impact that a couple small pieces of intuition can have on execution time when evaluating machine learning models, I'll run through a quick model tuning example. On the first go, I'll lean on tidymodels' default values and a simple grid search, and on the second, I'll pull a few tricks out from my sleeves that will drastically reduce the time to evaluate models while only negligibly decreasing predictive performance.
+To demonstrate the massive impact that a few small pieces of intuition can have on execution time when evaluating machine learning models, I'll run through a quick model tuning example. On the first go, I'll lean on tidymodels' default values and a simple grid search, and on the second, I'll pull a few tricks out from my sleeves that will drastically reduce the time to evaluate models while only negligibly decreasing predictive performance.
 
 ### Setup {#sec-setup}
 
@@ -42,7 +42,10 @@ For the purposes of this example, we'll simulate a data set of 100,000 rows and 
 #| label: d-print
 set.seed(1)
 d <- simulate_classification(1e5)
+d
 ```
+
+See @sec-datasets for more information on this dataset.
 
 We'll first split the data into training and testing sets before generating a set of 10 folds from the training data for cross-validation.
 
@@ -57,7 +60,7 @@ d_folds <- vfold_cv(d_train)
 
 ### A first go {#sec-first-go}
 
-For my first go at tuning, I'll tune a boosted tree model using grid search. By default, tidymodels will use XGBoost as the modeling engine; I'll try out a few different values for `learn_rate`— a parameter that controls how drastically newly added trees impact predictions—and `trees`—the number of trees in the ensemble.
+For my first go at tuning, I'll tune a boosted tree model using grid search. By default, tidymodels will use XGBoost as the modeling engine. I'll try out a few different values for `learn_rate`—a parameter that controls how drastically newly added trees impact predictions—and `trees`—the number of trees in the ensemble.
 
 ```{r}
 #| label: bt
@@ -103,23 +106,15 @@ if (identical(eval_fits, "true")) {
 bm_basic
 ```
 
-<!--# TODO: change this to 12 points so that the number of points match up -->
-
-Holy smokes! `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` hours is a good while. What all did `tune_grid()` do, though?
-
-First, let's break down how many model fits actually happened. Since I've supplied `grid = 12`, we're evaluating 12 possible model configurations. Each of those model configurations is evaluated against `d_folds`, a `r nrow(d_folds)`-fold cross validation object, meaning that each configuration is fitted `r nrow(d_folds)` times. That's `r nrow(d_folds) * 12` model fits!
-
-Further, consider that those fits happen on `r nrow(d_folds)-1`/`r nrow(d_folds)`ths of the training data, or `r nrow(d_folds$splits[[1]])` rows.
-
-<!--# TODO: The above doesn't seem to be in-lining correctly? -->
+Holy smokes! `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` hours is a good while. What all did `tune_grid()` do, though? First, let's break down how many model fits actually happened. Since I've supplied `grid = 12`, we're evaluating 12 possible model configurations. Each of those model configurations is evaluated against `d_folds`, a `r nrow(d_folds)`-fold cross validation object, meaning that each configuration is fitted `r nrow(d_folds)` times. That's `r nrow(d_folds) * 12` model fits! Further, consider that those fits happen on `r nrow(d_folds)-1`/`r nrow(d_folds)`ths of the training data, or `r nrow(d_folds$splits[[1]])` rows.
 
 With a couple small changes, though, the time to tune this model can be *drastically* decreased.
 
 ### A speedy go {#sec-speedy-go}
 
-To cut down on the time to evaluate these models, I'll make a few small modifications.
+To cut down on the time to evaluate these models, I'll make 4 small modifications that require something like 7 lines of code.
 
-First, I'll **evaluate in parallel**: Almost all modern laptops have more than one CPU core, and distributing computations across them only takes a couple lines of code with tidymodels.
+First, I'll **evaluate in parallel**: Almost all modern laptops have more than one CPU core, and distributing computations across them only takes 1 line of code with tidymodels.
 
 ```{r}
 plan(multisession, workers = 4)
@@ -127,12 +122,15 @@ plan(multisession, workers = 4)
 
 While this tuning process could benefit from distributing across many more cores than 4, I'll just use 4 here to give a realistic picture of the kinds of speedups possible on a typical laptop.
 
-Then, we'll **use a clever grid**: The tidymodels framework enables something called the "submodel trick," a technique that will allow us to predict from many more models than we actually fit. Instead of just supplying `grid = 12`, I'll construct the grid myself.
+::: callout-note
+Parallelism is the subject of @sec-parallel-computing.
+:::
+
+Then, we'll **use a clever grid**; the tidymodels framework enables something called the "submodel trick," a technique that will allow us to predict from many more models than we actually fit. Instead of just supplying `grid = 12` and letting tidymodels generate the grid automatically, I'll construct the grid myself.
 
 ```{r}
 set.seed(1)
-bt_grid <-
-  bt %>%
+bt_grid <- bt %>%
   extract_parameter_set_dials() %>% 
   grid_regular(levels = 4)
 ```
@@ -146,6 +144,10 @@ Next, I'll **switch out the computational engine**: Substituting XGBoost with an
 ```{r}
 bt_lgb <- bt %>% set_engine("lightgbm")
 ```
+
+::: callout-note
+@sec-models contains benchmarks and notes on the scaling properties of many of the modeling engines supported by tidymodels.
+:::
 
 Finally, I'll **give up early on poorly-performing models**: Rather than using grid search with `tune_grid()`, I'll use a technique called *racing* that stops evaluating models when they seem to be performing poorly using the `tune_race_anova()` function.
 
@@ -176,6 +178,10 @@ if (identical(eval_fits, "true")) {
   bm_speedy <- qread("data/01-intro/bm_speedy.rds")
 }
 ```
+
+::: callout-note
+Alternative search strategies like racing are covered in detail in @sec-search.
+:::
 
 Checking out the new benchmarks:
 
@@ -264,7 +270,7 @@ To better understand how to cut down on the time to evaluate models with tidymod
 
 Like many other "unifying frameworks" for ML (mlr3, caret, scikit-learn(?)), the tidymodels framework itself does not implement the algorithms to train and predict from models. Instead, tidymodels provides a common interface to modeling *engines*: packages (or functions from packages) that provide the methods to `fit()` and `predict()`.
 
-![](figures/translate_diagram.png){#fig-fit-boost-tree}
+![A diagram representing portions of the elapsed time to fit a machine learning model with tidymodels. The central portion, shown in green, represents the time required by the modeling engine to fit or predict the model algorithm. The portions in green, on either side of the modeling engine, represent tidymodels' "overhead."](figures/translate_diagram.png){#fig-fit-boost-tree fig-alt="A timeline-ish diagram consisting of three portions in green, orange, and green again. The first portion is labeled \"translate input to engine code,\" the second \"call engine code,\" the third \"translate engine output.\" Above the timeline is the code required to fit a boosted tree with tidymodels." fig-align="center"}
 
 The process of "translating" between the tidymodels and engine formats is illustrated in @fig-fit-boost-tree. When fitting and predicting with tidymodels, some portion of the elapsed time to run code is due to the "translation" of the inputted unified code to the specific syntax that the engine expects, and some portion of it is due to the translation of what the engine returns to the unified output returned by tidymodels; these portions are in the tidymodels team's control. The rest of the elapsed time occurs inside of the modeling engine's code.
 
@@ -278,27 +284,27 @@ The algorithmic complexity of the models implemented by these engines is well-un
 
 As shown in @fig-fit-scale, the proportion of elapsed time that overhead is responsible for depends on how quickly the engine can fit or predict for a given dataset.
 
-![](figures/scaling_diagram.png){#fig-fit-scale}
+![As a proportion, tidymodels' overhead is a function of how long an engine takes to fit. For a very simple fit on a small dataset, tidymodels overhead is quite substantial, but for even moderately complex model fits and/or moderately large data, the proportion overhead is negligible.](figures/scaling_diagram.png){#fig-fit-scale fig-alt="A diagram similar to the one from above, except three of them are stacked on top of each other. The length of the green portions is the same in each of the diagrams, but the orange portions are either very small, moderate, or long."}
 
 Since the absolute overhead of tidymodels' translation is relatively constant, overhead is only a substantial portion of elapsed time when models fit or predict *very* quickly. For a linear model fitted on 30 data points with `lm()`, this overhead is [continuously benchmarked](https://github.com/tidymodels/parsnip/blob/11a3ab942f131e9d612d4d37c4b77273be064aaf/tests/testthat/test_fit_interfaces.R#L171) to remain under 2/3. That is, absolute worst-case, fitting a model with tidymodels takes three times longer than using the engine interface itself. However, this overhead approaches fractions of a percent for fits on even 10,000 rows for many engines. Thus, a focus on reducing the elapsed time of overhead is valuable in the sense that the framework ought not to unintentionally introduce regressions that cause overhead to scale with the size of training data, but in general, the hard part of reducing elapsed time when evaluating models is reducing the elapsed time for computations carried out by the modeling engine.
 
 The next question is then *how could tidymodels cut down on elapsed time for modeling engines that it doesn't own?* To answer this question, let's revisit the applied example from @sec-first-go. In that first example, the code does some translation to the engine's syntax, sets up some error handling, and then fits and predicts from `r nrow(d_folds) * 12` models.
 
-![](figures/basic_resample.png){#fig-basic-resample}
+![A depiction of the timeline when tuning a model with tidymodels. The one, central orange segment representing engine code is now 120 individual segments, one for each model fit.](figures/basic_resample.png){#fig-basic-resample fig-alt="A similar diagram to the first, except that the middle orange portion is now cut up into 120 portions. When resampling models with tidymodels, the translation steps only need to happen once, and then the engine code is called for every data subset and hyperparameter combination."}
 
 @fig-basic-resample depicts this process, where we evaluate all `r nrow(d_folds) * 12` models in order. Each white dot in the engine portion of the elapsed time represents another round of fitting and predicting with engine. Remember that in reality, for even modest dataset sizes, the green portions representing tidymodels overhead are much smaller by proportion than represented.
 
 In @sec-speedy-go, the first thing I did was introduce a parallel backend. Distributing engine fits across available cores is itself a gamechanger, as illustrated in @fig-parallel-resample.
 
-![](figures/parallel_resample.png){#fig-parallel-resample}
+![Instead of fitting each of the 120 models in sequence, parallelism allows us to concurrently fit as many models as we have CPU cores.](figures/parallel_resample.png){#fig-parallel-resample fig-alt="The same diagram as above, except the portion of the timeline in orange is now split up into 4 segments and \"stacked\" on top of each other. The width of the diagram is 1/4 the size of what it was before."}
 
 Then, switching out computational engines for a more performant alternative further reduces elapsed time, as shown in @fig-parallel-resample-opt.
 
-![](figures/parallel_resample_opt.png){#fig-parallel-resample-opt}
+![Depending on the modeling context, certain modeling engines can evaluate much more quickly than others.](figures/parallel_resample_opt.png){#fig-parallel-resample-opt fig-alt="The same diagram as above, though now each orange segment is half as wide as it was before. The width of the diagram is now half as wide as it was previously."}
 
 Finally, as depicted in @fig-parallel-resample-opt2, the submodel trick described in @sec-submodel and racing described in @sec-search eliminate a substantial portion of the engine fits.
 
-![](figures/parallel_resample_opt2.png){#fig-parallel-resample-opt2}
+![Through racing and the submodel trick, we can evaluate the same number of potential models as before while fitting many fewer models.](figures/parallel_resample_opt2.png){#fig-parallel-resample-opt2 fig-alt="The same diagram as before, except around 2/3 of the orange segments have been removed."}
 
 The tidymodels team devotes substantial energy to ensuring support for the most performant parallelization technologies, modeling engines, model-specific optimizations, and search techniques. This book will demonstrate how to best make use of these features to reduce the time needed to evaluate machine learning models.
 
@@ -326,7 +332,8 @@ For one, the predictors are moderately correlated. Correlated predictors can lea
 #| echo: false
 library(corrr)
 
-correlate(d_class) %>% autoplot()
+correlate(d_class) %>% 
+  autoplot(low = "#c46938", high = "#3d6c56")
 ```
 
 Secondly, there are a number of factor predictors. Some modeling engines experience slower training times with many factor predictors for a variety of reasons. For one, most modeling engines ultimately implement training routines on numeric matrices, requiring that factor predictors are somehow encoded as numbers. Most often in R, this is in the form of treatment contrasts, where an $n$-length factor with $l$ levels is represented as an $n ~x~ l-1$ matrix composed of zeroes and ones. Each column is referred to as a dummy variable. The first column has value $1$ when the $i$-th entry of the factor is the second level, zero otherwise. The second column has value $1$ when the $i$-th entry of the factor is the third level, zero otherwise. We know that the $i$-th entry of the first took its first level if all of the entries in the $i$th column of the resulting matrix are zero. While this representation of a factor is relatively straightforward, it's quite memory intensive; a factor with 100 levels ultimately will require a 99-column matrix to be allocated in order to be included in a model. While many modeling engines in R assume that factors will be encoded as treatment constrasts, different modeling engines have different approaches to processing factor variables, some more efficient than others. More on this in @sec-sparsity, in particular.
@@ -365,7 +372,8 @@ Further, many of those factor variables have a class imbalance; that is, some le
 ```{r}
 #| label: factors-d-class
 #| echo: false
-#| fig-cap: "TODO: write caption"
+#| fig-cap: "Distributions of the categorical variables in the simulated data. While factor levels are well-balanced in the outcome `class`, some factor levels are much more common than others in the predictors, which can lead to instability in many modeling algorithms."
+#| fig-alt: "5 bar charts, faceted on top of each other. Each row represents a factor column in the data d, and each column gives a count of observations of each level of the column. The outcome `class` is relatively well-balanced, while each of the predictors have significant class imbalances."
 d_class %>%
   select(where(is.factor)) %>%
   summarize(across(everything(), ~list(table(.x)))) %>%
@@ -383,8 +391,12 @@ d_class %>%
   ggplot() +
   aes(x = level, y = n) +
   geom_col() +
-  facet_grid(rows = vars(variable))
+  facet_grid(rows = vars(variable)) +
+  theme_minimal() +
+  labs(x = "Factor Level", y = "Number of Observations")
 ```
+
+<!--# TODO: is it possible to remove the panel grid in the rows/cols that don't apply? -->
 
 The regression dataset looks quite similar.
 
