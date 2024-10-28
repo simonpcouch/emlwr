@@ -55,7 +55,7 @@ There are two dominant approaches to distributing model fits across local cores 
 Before I spend time experimenting with these techniques, I want to quickly situate the terminology I'm using here in the greater context of discussions of parallel computing with R. "Sequential," "forking," and "socket clusters" are my preferred terms for the techniques I'll now write about, but there's quite a bit of diversity in the terminology folks use to refer to them. I've also called out keywords (as in, functions or packages) related to these techniques in various generations of parallel computing frameworks in R. In "base," I refer to functions in the parallel package, building on popular packages multicore (first on CRAN in 2009, inspiring `mclapply()`) and snow (first on CRAN in 2003, inspiring `parLapply()`) and included in base installations of R from 2011 onward [@pkgparallel].
 
 | Technique | future | foreach | base | Synonyms |
-|---------------|---------------|---------------|---------------|---------------|
+|----|----|----|----|----|
 | Sequential | `sequential()` |  |  | Serial |
 | Forking | `multicore()` | doMC | `mclapply()` | Process forking |
 | Socket Clusters | `multisession()` | doParallel | `parLapply()` | Parallel Socket Clusters (PSOCK), Cluster, Socket |

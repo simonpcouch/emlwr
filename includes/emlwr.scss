@@ -85,3 +85,11 @@ caption,
     }
   }
 }
+
+.nav-page-text, 
+.bi {
+  color: $rust;
+  &:hover {
+    color: $charcoal;
+  }
+}
