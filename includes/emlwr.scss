@@ -93,3 +93,10 @@ caption,
     color: $charcoal;
   }
 }
+
+.bi-github {
+  color: $charcoal;
+  &:hover {
+    color: black;
+  }
+}
