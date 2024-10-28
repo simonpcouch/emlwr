@@ -38,11 +38,11 @@ In @sec-intro, one of the changes I made to greatly speed up that resampling pro
 
 Phrased another way, in the case of "sequential" training, all `r 10 * 12` model fits happened one after the other.
 
-![](figures/basic_resample.png){#fig-basic-resample-2}
+![A depiction of the timeline when tuning a model with tidymodels. The one, central orange segment representing engine code is now 120 individual segments, one for each model fit.](figures/basic_resample.png){#fig-basic-resample-2 fig-alt="A timeline-ish diagram, where 120 orange segments, representing modeling engine fits, are surrounded by two green segments, representing tidymodels' overhead."}
 
 While the one CPU core running my R process works itself to the bone, the other remaining 9 are mostly sitting idle (besides keeping my many browser tabs whirring). CPU parallelism is about somehow making use of more cores than the one my main R process is running on; in theory, if $n$ times as many cores are working on fitting models, the whole process could take $1/n$ of the time.
 
-![](figures/parallel_resample.png){#fig-parallel-resample-2}
+![Instead of fitting each of the 120 models in sequence, parallelism allows us to concurrently fit as many models as we have CPU cores.](figures/parallel_resample.png){#fig-parallel-resample-2 fig-alt="The same diagram as above, except the portion of the timeline in orange is now split up into 4 segments and \"stacked\" on top of each other. The width of the diagram is 1/4 the size of what it was before."}
 
 Why do I say "in theory"? The orchestration of splitting up that work is actually a very, very difficult problem, for two main reasons:
 
@@ -195,7 +195,8 @@ We can make the plot from the last section a bit more interesting now.
 
 ```{r}
 #| label: plot-press-seq-fork
-#| fig-cap: "TODO: write caption"
+#| fig-cap: "When using local cores, the parallel approach is only slower for only the smallest tuning processes."
+#| fig-alt: "A ggplot2 line plot with axes 'number of rows' and 'log(elapsed time)'. Two colored lines, one labeled 'Forking' and the other 'Sequential', show that larger training datasets take longer to fit. The tuning process using forking is faster for every size of dataset besides the smallest, at 100 rows."
 bind_rows(
   mutate(press_seq, Approach = "Sequential"),
   mutate(press_fork, Approach = "Forking")
@@ -227,7 +228,8 @@ Another angle from which to poke at this is *how much time did we lose to overhe
 
 ```{r}
 #| label: plot-press-seq-fork-adj
-#| fig-cap: "TODO: write caption"
+#| fig-cap: "As the dataset grows larger, the time to evaluate a model in parallel converges towards the time to evaluate sequentially over the number of cores utilized."
+#| fig-alt: "A plot identical to the one above, except the y axis is now the elapsed time per core. 'Forking' always results in larger elapsed times per core utilized, but that ratio converges towards 'Sequential' as the dataset grows larger."
 bind_rows(
   mutate(press_seq, Approach = "Sequential"),
   mutate(press_fork, Approach = "Forking")
@@ -248,6 +250,8 @@ Per core, no parallel approach will ever be faster than sequential. (If it is, t
 ### Socket Clusters {#sec-socket-clusters}
 
 <!--# some exposition -->
+
+TODO: some exposition...
 
 Let's see how this plays out in practice. Returning to the same experiment from before:
 
@@ -447,7 +451,8 @@ There's one timing per unique combination of number of rows, parallelism plan, a
 
 ```{r}
 #| label: plot-timings
-#| fig-cap: "TODO: write caption"
+#| fig-cap: "Cloud systems, in which CPU cores tend to have higher communication overhead, require much larger dataset sizes before parallelism begins to pay off."
+#| fig-alt: "A ggplot2 dot plot, where the number of rows is on the x axis and the signed factor of speedup is on the y axis. The signed factor is negative for almost all data points labeled as 'cloud', while the opposite is the case for points labeled 'laptop.'"
 timings %>%
   select(n_rows, plan, median, system) %>%
   pivot_wider(names_from = plan, values_from = median) %>%

@@ -189,6 +189,9 @@ window.Quarto = {
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Efficient Machine Learning with R</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/simonpcouch/emlwr" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -347,24 +350,24 @@ Caution
 <h2 data-number="3.1" class="anchored" data-anchor-id="sec-across-models"><span class="header-section-number">3.1</span> Across-models</h2>
 <p>In <a href="intro.html" class="quarto-xref"><span>Chapter 1</span></a>, one of the changes I made to greatly speed up that resampling process was to introduce an across-models parallel backend. By “across-models,” I mean that each individual model fit happens on a single CPU core, but I allot each of the CPU cores I’ve reserved for training a number of model fits to take care of.</p>
 <p>Phrased another way, in the case of “sequential” training, all 120 model fits happened one after the other.</p>
-<div id="fig-basic-resample-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-basic-resample-2" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A timeline-ish diagram, where 120 orange segments, representing modeling engine fits, are surrounded by two green segments, representing tidymodels' overhead.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-basic-resample-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figures/basic_resample.png" id="fig-basic-resample-2" class="img-fluid figure-img">
+<img src="figures/basic_resample.png" class="img-fluid figure-img" alt="A timeline-ish diagram, where 120 orange segments, representing modeling engine fits, are surrounded by two green segments, representing tidymodels' overhead.">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-basic-resample-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3.1
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-basic-resample-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3.1: A depiction of the timeline when tuning a model with tidymodels. The one, central orange segment representing engine code is now 120 individual segments, one for each model fit.
 </figcaption>
 </figure>
 </div>
 <p>While the one CPU core running my R process works itself to the bone, the other remaining 9 are mostly sitting idle (besides keeping my many browser tabs whirring). CPU parallelism is about somehow making use of more cores than the one my main R process is running on; in theory, if <span class="math inline">\(n\)</span> times as many cores are working on fitting models, the whole process could take <span class="math inline">\(1/n\)</span> of the time.</p>
-<div id="fig-parallel-resample-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-parallel-resample-2" class="quarto-float quarto-figure quarto-figure-center anchored" alt="The same diagram as above, except the portion of the timeline in orange is now split up into 4 segments and &quot;stacked&quot; on top of each other. The width of the diagram is 1/4 the size of what it was before.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-parallel-resample-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figures/parallel_resample.png" id="fig-parallel-resample-2" class="img-fluid figure-img">
+<img src="figures/parallel_resample.png" class="img-fluid figure-img" alt="The same diagram as above, except the portion of the timeline in orange is now split up into 4 segments and &quot;stacked&quot; on top of each other. The width of the diagram is 1/4 the size of what it was before.">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-parallel-resample-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3.2
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-parallel-resample-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3.2: Instead of fitting each of the 120 models in sequence, parallelism allows us to concurrently fit as many models as we have CPU cores.
 </figcaption>
 </figure>
 </div>
@@ -526,8 +529,8 @@ Figure&nbsp;3.2
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="parallelism_files/figure-html/plot-press-seq-fork-1.png" class="img-fluid figure-img" width="576"></p>
-<figcaption>TODO: write caption</figcaption>
+<p><img src="parallelism_files/figure-html/plot-press-seq-fork-1.png" class="img-fluid figure-img" alt="A ggplot2 line plot with axes 'number of rows' and 'log(elapsed time)'. Two colored lines, one labeled 'Forking' and the other 'Sequential', show that larger training datasets take longer to fit. The tuning process using forking is faster for every size of dataset besides the smallest, at 100 rows." width="576"></p>
+<figcaption>When using local cores, the parallel approach is only slower for only the smallest tuning processes.</figcaption>
 </figure>
 </div>
 </div>
@@ -561,8 +564,8 @@ Figure&nbsp;3.2
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="parallelism_files/figure-html/plot-press-seq-fork-adj-1.png" class="img-fluid figure-img" width="576"></p>
-<figcaption>TODO: write caption</figcaption>
+<p><img src="parallelism_files/figure-html/plot-press-seq-fork-adj-1.png" class="img-fluid figure-img" alt="A plot identical to the one above, except the y axis is now the elapsed time per core. 'Forking' always results in larger elapsed times per core utilized, but that ratio converges towards 'Sequential' as the dataset grows larger." width="576"></p>
+<figcaption>As the dataset grows larger, the time to evaluate a model in parallel converges towards the time to evaluate sequentially over the number of cores utilized.</figcaption>
 </figure>
 </div>
 </div>
@@ -572,6 +575,7 @@ Figure&nbsp;3.2
 <section id="sec-socket-clusters" class="level3" data-number="3.1.3">
 <h3 data-number="3.1.3" class="anchored" data-anchor-id="sec-socket-clusters"><span class="header-section-number">3.1.3</span> Socket Clusters</h3>
 <!--# some exposition -->
+<p>TODO: some exposition…</p>
 <p>Let’s see how this plays out in practice. Returning to the same experiment from before:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>press_sc <span class="ot">&lt;-</span></span>
@@ -721,8 +725,8 @@ Figure&nbsp;3.2
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="parallelism_files/figure-html/plot-timings-1.png" class="img-fluid figure-img" width="576"></p>
-<figcaption>TODO: write caption</figcaption>
+<p><img src="parallelism_files/figure-html/plot-timings-1.png" class="img-fluid figure-img" alt="A ggplot2 dot plot, where the number of rows is on the x axis and the signed factor of speedup is on the y axis. The signed factor is negative for almost all data points labeled as 'cloud', while the opposite is the case for points labeled 'laptop.'" width="576"></p>
+<figcaption>Cloud systems, in which CPU cores tend to have higher communication overhead, require much larger dataset sizes before parallelism begins to pay off.</figcaption>
 </figure>
 </div>
 </div>
