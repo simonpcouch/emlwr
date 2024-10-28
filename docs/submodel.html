@@ -189,6 +189,9 @@ window.Quarto = {
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Efficient Machine Learning with R</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/simonpcouch/emlwr" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -397,8 +400,8 @@ Note
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="submodel_files/figure-html/plot-grid-latin-hypercube-1.png" class="img-fluid figure-img" width="576"></p>
-<figcaption>TODO: write caption</figcaption>
+<p><img src="submodel_files/figure-html/plot-grid-latin-hypercube-1.png" class="img-fluid figure-img" alt="A ggplot2 dotplot. The x axis is labeled `trees` and has range 0 to 2000. The y axis is labeled `learn_rate` and has range 0 to .25. `trees` values are spread somewhat uniformly throughout the range, while most `learn_rate` values tend toward zero. There is very little correlation between the two variables." width="576"></p>
+<figcaption>Distribution of proposed boosted tree hyperparameters, generated using a semi-random latin hypercube design. Notably, values in neither the x or y axes appear more than once.</figcaption>
 </figure>
 </div>
 </div>
@@ -442,8 +445,8 @@ Note
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="submodel_files/figure-html/plot-grid-regular-1.png" class="img-fluid figure-img" width="576"></p>
-<figcaption>TODO: write caption</figcaption>
+<p><img src="submodel_files/figure-html/plot-grid-regular-1.png" class="img-fluid figure-img" alt="A plot similar to that above, but with a different covariance. There are four 'rows' of points, each formed by four points each." width="576"></p>
+<figcaption>Distribution of proposed boosted tree hyperparameters, generated using a regular grid. There are 4 unique levels of both the <code>trees</code> and <code>learn_rate</code> parameters, and the grid is formed by taking unique combinations of them.</figcaption>
 </figure>
 </div>
 </div>
@@ -474,7 +477,7 @@ Note
 </div>
 </div>
 <p>See? Have some faith in me!</p>
-<p>Changing only the <code>grid</code> argument (and even increasing the number of proposed <code>grid</code> points), we’ve decreased the time to evaluate against resamples from 3.68 to 1.23 hours, or a speedup of -99.67%.</p>
+<p>Changing only the <code>grid</code> argument (and even increasing the number of proposed <code>grid</code> points), we’ve decreased the time to evaluate against resamples from 3.68 to 1.23 hours, or a speedup of 67%.</p>
 </section>
 <section id="the-trick" class="level3" data-number="5.1.2">
 <h3 data-number="5.1.2" class="anchored" data-anchor-id="the-trick"><span class="header-section-number">5.1.2</span> The trick</h3>

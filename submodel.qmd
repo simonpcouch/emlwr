@@ -84,7 +84,8 @@ Since we're working with a two-dimensional grid in this case, we can plot the re
 
 ```{r}
 #| label: "plot-grid-latin-hypercube"
-#| fig-cap: "TODO: write caption"
+#| fig-cap: "Distribution of proposed boosted tree hyperparameters, generated using a semi-random latin hypercube design. Notably, values in neither the x or y axes appear more than once."
+#| fig-alt: "A ggplot2 dotplot. The x axis is labeled `trees` and has range 0 to 2000. The y axis is labeled `learn_rate` and has range 0 to .25. `trees` values are spread somewhat uniformly throughout the range, while most `learn_rate` values tend toward zero. There is very little correlation between the two variables."
 ggplot(bt_grid_latin_hypercube) +
   aes(x = trees, y = learn_rate) +
   geom_point()
@@ -107,7 +108,8 @@ Plotting in the same way:
 
 ```{r}
 #| label: "plot-grid-regular"
-#| fig-cap: "TODO: write caption"
+#| fig-cap: "Distribution of proposed boosted tree hyperparameters, generated using a regular grid. There are 4 unique levels of both the `trees` and `learn_rate` parameters, and the grid is formed by taking unique combinations of them."
+#| fig-alt: "A plot similar to that above, but with a different covariance. There are four 'rows' of points, each formed by four points each."
 ggplot(bt_grid_regular) +
   aes(x = trees, y = learn_rate) +
   geom_point()
@@ -151,7 +153,7 @@ bm_grid_regular
 
 See? Have some faith in me!
 
-Changing only the `grid` argument (and even increasing the number of proposed `grid` points), we've decreased the time to evaluate against resamples from `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` to `r round(as.numeric(bm_grid_regular$median[[1]]) / 60 / 60, 2)` hours, or a speedup of `r round(as.numeric(bm_grid_regular$median[[1]] / bm_basic$median[[1]]), 2) - 1 * 100`%.
+Changing only the `grid` argument (and even increasing the number of proposed `grid` points), we've decreased the time to evaluate against resamples from `r round(as.numeric(bm_basic$median[[1]]) / 60 / 60, 2)` to `r round(as.numeric(bm_grid_regular$median[[1]]) / 60 / 60, 2)` hours, or a speedup of `r (1 - round(as.numeric(bm_grid_regular$median[[1]] / bm_basic$median[[1]]), 2)) * 100`%.
 
 ### The trick
 
