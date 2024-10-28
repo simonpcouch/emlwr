@@ -20,7 +20,7 @@ if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
 }
 
 if (!eval_fits) {
-  data_files <- list.files("data/04-search", full.names = TRUE)
+  data_files <- list.files("data/search", full.names = TRUE)
   data_files <- data_files[grepl("\\.Rda", data_files)]
   loaded <- lapply(data_files, load)
 }

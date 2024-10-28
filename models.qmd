@@ -31,7 +31,7 @@ if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
 }
 
 if (!eval_fits) {
-  data_files <- list.files("data/02-models", full.names = TRUE)
+  data_files <- list.files("data/models", full.names = TRUE)
   data_files <- data_files[grepl("\\.Rda", data_files)]
   loaded <- lapply(data_files, load)
 }
@@ -129,9 +129,9 @@ bm_boost_tree <-
 #| include: false
 if (eval_fits) {
   press_boost_tree <- trim_bench_mark(press_boost_tree)
-  qsave(press_boost_tree, file = "data/02-models/press_boost_tree.rds")
+  qsave(press_boost_tree, file = "data/models/press_boost_tree.rds")
 } else {
-  press_boost_tree <- qread(file = "data/02-models/press_boost_tree.rds")
+  press_boost_tree <- qread(file = "data/models/press_boost_tree.rds")
 }
 ```
 

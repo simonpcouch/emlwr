@@ -22,7 +22,7 @@ if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
 }
 
 if (!eval_fits) {
-  data_files <- list.files("data/03-parallelism", full.names = TRUE)
+  data_files <- list.files("data/parallelism", full.names = TRUE)
   data_files <- data_files[grepl("\\.rds", data_files)]
 
   for (data_file in data_files) {
@@ -134,9 +134,9 @@ press_seq <-
 #| include: false
 if (eval_fits) {
   press_seq <- trim_bench_mark(press_seq)
-  qsave(press_seq, file = "data/03-parallelism/press_seq.rds")
+  qsave(press_seq, file = "data/parallelism/press_seq.rds")
 } else {
-  press_seq <- qread(file = "data/03-parallelism/press_seq.rds")
+  press_seq <- qread(file = "data/parallelism/press_seq.rds")
 }
 ```
 
@@ -185,9 +185,9 @@ press_fork <-
 #| include: false
 if (eval_fits) {
   press_fork <- trim_bench_mark(press_fork)
-  qsave(press_fork, file = "data/03-parallelism/press_fork.rds")
+  qsave(press_fork, file = "data/parallelism/press_fork.rds")
 } else {
-  press_fork <- qread(file = "data/03-parallelism/press_fork.rds")
+  press_fork <- qread(file = "data/parallelism/press_fork.rds")
 }
 ```
 
@@ -270,9 +270,9 @@ press_sc <-
 #| include: false
 if (eval_fits) {
   press_sc <- trim_bench_mark(press_sc)
-  qsave(press_sc, file = "data/03-parallelism/press_sc.rds")
+  qsave(press_sc, file = "data/parallelism/press_sc.rds")
 } else {
-  press_sc <- qread(file = "data/03-parallelism/press_sc.rds")
+  press_sc <- qread(file = "data/parallelism/press_sc.rds")
 }
 ```
 
@@ -397,12 +397,12 @@ bench::press(
 #| label: t_laptop
 #| eval: !expr eval_fits
 #| include: false
-if (!file.exists("data/03-parallelism/t_cloud.rds")) {
+if (!file.exists("data/parallelism/t_cloud.rds")) {
   cli::cli_abort(
     c(
       "Can't evaluate fits for this chapter without data from the
        cloud system.",
-      "See `data/03-parallelism/time_resample_bt.R`."
+      "See `data/parallelism/time_resample_bt.R`."
     )
   )
 }
@@ -423,9 +423,9 @@ t_seq <- trim_bench_mark(t_seq)
 t_par <- trim_bench_mark(t_par)
 t_laptop <- trim_bench_mark(t_laptop)
 
-qsave(t_seq, file = "data/03-parallelism/t_seq.rds")
-qsave(t_par, file = "data/03-parallelism/t_par.rds")
-qsave(t_laptop, file = "data/03-parallelism/t_laptop.rds")
+qsave(t_seq, file = "data/parallelism/t_seq.rds")
+qsave(t_par, file = "data/parallelism/t_par.rds")
+qsave(t_laptop, file = "data/parallelism/t_laptop.rds")
 ```
 
 The resulting timings are in the object `timings` and look like this:
