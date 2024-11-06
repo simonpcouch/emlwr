@@ -1,5 +1,6 @@
-
 library(tidyverse)
+library(workflows)
+library(lightgbm)
 
 library(bench)
 library(qs)
@@ -7,6 +8,7 @@ library(here)
 
 library(shiny)
 library(shinydashboard)
+library(fresh)
 
 options(
   ggplot2.discrete.colour = c(
@@ -31,9 +33,14 @@ ui <- dashboardPage(
   ),
   
   dashboardBody(
+    includeCSS(here("data/models/app/emlwr.css")),
+    use_theme(
+      create_theme(
+        adminlte_color(light_blue = "#42725c")
+      )
+    ),
     tabItems(
       tabItem(tabName = "prediction",
-              # Top row for model selection
               fluidRow(
                 box(
                   title = "Modeling Engine", 
