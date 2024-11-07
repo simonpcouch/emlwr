@@ -68,7 +68,7 @@ ui <- dashboardPage(
                   selectInput("model", "Model:",
                               choices = unique(bm$model),
                               multiple = TRUE,
-                              selected = unique(bm$model)[1])
+                              selected = c("logistic_reg (glmnet)", "boost_tree (xgboost)"))
                 )
               ),
               fluidRow(
