@@ -101,8 +101,12 @@ server <- function(input, output, session) {
   )
   
   output$plot <- renderPlot({
+    # if (length(input$model) == 0) {
+    #   browser()
+    # }
+    
     new_data <- data.frame(
-      model = input$model,
+      model = input$model %||% "",
       dataset = input$dataset,
       n_rows = 0L,
       strategy = "stand-in",
