@@ -1,9 +1,6 @@
 library(tidyverse)
-library(tidymodels)
 library(bench)
 library(qs)
-library(bonsai)
-library(finetune)
 
 benchmarks <- qread("data/models/app/benchmarks.rds")
 benchmarks <- as_tibble(benchmarks)
@@ -30,20 +27,4 @@ bm <-
 
 bm
 
-# fit a model to generate the predictions --------------------------------------
-bm_fit <-
-  tune_race_anova(
-    recipe(time_to_tune_float ~ ., bm %>% select(-time_to_tune)) %>% 
-      step_zv(all_predictors()),
-    boost_tree(learn_rate = tune(), trees = tune()) %>%
-      set_engine(engine = "lightgbm") %>%
-      set_mode(mode = "regression"),
-    resamples = bootstraps(bm %>% select(-time_to_tune)),
-    control = control_race(save_workflow = TRUE)
-  ) %>%
-  fit_best(metric = "rmse")
-
 qsave(bm, file = "data/models/app/bm.rds")
-
-saveRDS(bm_fit, "data/models/app/bm_fit.rds")
-lgb.save(extract_fit_engine(bm_fit), "data/models/app/bm_fit_engine.rds")

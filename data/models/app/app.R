@@ -21,8 +21,6 @@ options(
 )
 
 bm <- qread(here("data/models/app/bm.rds"))
-bm_fit <- readRDS(here("data/models/app/bm_fit.rds"))
-bm_fit$fit$fit$fit <- lgb.load(here("data/models/app/bm_fit_engine.rds"))
 
 # from https://www.cpubenchmark.net/cpu_list.php
 cpus <- qread(here("data/models/app/cpus.rds"))
@@ -35,18 +33,18 @@ reference_mark <- 37002
 
 # TODO: make this estimate adjust for `tune_race_anova`
 footer_context <- paste0(collapse = "", c(
-  "Timings predict the time to evaluate an initial set of 10 models across 10 ",
+  "Timings estimate the time to evaluate an initial set of 10 models across 10 ",
   "resamples, resulting in 100 model fits on 9/10th of rows, 100 sets of ",
   "predictions on 1/10th of rows, and metric calculations on each set of predictions."
 ))
 
 # ui ---------------------------------------------------------------------------
 ui <- dashboardPage(
-  dashboardHeader(title = "Predict Time To Tune"),
+  dashboardHeader(title = "Time To Tune"),
   
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Prediction", tabName = "prediction", icon = icon("clock"))
+      menuItem("Timings", tabName = "timings", icon = icon("clock"))
     ),
     collapsed = TRUE
   ),
@@ -59,7 +57,7 @@ ui <- dashboardPage(
       )
     ),
     tabItems(
-      tabItem(tabName = "prediction",
+      tabItem(tabName = "timings",
               fluidRow(
                 box(
                   title = "Modeling Engine", 
@@ -68,12 +66,12 @@ ui <- dashboardPage(
                   selectInput("model", "Model:",
                               choices = unique(bm$model),
                               multiple = TRUE,
-                              selected = c("logistic_reg (glmnet)", "boost_tree (xgboost)"))
+                              selected = c("linear_reg (glmnet)", "boost_tree (xgboost)"))
                 )
               ),
               fluidRow(
                 box(
-                  title = "Predicted Time To Tune",
+                  title = "Time To Tune",
                   width = 7,
                   footer = footer_context,
                   plotOutput("plot", height = "400px")
@@ -81,8 +79,11 @@ ui <- dashboardPage(
                 box(
                   title = "Additional Parameters", width = 5, status = "primary",
                   selectInput("dataset", "Dataset:",
-                              choices = unique(bm$dataset)),
+                              choices = unique(bm$dataset),
+                              selected = "reg_sapp"),
 
+                  # TODO: somehow need to only enable selection numbers of 
+                  # workers that we've actually run (or run all in 1:10 eep)
                   sliderInput("n_workers", "Number of Workers:",
                               value = 1,
                               min = 1,
@@ -93,7 +94,7 @@ ui <- dashboardPage(
                   selectInput("tuning_fn", "Tuning Function:",
                               choices = unique(bm$tuning_fn)),
                   selectInput("cpu", "CPU:", choices = NULL),
-                  markdown("Prediction times scales according to [CPU benchmarks](https://www.cpubenchmark.net/cpu_list.php).")
+                  markdown("Timings scaled according to [CPU benchmarks](https://www.cpubenchmark.net/cpu_list.php).")
                 )
               )
       )
@@ -112,35 +113,24 @@ server <- function(input, output, session) {
   )
   
   output$plot <- renderPlot({
-    new_data <- data.frame(
-      model = input$model %||% "",
-      dataset = input$dataset,
-      n_rows = 0L,
-      strategy = "stand-in",
-      n_workers = input$n_workers,
-      tuning_fn = input$tuning_fn
-    )
+    new_data <- bm[
+      bm$model %in% input$model &
+      bm$dataset == input$dataset &
+      bm$n_workers == input$n_workers &
+      bm$tuning_fn == input$tuning_fn,
+    ]
     
-    new_data <- dplyr::mutate(
-      new_data,
-      strategy = dplyr::case_when(n_workers > 1 ~ "multisession", .default = "sequential")
-    )
-    new_data <- purrr::map(n_rows, ~mutate(new_data, n_rows = .x)) %>% list_rbind()
+    if (!identical(input$cpu, "")) {
+      new_data$time_to_tune_float <-
+        new_data$time_to_tune_float *
+        (reference_mark/ cpus$mark[cpus$name == input$cpu])
+      new_data$time_to_tune <- as_bench_time(new_data$time_to_tune_float)
+    }
     
-    predictions <- predict(bm_fit, new_data = new_data)
-    
-    selected_cpu <- if (identical(input$cpu, "")) "Intel Core i7-13700" else input$cpu
-    
-    new_data <- new_data %>%
-      mutate(
-        .pred = predictions$.pred * 
-                (reference_mark/ cpus$mark[cpus$name == selected_cpu]),
-        .pred = as_bench_time(.pred)
-      )
-    
-    ggplot(new_data, aes(x = n_rows, y = .pred, col = model)) +
-      geom_line() +
-      scale_x_log10(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
+    ggplot(new_data, aes(x = n_rows, y = time_to_tune, col = model)) +
+      # TODO: change these to lines once we have data
+      geom_point() +
+      scale_x_log10() +
       labs(x = "Number of Rows", y = "Time to Tune (seconds)") +
       theme(
         text = element_text(size = 14),
