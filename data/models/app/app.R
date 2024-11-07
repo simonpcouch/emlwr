@@ -92,7 +92,8 @@ ui <- dashboardPage(
                   
                   selectInput("tuning_fn", "Tuning Function:",
                               choices = unique(bm$tuning_fn)),
-                  selectInput("cpu", "CPU:", choices = NULL)
+                  selectInput("cpu", "CPU:", choices = NULL),
+                  markdown("Prediction times scales according to [CPU benchmarks](https://www.cpubenchmark.net/cpu_list.php).")
                 )
               )
       )
@@ -111,10 +112,6 @@ server <- function(input, output, session) {
   )
   
   output$plot <- renderPlot({
-    # if (length(input$model) == 0) {
-    #   browser()
-    # }
-    
     new_data <- data.frame(
       model = input$model %||% "",
       dataset = input$dataset,
