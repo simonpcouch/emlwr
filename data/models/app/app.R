@@ -23,6 +23,9 @@ bm <- qread(here("data/models/app/bm.rds"))
 bm_fit <- readRDS(here("data/models/app/bm_fit.rds"))
 bm_fit$fit$fit$fit <- lgb.load(here("data/models/app/bm_fit_engine.rds"))
 
+# from https://www.cpubenchmark.net/cpu_list.php
+cpus <- qread(here("data/models/app/cpus.rds"))
+
 ui <- dashboardPage(
   dashboardHeader(title = "Predict Time To Tune"),
   
@@ -74,7 +77,8 @@ ui <- dashboardPage(
                               animate = TRUE),
                   
                   selectInput("tuning_fn", "Tuning Function:",
-                              choices = unique(bm$tuning_fn))
+                              choices = unique(bm$tuning_fn)),
+                  selectInput("cpu", "CPU:", choices = NULL)
                 )
               )
       )
@@ -84,7 +88,18 @@ ui <- dashboardPage(
 
 n_rows <- round(10^seq(from = 2, to = 6, by = .5))
 
-server <- function(input, output) {
+# intel i7-13700
+reference_mark <- 37002
+
+server <- function(input, output, session) {
+  updateSelectizeInput(
+    session,
+    'cpu',
+    choices = cpus$name,
+    server = TRUE,
+    selected = "Intel Core i7-13700"
+  )
+  
   output$plot <- renderPlot({
     new_data <- data.frame(
       model = input$model,
@@ -104,7 +119,11 @@ server <- function(input, output) {
     predictions <- predict(bm_fit, new_data = new_data)
     
     new_data <- new_data %>%
-      mutate(.pred = as_bench_time(predictions$.pred))
+      mutate(
+        .pred = predictions$.pred * 
+                (reference_mark/ cpus$mark[cpus$name == input$cpu]),
+        .pred = as_bench_time(.pred)
+      )
     
     ggplot(new_data, aes(x = n_rows, y = .pred, col = model)) +
       geom_line() +
