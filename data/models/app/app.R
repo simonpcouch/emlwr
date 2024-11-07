@@ -82,10 +82,7 @@ ui <- dashboardPage(
                   title = "Additional Parameters", width = 5, status = "primary",
                   selectInput("dataset", "Dataset:",
                               choices = unique(bm$dataset)),
-                  
-                  selectInput("strategy", "Strategy:",
-                              choices = unique(bm$strategy)),
-                  
+
                   sliderInput("n_workers", "Number of Workers:",
                               value = 1,
                               min = 1,
