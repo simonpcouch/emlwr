@@ -1,3 +1,4 @@
+# setup ------------------------------------------------------------------------
 library(tidyverse)
 library(workflows)
 library(lightgbm)
@@ -26,6 +27,20 @@ bm_fit$fit$fit$fit <- lgb.load(here("data/models/app/bm_fit_engine.rds"))
 # from https://www.cpubenchmark.net/cpu_list.php
 cpus <- qread(here("data/models/app/cpus.rds"))
 
+# constants  -------------------------------------------------------------------
+n_rows <- round(10^seq(from = 2, to = 6, by = .5))
+
+# intel i7-13700
+reference_mark <- 37002
+
+# TODO: make this estimate adjust for `tune_race_anova`
+footer_context <- paste0(collapse = "", c(
+  "Timings predict the time to evaluate an initial set of 10 models across 10 ",
+  "resamples, resulting in 100 model fits on 9/10th of rows, 100 sets of ",
+  "predictions on 1/10th of rows, and metric calculations on each set of predictions."
+))
+
+# ui ---------------------------------------------------------------------------
 ui <- dashboardPage(
   dashboardHeader(title = "Predict Time To Tune"),
   
@@ -59,6 +74,7 @@ ui <- dashboardPage(
                 box(
                   title = "Predicted Time To Tune",
                   width = 7,
+                  footer = footer_context,
                   plotOutput("plot", height = "400px")
                 ),
                 box(
@@ -86,11 +102,7 @@ ui <- dashboardPage(
   )
 )
 
-n_rows <- round(10^seq(from = 2, to = 6, by = .5))
-
-# intel i7-13700
-reference_mark <- 37002
-
+# server -----------------------------------------------------------------------
 server <- function(input, output, session) {
   updateSelectizeInput(
     session,
@@ -122,10 +134,12 @@ server <- function(input, output, session) {
     
     predictions <- predict(bm_fit, new_data = new_data)
     
+    selected_cpu <- if (identical(input$cpu, "")) "Intel Core i7-13700" else input$cpu
+    
     new_data <- new_data %>%
       mutate(
         .pred = predictions$.pred * 
-                (reference_mark/ cpus$mark[cpus$name == input$cpu]),
+                (reference_mark/ cpus$mark[cpus$name == selected_cpu]),
         .pred = as_bench_time(.pred)
       )
     
