@@ -47,7 +47,8 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem("Prediction", tabName = "prediction", icon = icon("clock"))
-    )
+    ),
+    collapsed = TRUE
   ),
   
   dashboardBody(
