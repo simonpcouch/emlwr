@@ -1,12 +1,182 @@
+---
+filters:
+  - shinylive
+---
+
+```{r}
+#| label: setup-common-models
+#| include: false
+source("includes/common.R")
+```
+
+```{r}
+#| label: setup-02
+#| include: false
+if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
+  eval_fits <- FALSE
+} else {
+  eval_fits <- TRUE
+}
+```
+
 # Models {#sec-models}
+
+## Benchmarks
+
+The following is a shiny app based on experimental benchmarks. For a given selection of model configurations, the app displays the time to resample various model configurations across a given number of rows of training data.
+
+```{r}
+#| label: load-shinylive
+#| include: false
+library(shiny)
+library(bslib)
+library(shinylive)
+```
 
 <!--# Going to take some work for this not to feel super rote.  -->
 
 <!--# I do want some kind of content that's, like, tables of timings for every ___ engine fitted on a bunch of numbers of rows.  -->
 
-::: callout-caution
-This chapter still has a long way to go. I'd recommend exploring other portions of the draft in the meantime.
-:::
+```{shinylive-r}
+#| label: models-app
+#| standalone: true
+#| viewerHeight: 400
+#| eval: true
+#| echo: false
+#| file: "data/models/app/app.R"
+```
+
+```{r}
+#| include: false
+bm <- qs::qread("data/models/app/bm.rds")
+
+min_nrow <- min(bm$n_rows, na.rm = TRUE)
+```
+
+This app allows for quickly juxtaposing the time that it might take to evaluate performance across various modeling approaches.
+
+### One data point
+
+When the app first starts, the left-most point labeled `boost_tree (lightgbm)` is the observed time to sequentially evaluate an initial set of 10 models across 10 cross-validation folds of an `r min_nrow` row training set, resulting in 100 model fits on 900 rows, 100 sets of predictions of 100 rows, and metric calculations on each set of predictions. The actual benchmarking code is a bit more involved, but the code underlying that single data point looks something like the following.
+
+First, we load core packages as well as the bonsai parsnip extension (for lightgbm support):
+
+```{r}
+library(tidymodels)
+library(bonsai)
+```
+
+Next, we'll simulate a dataset with 1000 rows using `simulate_regression()`, *Efficient Machine Learning with R*'s in-house simulation function:
+
+```{r}
+d <- simulate_regression(1000)
+d
+```
+
+This step would happen as-is for every regression task on 1000 rows.
+
+Now, splitting the data into 10 folds using cross-validation:
+
+```{r}
+d_folds <- vfold_cv(d, v = 10)
+d_folds
+```
+
+Now, we specify a boosted tree model specification using the LightGBM engine. In this experiment, any tunable parameter (defined by whether tidymodels has a parameter definition that automatically kicks in when generating grids) is set to be tuned.
+
+```{r}
+spec <- 
+  boost_tree(
+    tree_depth = tune(),
+    trees = tune(),
+    learn_rate = tune(),
+    mtry = tune(),
+    min_n = tune(),
+    loss_reduction = tune(),
+    sample_size = tune(),
+    stop_iter = tune()
+  ) %>%
+  set_engine("lightgbm") %>%
+  set_mode("regression")
+```
+
+Each of these model fits are carried out with minimal preprocessors based on *Tidy Modeling with R's* "Recommended Preprocessing" appendix [@kuhn2022]. In this case, Kuhn and Silge recommend that users impute missing values for both numeric predictors (we do so using the median for all) and categorical predictors (we do so using the mode).
+
+```{r}
+rec <- 
+  recipe(outcome ~ ., d) %>%
+  step_impute_median(all_numeric_predictors()) %>%
+  step_impute_mode(all_nominal_predictors())
+```
+
+With our data resampled and a modeling workflow defined, we're ready to resample this model. The resampling process will propose 10 different possible sets of parameter values for each parameter tagged with `tune()`. This will happen automatically under the hood of `tune_grid()`, but we can replicate this ourselves using dials:
+
+```{r}
+#| label: print-example-grid
+extract_parameter_set_dials(spec) %>% 
+  finalize(d) %>%
+  grid_space_filling(size = 10)
+```
+
+`tune_grid()` will evaluate those sets of values by fitting them to 10 different subsets of `d`.
+
+```{r}
+#| eval: false
+set.seed(1)
+res <- tune_grid(workflow(rec, spec), d_folds)
+```
+
+The point in the above plot is the time that those 100 model fits took altogether; in other words, the time that we'd wait for `tune_grid()` to evaluate.
+
+### Why not just model fits?
+
+This seems a bit involved for the purposes of getting a rough sense of how long a given model may take to fit; why don't we just use default parameter values from tidymodels and pass the model specification straight to `fit()`?
+
+There are a few reasons for this. In general, though, resampling a model specification across an initial set of possible parameter values is a fundamental unit of interactive machine learning. This initial resampling process gives the practitioner a sense for the ballpark of predictive performance she can expect for a given model task and how various parameter values may affect that performance. Does a higher `learn_rate` result in better predictive performance? How many `trees` is enough? A single model fit leaves the answer to all of these questions unknown.
+
+Importantly, too, the time that a given model specification takes to fit can vary greatly depending on parameter values. For example, only exploring the time to `fit()` rather than resample across a set of values would obscure the difference in these two elapsed times:
+
+```{r}
+#| label: bm-trees
+#| include: false
+if (eval_fits) {
+  bm_trees <-
+    bench::mark(
+      few_trees = fit(spec %>% set_args(trees = 10), outcome ~ ., d),
+      many_trees = fit(spec %>% set_args(trees = 1000), outcome ~ ., d),
+      check = FALSE
+    )
+  qsave(bm_trees, file = "data/models/bm_trees.rds")
+} else {
+  bm_trees <- qread("data/models/bm_trees.rds")
+}
+```
+
+```{r}
+#| eval: false
+#| label: fit-boost-trees
+spec <- boost_tree(mode = "regression", engine = "lightgbm")
+
+bench::mark(
+  few_trees = fit(spec %>% set_args(trees = 10), outcome ~ ., d),
+  many_trees = fit(spec %>% set_args(trees = 1000), outcome ~ ., d),
+  check = FALSE
+)
+```
+
+```{r}
+#| label: print-boost-trees
+#| echo: false
+bm_trees
+```
+
+By summing across many model fits that result in varied fit times, we can get a better sense for a typical time to fit across typical parameter values.
+
+<!--# TODO: is an app that explores variations in fit times within a resampling process worth looking into? -->
+
+<!--# TODO: next bit is just a guided analysis of the data. this will live in both the web and print version of the book, but the book will need its own initial view of the data. -->
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 ## Tidymodels overhead
 
@@ -22,7 +192,7 @@ source("includes/common.R")
 ```
 
 ```{r}
-#| label: setup-02
+#| label: setup-02-tbd
 #| include: false
 if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
   eval_fits <- FALSE
@@ -151,19 +321,3 @@ press_boost_tree %>%
 This graph shows the gist of tidymodels' overhead for modeling engines: as dataset size and model complexity grow larger, model fitting and prediction take up increasingly large proportions of the total evaluation time.
 
 @sec-speedy-go showed a number of ways users can cut down on the evaluation time of their tidymodels code. Making use of parallelism, reducing the total number of model fits needed to search a given grid, and carefully constructing that grid to search over are all major parts of the story
-
-<!--# should this chapter go after everything else? -->
-
-## Benchmarks
-
-### Linear models
-
-### Decision trees
-
-### Boosted trees
-
-XGBoost and LightGBM – comparison timings for the same thing but from the Python interface?
-
-### Random forests
-
-### Support vector machines
