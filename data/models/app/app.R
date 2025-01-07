@@ -66,7 +66,11 @@ ui <- dashboardPage(
                   selectInput("model", "Model:",
                               choices = unique(bm$model),
                               multiple = TRUE,
-                              selected = c("linear_reg (glmnet)", "boost_tree (xgboost)"))
+                              selected = c(
+                                "linear_reg (glmnet)", 
+                                "boost_tree (xgboost)",
+                                "boost_tree (lightgbm)"
+                              ))
                 )
               ),
               fluidRow(
@@ -78,9 +82,9 @@ ui <- dashboardPage(
                 ),
                 box(
                   title = "Additional Parameters", width = 5, status = "primary",
-                  selectInput("dataset", "Dataset:",
+                  selectInput("dataset", "Task:",
                               choices = unique(bm$dataset),
-                              selected = "reg_sapp"),
+                              selected = "regression"),
 
                   # TODO: somehow need to only enable selection numbers of 
                   # workers that we've actually run (or run all in 1:10 eep)
