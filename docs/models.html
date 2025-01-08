@@ -401,7 +401,7 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 1 × 2
   expression   median
 * &lt;bch:expr&gt; &lt;bch:tm&gt;
-1 fit          2.47ms</code></pre>
+1 fit           2.4ms</code></pre>
 </div>
 </div>
 <p>Pretty dang fast. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
@@ -418,11 +418,11 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 2 × 3
   expression   median mem_alloc
 * &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:byt&gt;
-1 parsnip       3.4ms    1.22MB
-2 stats         2.4ms    1.21MB</code></pre>
+1 parsnip      3.26ms    1.22MB
+2 stats        2.36ms    1.21MB</code></pre>
 </div>
 </div>
-<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.999 milliseconds, or 29.4% of the total elapsed time.</p>
+<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.904 milliseconds, or 27.7% of the total elapsed time.</p>
 <p>So, to fit a boosted tree model on 1,000,000 data points, step <strong>2)</strong> might take a few seconds. Steps <strong>1)</strong> and <strong>3)</strong> don’t care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let’s quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip’s wrapper around it.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -451,17 +451,6 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 #| viewerHeight: 400
 #| eval: true
 #| echo: false
-library(ggplot2)
-library(bench)
-library(qs)
-library(shiny)
-library(here)
-library(fresh)
-
-library(bslib)
-library(shinylive)
-library(httpuv)
-
 source("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/app.R")
 
 app</code></pre>

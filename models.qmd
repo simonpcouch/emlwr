@@ -242,17 +242,6 @@ library(httpuv)
 #| viewerHeight: 400
 #| eval: true
 #| echo: false
-library(ggplot2)
-library(bench)
-library(qs)
-library(shiny)
-library(here)
-library(fresh)
-
-library(bslib)
-library(shinylive)
-library(httpuv)
-
 source("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/app.R")
 
 app
