@@ -23,7 +23,10 @@ bm <-
   mutate(across(where(is.character), as.factor)) %>%
   # TODO: let folks choose one or both of these and discard mismatching
   # engines (possible "greying them out" in the dropdown)
-  select(-model_type, -engine)
+  select(-model_type, -engine) %>%
+  relocate(model, .before = everything()) %>%
+  relocate(strategy, .after = everything()) %>%
+  rename(task = dataset)
 
 bm
 

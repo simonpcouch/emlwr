@@ -269,12 +269,13 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#benchmarks" id="toc-benchmarks" class="nav-link active" data-scroll-target="#benchmarks"><span class="header-section-number">2.1</span> Benchmarks</a>
+  <li><a href="#sec-models-overhead" id="toc-sec-models-overhead" class="nav-link active" data-scroll-target="#sec-models-overhead"><span class="header-section-number">2.1</span> Tidymodels overhead</a></li>
+  <li><a href="#sec-models-benchmarks" id="toc-sec-models-benchmarks" class="nav-link" data-scroll-target="#sec-models-benchmarks"><span class="header-section-number">2.2</span> Benchmarks</a>
   <ul class="collapse">
-  <li><a href="#one-data-point" id="toc-one-data-point" class="nav-link" data-scroll-target="#one-data-point"><span class="header-section-number">2.1.1</span> One data point</a></li>
-  <li><a href="#why-not-just-model-fits" id="toc-why-not-just-model-fits" class="nav-link" data-scroll-target="#why-not-just-model-fits"><span class="header-section-number">2.1.2</span> Why not just model fits?</a></li>
+  <li><a href="#sec-models-one-data-point" id="toc-sec-models-one-data-point" class="nav-link" data-scroll-target="#sec-models-one-data-point"><span class="header-section-number">2.2.1</span> One data point</a></li>
+  <li><a href="#why-not-just-model-fits" id="toc-why-not-just-model-fits" class="nav-link" data-scroll-target="#why-not-just-model-fits"><span class="header-section-number">2.2.2</span> Why not just model fits?</a></li>
+  <li><a href="#sec-models-analysis" id="toc-sec-models-analysis" class="nav-link" data-scroll-target="#sec-models-analysis"><span class="header-section-number">2.2.3</span> Analysis</a></li>
   </ul></li>
-  <li><a href="#tidymodels-overhead" id="toc-tidymodels-overhead" class="nav-link" data-scroll-target="#tidymodels-overhead"><span class="header-section-number">2.2</span> Tidymodels overhead</a></li>
   </ul>
 </nav>
     </div>
@@ -300,161 +301,9 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 </header>
 
 
-<section id="benchmarks" class="level2" data-number="2.1">
-<h2 data-number="2.1" class="anchored" data-anchor-id="benchmarks"><span class="header-section-number">2.1</span> Benchmarks</h2>
-<p>The following is a shiny app based on experimental benchmarks. For a given selection of model configurations, the app displays the time to resample various model configurations across a given number of rows of training data.</p>
-<!--# Going to take some work for this not to feel super rote.  -->
-<!--# I do want some kind of content that's, like, tables of timings for every ___ engine fitted on a bunch of numbers of rows.  -->
-<pre class="shinylive-r" data-engine="r"><code>#| '!! shinylive warning !!': |
-#|   shinylive does not work in self-contained HTML documents.
-#|   Please set `embed-resources: false` in your metadata.
-#| label: models-app
-#| standalone: true
-#| viewerHeight: 400
-#| eval: true
-#| echo: false
-#| file: "data/models/app/app.R"</code></pre>
-<p>This app allows for quickly juxtaposing the time that it might take to evaluate performance across various modeling approaches.</p>
-<section id="one-data-point" class="level3" data-number="2.1.1">
-<h3 data-number="2.1.1" class="anchored" data-anchor-id="one-data-point"><span class="header-section-number">2.1.1</span> One data point</h3>
-<p>When the app first starts, the left-most point labeled <code>boost_tree (lightgbm)</code> is the observed time to sequentially evaluate an initial set of 10 models across 10 cross-validation folds of an 1000 row training set, resulting in 100 model fits on 900 rows, 100 sets of predictions of 100 rows, and metric calculations on each set of predictions. The actual benchmarking code is a bit more involved, but the code underlying that single data point looks something like the following.</p>
-<p>First, we load core packages as well as the bonsai parsnip extension (for lightgbm support):</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bonsai)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Next, we’ll simulate a dataset with 1000 rows using <code>simulate_regression()</code>, <em>Efficient Machine Learning with R</em>’s in-house simulation function:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">simulate_regression</span>(<span class="dv">1000</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>d</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1,000 × 16
-   outcome predictor_01 predictor_02 predictor_03 predictor_04 predictor_05
-     &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
- 1   12.5       -1.20          5.82        -0.250       1.75        -7.65  
- 2   44.0        1.96         -1.23        -0.755       0.0723       2.07  
- 3  -11.0        2.62         -1.63         4.55       -1.33        -1.36  
- 4    9.80      -3.86         -1.17         3.08       -3.35         0.0360
- 5   31.0       -0.0483       -0.817        4.48       -2.64         5.76  
- 6   16.4        3.75          3.33        -1.39       -0.800       -3.94  
- 7   -5.12       1.33          0.964        0.402       2.01        -1.13  
- 8    9.81      -2.28          4.52        -2.29        4.43        -1.18  
- 9   26.3       -2.07         -0.268       -2.28       -4.93        -1.78  
-10   -8.80      -6.85         -3.45        -4.64        1.78        -1.21  
-# ℹ 990 more rows
-# ℹ 10 more variables: predictor_06 &lt;dbl&gt;, predictor_07 &lt;dbl&gt;,
-#   predictor_08 &lt;dbl&gt;, predictor_09 &lt;dbl&gt;, predictor_10 &lt;fct&gt;,
-#   predictor_11 &lt;fct&gt;, predictor_12 &lt;fct&gt;, predictor_13 &lt;fct&gt;,
-#   predictor_14 &lt;fct&gt;, predictor_15 &lt;fct&gt;</code></pre>
-</div>
-</div>
-<p>This step would happen as-is for every regression task on 1000 rows.</p>
-<p>Now, splitting the data into 10 folds using cross-validation:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>d_folds <span class="ot">&lt;-</span> <span class="fu">vfold_cv</span>(d, <span class="at">v =</span> <span class="dv">10</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>d_folds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>#  10-fold cross-validation 
-# A tibble: 10 × 2
-   splits            id    
-   &lt;list&gt;            &lt;chr&gt; 
- 1 &lt;split [900/100]&gt; Fold01
- 2 &lt;split [900/100]&gt; Fold02
- 3 &lt;split [900/100]&gt; Fold03
- 4 &lt;split [900/100]&gt; Fold04
- 5 &lt;split [900/100]&gt; Fold05
- 6 &lt;split [900/100]&gt; Fold06
- 7 &lt;split [900/100]&gt; Fold07
- 8 &lt;split [900/100]&gt; Fold08
- 9 &lt;split [900/100]&gt; Fold09
-10 &lt;split [900/100]&gt; Fold10</code></pre>
-</div>
-</div>
-<p>Now, we specify a boosted tree model specification using the LightGBM engine. In this experiment, any tunable parameter (defined by whether tidymodels has a parameter definition that automatically kicks in when generating grids) is set to be tuned.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> </span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">boost_tree</span>(</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">tree_depth =</span> <span class="fu">tune</span>(),</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">trees =</span> <span class="fu">tune</span>(),</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">learn_rate =</span> <span class="fu">tune</span>(),</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mtry =</span> <span class="fu">tune</span>(),</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">min_n =</span> <span class="fu">tune</span>(),</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">loss_reduction =</span> <span class="fu">tune</span>(),</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">sample_size =</span> <span class="fu">tune</span>(),</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">stop_iter =</span> <span class="fu">tune</span>()</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"lightgbm"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"regression"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Each of these model fits are carried out with minimal preprocessors based on <em>Tidy Modeling with R’s</em> “Recommended Preprocessing” appendix <span class="citation" data-cites="kuhn2022">(<a href="references.html#ref-kuhn2022" role="doc-biblioref">Kuhn and Silge 2022</a>)</span>. In this case, Kuhn and Silge recommend that users impute missing values for both numeric predictors (we do so using the median for all) and categorical predictors (we do so using the mode).</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>rec <span class="ot">&lt;-</span> </span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(outcome <span class="sc">~</span> ., d) <span class="sc">%&gt;%</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_median</span>(<span class="fu">all_numeric_predictors</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_mode</span>(<span class="fu">all_nominal_predictors</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>With our data resampled and a modeling workflow defined, we’re ready to resample this model. The resampling process will propose 10 different possible sets of parameter values for each parameter tagged with <code>tune()</code>. This will happen automatically under the hood of <code>tune_grid()</code>, but we can replicate this ourselves using dials:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">extract_parameter_set_dials</span>(spec) <span class="sc">%&gt;%</span> </span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">finalize</span>(d) <span class="sc">%&gt;%</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grid_space_filling</span>(<span class="at">size =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 10 × 8
-    mtry trees min_n tree_depth  learn_rate loss_reduction sample_size stop_iter
-   &lt;int&gt; &lt;int&gt; &lt;int&gt;      &lt;int&gt;       &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt;     &lt;int&gt;
- 1     1   445    23         10       1e-10       4.64e- 3         0.7        18
- 2     2  1555     2         15       1e- 3       2.45e- 4         0.5        12
- 3     4   889    31          4       1e- 7       3.16e+ 1         0.3         3
- 4     6   223    35          5       1e- 1       3.59e- 8         0.6        16
- 5     7  1111    10          2       1e- 9       1   e-10         0.9         8
- 6     9  2000    40         11       1e- 5       1.90e- 9         0.4         6
- 7    11  1777    14          1       1e- 2       1.67e+ 0         0.8        14
- 8    12     1     6          8       1e- 4       6.81e- 7         0.2         4
- 9    14  1333    18          7       1e- 8       1.29e- 5         0.1        20
-10    16   667    27         13       1e- 6       8.80e- 2         1          10</code></pre>
-</div>
-</div>
-<p><code>tune_grid()</code> will evaluate those sets of values by fitting them to 10 different subsets of <code>d</code>.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">tune_grid</span>(<span class="fu">workflow</span>(rec, spec), d_folds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>The point in the above plot is the time that those 100 model fits took altogether; in other words, the time that we’d wait for <code>tune_grid()</code> to evaluate.</p>
-</section>
-<section id="why-not-just-model-fits" class="level3" data-number="2.1.2">
-<h3 data-number="2.1.2" class="anchored" data-anchor-id="why-not-just-model-fits"><span class="header-section-number">2.1.2</span> Why not just model fits?</h3>
-<p>This seems a bit involved for the purposes of getting a rough sense of how long a given model may take to fit; why don’t we just use default parameter values from tidymodels and pass the model specification straight to <code>fit()</code>?</p>
-<p>There are a few reasons for this. In general, though, resampling a model specification across an initial set of possible parameter values is a fundamental unit of interactive machine learning. This initial resampling process gives the practitioner a sense for the ballpark of predictive performance she can expect for a given model task and how various parameter values may affect that performance. Does a higher <code>learn_rate</code> result in better predictive performance? How many <code>trees</code> is enough? A single model fit leaves the answer to all of these questions unknown.</p>
-<p>Importantly, too, the time that a given model specification takes to fit can vary greatly depending on parameter values. For example, only exploring the time to <code>fit()</code> rather than resample across a set of values would obscure the difference in these two elapsed times:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">boost_tree</span>(<span class="at">mode =</span> <span class="st">"regression"</span>, <span class="at">engine =</span> <span class="st">"lightgbm"</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>bench<span class="sc">::</span><span class="fu">mark</span>(</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">few_trees =</span> <span class="fu">fit</span>(spec <span class="sc">%&gt;%</span> <span class="fu">set_args</span>(<span class="at">trees =</span> <span class="dv">10</span>), outcome <span class="sc">~</span> ., d),</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">many_trees =</span> <span class="fu">fit</span>(spec <span class="sc">%&gt;%</span> <span class="fu">set_args</span>(<span class="at">trees =</span> <span class="dv">1000</span>), outcome <span class="sc">~</span> ., d),</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">check =</span> <span class="cn">FALSE</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 3
-  expression   median mem_alloc
-* &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:byt&gt;
-1 few_trees    13.7ms    5.06MB
-2 many_trees  458.8ms    1.41MB</code></pre>
-</div>
-</div>
-<p>By summing across many model fits that result in varied fit times, we can get a better sense for a typical time to fit across typical parameter values.</p>
-<!--# TODO: is an app that explores variations in fit times within a resampling process worth looking into? -->
-<!--# TODO: next bit is just a guided analysis of the data. this will live in both the web and print version of the book, but the book will need its own initial view of the data. -->
-<p><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></p>
-</section>
-</section>
-<section id="tidymodels-overhead" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="tidymodels-overhead"><span class="header-section-number">2.2</span> Tidymodels overhead</h2>
-<!--# TODO: currently this talks about the difference between CRAN and dev (at the time) packages. rephrase to just focus on the now. -->
-<p><br>
-<!--# also, need to rewrite to fit when `eval_fits` and not otherwise. --></p>
+<p>At a high level, this chapter aims to help readers build intuition about how long various model types and engines take to fit. Our first order of business, in <a href="#sec-models-overhead" class="quarto-xref"><span>Section 2.1</span></a>, is demonstrating that fitting a model with tidymodels doesn’t take much longer than it would to fit the model without tidymodels’ unifying interface on top. That is, if I’d like to fit a boosted tree with XGBoost, will <code>xgboost::xgb.train()</code> fit notably more quickly than the analogous tidymodels interface <code>boost_tree(engine = "xgboost")</code>? Then, once you’re convinced the penalty in performance is negligible, we’ll move on to comparing fit times across modeling engines in <a href="#sec-models-benchmarks" class="quarto-xref"><span>Section 2.2</span></a>. That is, does <code>boost_tree(engine = "lightgbm")</code> fit more quickly than <code>boost_tree(engine = "xgboost")</code>?</p>
+<section id="sec-models-overhead" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="sec-models-overhead"><span class="header-section-number">2.1</span> Tidymodels overhead</h2>
 <p>While the tidymodels team develops the infrastructure that users interact with directly, under the hood, we send calls out to other people’s modeling packages—or modeling <em>engines</em>—that provide the actual implementations that estimate parameters, generate predictions, etc. The process looks something like this:</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -462,13 +311,13 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 <figcaption>A graphic representing the tidymodels interface. In order, step 1 “translate”, step 2 “call”, and step 3 “translate”, outline the process of translating from the standardized tidymodels interface to an engine’s specific interface, calling the modeling engine, and translating back to the standardized tidymodels interface. Step 1 and step 3 are in green, while step 2 is in orange.</figcaption>
 </figure>
 </div>
-<p>When thinking about the time allotted to each of the three steps above, we refer to the “translate” steps in green as the <em>tidymodels overhead</em>. The time it takes to “translate” interfaces in steps <strong>1)</strong> and <strong>3)</strong> is within our control, while the time the modeling engine takes to do it’s thing in step <strong>2)</strong> is not.</p>
-<p>Let’s demonstrate with an example classification problem. Generating some random data:</p>
+<p>When thinking about the time allotted to each of the three steps above, we refer to the “translate” steps in green as the <em>tidymodels overhead</em>. The time it takes to “translate” interfaces in steps <strong>1)</strong> and <strong>3)</strong> is within our control, while the time the modeling engine takes to do its thing in step <strong>2)</strong> is not.</p>
+<p>Let’s demonstrate with an example classification problem. Generating some data:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">simulate_classification</span>(<span class="at">n_rows =</span> <span class="dv">100</span>)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>d</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">simulate_classification</span>(<span class="at">n_rows =</span> <span class="dv">100</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>d</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 100 × 18
    class   two_factor_1 two_factor_2 non_linear_1 non_linear_2 non_linear_3
@@ -492,7 +341,7 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 </div>
 <p>…we’d like to model the <code>class</code> using the remainder of the variables in this dataset using a logistic regression. We can using the following code to do so:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fit</span>(<span class="fu">logistic_reg</span>(), class <span class="sc">~</span> ., d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fit</span>(<span class="fu">logistic_reg</span>(), class <span class="sc">~</span> ., d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>parsnip model object
 
@@ -527,45 +376,227 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <li>Calls <code>stats::glm()</code> and collects its output.</li>
 <li>Translates the output of <code>stats::glm()</code> back into a standardized model fit object.</li>
 </ol>
-<p>Again, we can control what happens in steps <strong>1)</strong> and <strong>3)</strong>, but step <strong>2)</strong> belongs to the <code>stats</code> package.</p>
+<p>Again, we can control what happens in steps <strong>1)</strong> and <strong>3)</strong>, but step <strong>2)</strong> belongs to the stats package.</p>
 <p>The time that steps <strong>1)</strong> and <strong>3)</strong> take is relatively independent of the dimensionality of the training data. That is, regardless of whether we train on one hundred or a million data points, <em>our</em> code (as in, the translation) takes about the same time to run. Regardless of training set size, our code pushes around small, relational data structures to determine how to correctly interface with a given engine. The time it takes to run step <strong>2)</strong>, though, depends almost completely on the size of the data. Depending on the modeling engine, modeling 10 times as much data could result in step <strong>2)</strong> taking twice as long, or 10x as long, or 100x as long as the original fit.</p>
 <p>So, while the <em>absolute</em> time allotted to steps <strong>1)</strong> and <strong>3)</strong> is fixed, the <em>portion</em> of total time to fit a model with tidymodels that is “overhead” depends on how quick the engine code itself is. How quick is a logistic regression with <code>glm()</code> on 100 data points?</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>bench<span class="sc">::</span><span class="fu">mark</span>(</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">fit =</span> <span class="fu">glm</span>(class <span class="sc">~</span> ., <span class="at">family =</span> binomial, <span class="at">data =</span> d)</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> </span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(expression, median)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>bench<span class="sc">::</span><span class="fu">mark</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">fit =</span> <span class="fu">glm</span>(class <span class="sc">~</span> ., <span class="at">family =</span> binomial, <span class="at">data =</span> d)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(expression, median)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 2
   expression   median
 * &lt;bch:expr&gt; &lt;bch:tm&gt;
-1 fit           2.4ms</code></pre>
+1 fit          2.34ms</code></pre>
 </div>
 </div>
-<p>About a millisecond. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
+<p>Pretty dang fast. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
 <p>In practice, the overhead here has hovered around a millisecond or two for the last couple years, and machine learning practitioners usually fit much more computationally expensive models than a logistic regression on 100 data points. You’ll just have to believe me on that second point. Regarding the first:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>bm_logistic_reg <span class="ot">&lt;-</span> </span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  bench<span class="sc">::</span><span class="fu">mark</span>(</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">parsnip =</span> <span class="fu">fit</span>(<span class="fu">logistic_reg</span>(), class <span class="sc">~</span> ., d),</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">stats =</span> <span class="fu">glm</span>(class <span class="sc">~</span> ., <span class="at">family =</span> binomial, <span class="at">data =</span> d),</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">check =</span> <span class="cn">FALSE</span></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>bench<span class="sc">::</span><span class="fu">mark</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">parsnip =</span> <span class="fu">fit</span>(<span class="fu">logistic_reg</span>(), class <span class="sc">~</span> ., d),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">stats =</span> <span class="fu">glm</span>(class <span class="sc">~</span> ., <span class="at">family =</span> binomial, <span class="at">data =</span> d),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">check =</span> <span class="cn">FALSE</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.7884505 milliseconds, or 24.8% of the total elapsed time.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  expression   median mem_alloc
+* &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:byt&gt;
+1 parsnip      3.08ms    1.22MB
+2 stats        2.29ms    1.21MB</code></pre>
+</div>
+</div>
+<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.783 milliseconds, or 25.5% of the total elapsed time.</p>
 <p>So, to fit a boosted tree model on 1,000,000 data points, step <strong>2)</strong> might take a few seconds. Steps <strong>1)</strong> and <strong>3)</strong> don’t care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let’s quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip’s wrapper around it.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="models_files/figure-html/plot-press-boost-tree-1.png" class="img-fluid figure-img" width="576"></p>
-<figcaption>TODO: write caption</figcaption>
+<p><img src="models_files/figure-html/plot-press-boost-tree-1.png" class="img-fluid figure-img" alt="A ggplot line plot displaying numbers of rows, ranging from 100 to a million, on the x axis, and elapsed time, ranging from a millisecond to 10 seconds, on the y axis. One line shows the fit times for XGBoost itself and the other shows XGBoost with parsnip--fit times are only visually different for numbers of rows less than 10,000." width="576"></p>
+<figcaption>Elapsed fit times for XGBoost itself versus XBGoost interfaced with through parsnip. Fit times are non-negligigbly different only for very small data.</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>This graph shows the gist of tidymodels’ overhead for modeling engines: as dataset size and model complexity grow larger, model fitting and prediction take up increasingly large proportions of the total evaluation time.</p>
-<p><a href="intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a> showed a number of ways users can cut down on the evaluation time of their tidymodels code. Making use of parallelism, reducing the total number of model fits needed to search a given grid, and carefully constructing that grid to search over are all major parts of the story</p>
+<p>In the left-most model fits on 100 rows, the model fit with XGBoost itself takes 4.7 milliseconds while parsnip takes 8.99, a 91.1% increase in total elapsed time. However, that increase shrinks to 28.7% with an 1000-row dataset, and is fractions of a percent by the time there are hundreds of thousands of rows in the training data. This is the gist of tidymodels’ overhead for modeling engines: as dataset size and model complexity grow larger, the underlying model fit itself takes up increasingly large proportions of the total evaluation time.</p>
+<p><a href="intro.html#sec-speedy-go" class="quarto-xref"><span>Section 1.1.3</span></a> showed a number of ways users can cut down on the evaluation time of their tidymodels code. Making use of parallelism, reducing the total number of model fits needed to search a given grid, and carefully constructing that grid to search over are all major parts of the story. However, the rest of this chapter will focus explicitly on choosing performant modeling engines.</p>
+</section>
+<section id="sec-models-benchmarks" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="sec-models-benchmarks"><span class="header-section-number">2.2</span> Benchmarks</h2>
+<p>The following is a shiny app based on experimental benchmarks. For a given selection of model configurations, the app displays the time to resample various model configurations across a given number of rows of training data.</p>
+<!--# Going to take some work for this not to feel super rote.  -->
+<!--# I do want some kind of content that's, like, tables of timings for every ___ engine fitted on a bunch of numbers of rows.  -->
+<pre class="shinylive-r" data-engine="r"><code>#| '!! shinylive warning !!': |
+#|   shinylive does not work in self-contained HTML documents.
+#|   Please set `embed-resources: false` in your metadata.
+#| label: models-app
+#| standalone: true
+#| viewerHeight: 400
+#| eval: true
+#| echo: false
+#| file: "data/models/app/app.R"</code></pre>
+<p>This app allows for quickly juxtaposing the time that it might take to evaluate performance across various modeling approaches. In <a href="#sec-models-one-data-point" class="quarto-xref"><span>Section 2.2.1</span></a>, I’ll go into a bit more detail about what each data point in this app represents and why, and then analyze the data in further detail in <a href="#sec-models-analysis" class="quarto-xref"><span>Section 2.2.3</span></a>.</p>
+<section id="sec-models-one-data-point" class="level3" data-number="2.2.1">
+<h3 data-number="2.2.1" class="anchored" data-anchor-id="sec-models-one-data-point"><span class="header-section-number">2.2.1</span> One data point</h3>
+<p>When the app first starts, the left-most point labeled <code>boost_tree (lightgbm)</code> is the observed time to sequentially evaluate an initial set of 10 models across 10 cross-validation folds of an 1000 row training set, resulting in 100 model fits on 900 rows, 100 sets of predictions of 100 rows, and metric calculations on each set of predictions. The actual benchmarking code is a bit more involved, but the code underlying that single data point looks something like the following.</p>
+<p>First, we load core packages as well as the bonsai parsnip extension (for lightgbm support):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bonsai)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, we’ll simulate a dataset with 1000 rows using <code>simulate_regression()</code>, <em>Efficient Machine Learning with R</em>’s in-house simulation function:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">simulate_regression</span>(<span class="dv">1000</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>d</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,000 × 16
+   outcome predictor_01 predictor_02 predictor_03 predictor_04 predictor_05
+     &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+ 1  -13.8         2.28        -0.419      -0.0188       -0.104      -1.10  
+ 2   26.6        -6.86        -1.37        0.434         4.77       -1.19  
+ 3   14.9         1.55         2.95        1.60         -0.888       0.0702
+ 4   24.1        -4.04         2.06       -3.53          3.97       -1.17  
+ 5   11.0         1.09        -3.33        7.45         -3.61        1.45  
+ 6   39.0         3.94         1.62       -4.00         -2.54        2.28  
+ 7    8.82       -1.34         2.34       -4.08          0.980       0.512 
+ 8   15.5        -2.42        -3.58       -0.705        -4.38        5.27  
+ 9   27.5        -0.259       -0.742      -0.269         3.67       -3.87  
+10   16.2         4.76         4.96        0.602        -0.513       4.05  
+# ℹ 990 more rows
+# ℹ 10 more variables: predictor_06 &lt;dbl&gt;, predictor_07 &lt;dbl&gt;,
+#   predictor_08 &lt;dbl&gt;, predictor_09 &lt;dbl&gt;, predictor_10 &lt;fct&gt;,
+#   predictor_11 &lt;fct&gt;, predictor_12 &lt;fct&gt;, predictor_13 &lt;fct&gt;,
+#   predictor_14 &lt;fct&gt;, predictor_15 &lt;fct&gt;</code></pre>
+</div>
+</div>
+<p>This step would happen as-is for every regression task on 1000 rows.</p>
+<p>Now, splitting the data into 10 folds using cross-validation:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>d_folds <span class="ot">&lt;-</span> <span class="fu">vfold_cv</span>(d, <span class="at">v =</span> <span class="dv">10</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>d_folds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#  10-fold cross-validation 
+# A tibble: 10 × 2
+   splits            id    
+   &lt;list&gt;            &lt;chr&gt; 
+ 1 &lt;split [900/100]&gt; Fold01
+ 2 &lt;split [900/100]&gt; Fold02
+ 3 &lt;split [900/100]&gt; Fold03
+ 4 &lt;split [900/100]&gt; Fold04
+ 5 &lt;split [900/100]&gt; Fold05
+ 6 &lt;split [900/100]&gt; Fold06
+ 7 &lt;split [900/100]&gt; Fold07
+ 8 &lt;split [900/100]&gt; Fold08
+ 9 &lt;split [900/100]&gt; Fold09
+10 &lt;split [900/100]&gt; Fold10</code></pre>
+</div>
+</div>
+<p>Now, we specify a boosted tree model specification using the LightGBM engine. In this experiment, any tunable parameter (defined by whether tidymodels has a parameter definition that automatically kicks in when generating grids) is set to be tuned.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">boost_tree</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">tree_depth =</span> <span class="fu">tune</span>(),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">trees =</span> <span class="fu">tune</span>(),</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">learn_rate =</span> <span class="fu">tune</span>(),</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mtry =</span> <span class="fu">tune</span>(),</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">min_n =</span> <span class="fu">tune</span>(),</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">loss_reduction =</span> <span class="fu">tune</span>(),</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">sample_size =</span> <span class="fu">tune</span>(),</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">stop_iter =</span> <span class="fu">tune</span>()</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"lightgbm"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"regression"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Each of these model fits are carried out with minimal preprocessors based on <em>Tidy Modeling with R’s</em> “Recommended Preprocessing” appendix <span class="citation" data-cites="kuhn2022">(<a href="references.html#ref-kuhn2022" role="doc-biblioref">Kuhn and Silge 2022</a>)</span>. In this case, Kuhn and Silge recommend that users impute missing values for both numeric predictors (we do so using the median for all) and categorical predictors (we do so using the mode) when working with boosted trees.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>rec <span class="ot">&lt;-</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(outcome <span class="sc">~</span> ., d) <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_median</span>(<span class="fu">all_numeric_predictors</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_mode</span>(<span class="fu">all_nominal_predictors</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>With our data resampled and a modeling workflow defined, we’re ready to resample this model. The resampling process will propose 10 different possible sets of parameter values for each parameter tagged with <code>tune()</code>. This will happen automatically under the hood of <code>tune_grid()</code>, but we can replicate this ourselves using dials:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">extract_parameter_set_dials</span>(spec) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">finalize</span>(d) <span class="sc">%&gt;%</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">grid_space_filling</span>(<span class="at">size =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 8
+    mtry trees min_n tree_depth  learn_rate loss_reduction sample_size stop_iter
+   &lt;int&gt; &lt;int&gt; &lt;int&gt;      &lt;int&gt;       &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt;     &lt;int&gt;
+ 1     1   445    23         10       1e-10       4.64e- 3         0.7        18
+ 2     2  1555     2         15       1e- 3       2.45e- 4         0.5        12
+ 3     4   889    31          4       1e- 7       3.16e+ 1         0.3         3
+ 4     6   223    35          5       1e- 1       3.59e- 8         0.6        16
+ 5     7  1111    10          2       1e- 9       1   e-10         0.9         8
+ 6     9  2000    40         11       1e- 5       1.90e- 9         0.4         6
+ 7    11  1777    14          1       1e- 2       1.67e+ 0         0.8        14
+ 8    12     1     6          8       1e- 4       6.81e- 7         0.2         4
+ 9    14  1333    18          7       1e- 8       1.29e- 5         0.1        20
+10    16   667    27         13       1e- 6       8.80e- 2         1          10</code></pre>
+</div>
+</div>
+<p><code>tune_grid()</code> will evaluate those sets of values by fitting them to 10 different subsets of <code>d</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">tune_grid</span>(<span class="fu">workflow</span>(rec, spec), d_folds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The point in the above plot is the time that those 100 model fits took altogether; in other words, the time that we’d wait for <code>tune_grid()</code> to evaluate.</p>
+<p>The data underlying this app is generated from thousands of experiments that look just like the one above, but varying the structure of the training data, the numbers of rows in the training data and the number of CPU cores utilized. In all, 585 such experiments form the underlying data for this app:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>bm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 8
+   model                          task           n_rows n_workers tuning_fn
+   &lt;fct&gt;                          &lt;fct&gt;           &lt;dbl&gt;     &lt;dbl&gt; &lt;fct&gt;    
+ 1 decision_tree (partykit)       regression       2512         1 tune_grid
+ 2 rule_fit (xrf)                 regression       1000         1 tune_grid
+ 3 rand_forest (ranger)           classification   6310         2 tune_grid
+ 4 mars (earth)                   regression       1000         1 tune_grid
+ 5 logistic_reg (LiblineaR)       classification  15849         2 tune_grid
+ 6 discrim_linear (sparsediscrim) classification   6310         1 tune_grid
+ 7 mars (earth)                   regression       6310         1 tune_grid
+ 8 logistic_reg (LiblineaR)       classification   6310         1 tune_grid
+ 9 rand_forest (ranger)           regression      39811         2 tune_grid
+10 multinom_reg (glmnet)          classification  15849         2 tune_grid
+# ℹ 3 more variables: time_to_tune &lt;bch:tm&gt;, time_to_tune_float &lt;dbl&gt;,
+#   strategy &lt;fct&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="why-not-just-model-fits" class="level3" data-number="2.2.2">
+<h3 data-number="2.2.2" class="anchored" data-anchor-id="why-not-just-model-fits"><span class="header-section-number">2.2.2</span> Why not just model fits?</h3>
+<p>This seems a bit involved for the purposes of getting a rough sense of how long a given model may take to fit; why don’t we just use default parameter values from tidymodels and pass the model specification straight to <code>fit()</code>?</p>
+<p>There are a few reasons for this. In general, though, resampling a model specification across an initial set of possible parameter values is a fundamental unit of interactive machine learning. This initial resampling process gives the practitioner a sense for the ballpark of predictive performance she can expect for a given model task and how various parameter values may affect that performance. Does a higher <code>learn_rate</code> result in better predictive performance? How many <code>trees</code> is enough? A single model fit leaves the answer to all of these questions unknown.</p>
+<p>Importantly, too, the time that a given model specification takes to fit can vary greatly depending on parameter values. For example, only exploring the time to <code>fit()</code> rather than resample across a set of values would obscure the difference in these two elapsed times:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>spec <span class="ot">&lt;-</span> <span class="fu">boost_tree</span>(<span class="at">mode =</span> <span class="st">"regression"</span>, <span class="at">engine =</span> <span class="st">"lightgbm"</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>bench<span class="sc">::</span><span class="fu">mark</span>(</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">few_trees =</span> <span class="fu">fit</span>(spec <span class="sc">%&gt;%</span> <span class="fu">set_args</span>(<span class="at">trees =</span> <span class="dv">10</span>), outcome <span class="sc">~</span> ., d),</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">many_trees =</span> <span class="fu">fit</span>(spec <span class="sc">%&gt;%</span> <span class="fu">set_args</span>(<span class="at">trees =</span> <span class="dv">1000</span>), outcome <span class="sc">~</span> ., d),</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">check =</span> <span class="cn">FALSE</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  expression   median mem_alloc
+* &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:byt&gt;
+1 few_trees    13.7ms    5.06MB
+2 many_trees  458.8ms    1.41MB</code></pre>
+</div>
+</div>
+<p>By summing across many model configurations that result in varied fit times, we can get a better sense for a typical time to fit across typical parameter values.</p>
+</section>
+<section id="sec-models-analysis" class="level3" data-number="2.2.3">
+<h3 data-number="2.2.3" class="anchored" data-anchor-id="sec-models-analysis"><span class="header-section-number">2.2.3</span> Analysis</h3>
+<!--# TODO: is an app that explores variations in fit times within a resampling process worth looking into? -->
+<!--# TODO: next bit is just a guided analysis of the data. this will live in both the web and print version of the book, but the book will need its own initial view of the data. -->
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
@@ -573,6 +604,7 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 Kuhn, Max, and Julia Silge. 2022. <em>Tidy Modeling with <span>R</span></em>. " O’Reilly Media, Inc.".
 </div>
 </div>
+</section>
 </section>
 
 </main> <!-- /main -->
