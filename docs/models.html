@@ -301,6 +301,19 @@ gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 </header>
 
 
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Caution
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This chapter is under active construction! You may be better off checking out other chapters in the meantime.</p>
+</div>
+</div>
 <p>At a high level, this chapter aims to help readers build intuition about how long various model types and engines take to fit. Our first order of business, in <a href="#sec-models-overhead" class="quarto-xref"><span>Section 2.1</span></a>, is demonstrating that fitting a model with tidymodels doesn’t take much longer than it would to fit the model without tidymodels’ unifying interface on top. That is, if I’d like to fit a boosted tree with XGBoost, will <code>xgboost::xgb.train()</code> fit notably more quickly than the analogous tidymodels interface <code>boost_tree(engine = "xgboost")</code>? Then, once you’re convinced the penalty in performance is negligible, we’ll move on to comparing fit times across modeling engines in <a href="#sec-models-benchmarks" class="quarto-xref"><span>Section 2.2</span></a>. That is, does <code>boost_tree(engine = "lightgbm")</code> fit more quickly than <code>boost_tree(engine = "xgboost")</code>?</p>
 <section id="sec-models-overhead" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="sec-models-overhead"><span class="header-section-number">2.1</span> Tidymodels overhead</h2>
@@ -388,7 +401,7 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 1 × 2
   expression   median
 * &lt;bch:expr&gt; &lt;bch:tm&gt;
-1 fit          2.34ms</code></pre>
+1 fit           2.3ms</code></pre>
 </div>
 </div>
 <p>Pretty dang fast. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
@@ -405,11 +418,11 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 2 × 3
   expression   median mem_alloc
 * &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:byt&gt;
-1 parsnip      3.08ms    1.22MB
-2 stats        2.29ms    1.21MB</code></pre>
+1 parsnip      3.07ms    1.22MB
+2 stats         2.3ms    1.21MB</code></pre>
 </div>
 </div>
-<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.783 milliseconds, or 25.5% of the total elapsed time.</p>
+<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.772 milliseconds, or 25.1% of the total elapsed time.</p>
 <p>So, to fit a boosted tree model on 1,000,000 data points, step <strong>2)</strong> might take a few seconds. Steps <strong>1)</strong> and <strong>3)</strong> don’t care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let’s quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip’s wrapper around it.</p>
 <div class="cell">
 <div class="cell-output-display">

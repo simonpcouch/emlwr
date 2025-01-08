@@ -21,6 +21,10 @@ if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
 
 # Models {#sec-models}
 
+::: callout-caution
+This chapter is under active construction! You may be better off checking out other chapters in the meantime.
+:::
+
 At a high level, this chapter aims to help readers build intuition about how long various model types and engines take to fit. Our first order of business, in @sec-models-overhead, is demonstrating that fitting a model with tidymodels doesn't take much longer than it would to fit the model without tidymodels' unifying interface on top. That is, if I'd like to fit a boosted tree with XGBoost, will `xgboost::xgb.train()` fit notably more quickly than the analogous tidymodels interface `boost_tree(engine = "xgboost")`? Then, once you're convinced the penalty in performance is negligible, we'll move on to comparing fit times across modeling engines in @sec-models-benchmarks. That is, does `boost_tree(engine = "lightgbm")` fit more quickly than `boost_tree(engine = "xgboost")`? 
 
 ## Tidymodels overhead {#sec-models-overhead}
