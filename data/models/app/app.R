@@ -82,8 +82,8 @@ ui <- dashboardPage(
                 ),
                 box(
                   title = "Additional Parameters", width = 5, status = "primary",
-                  selectInput("dataset", "Task:",
-                              choices = unique(bm$dataset),
+                  selectInput("task", "Task:",
+                              choices = unique(bm$task),
                               selected = "regression"),
 
                   # TODO: somehow need to only enable selection numbers of 
@@ -119,7 +119,7 @@ server <- function(input, output, session) {
   output$plot <- renderPlot({
     new_data <- bm[
       bm$model %in% input$model &
-      bm$dataset == input$dataset &
+      bm$task == input$task &
       bm$n_workers == input$n_workers &
       bm$tuning_fn == input$tuning_fn,
     ]
@@ -131,9 +131,10 @@ server <- function(input, output, session) {
       new_data$time_to_tune <- as_bench_time(new_data$time_to_tune_float)
     }
     
-    ggplot(new_data, aes(x = n_rows, y = time_to_tune, col = model)) +
+    ggplot(new_data, aes(x = n_rows, y = time_to_tune, col = model, group = model)) +
       # TODO: change these to lines once we have data
       geom_point() +
+      geom_line() +
       scale_x_log10() +
       labs(x = "Number of Rows", y = "Time to Tune (seconds)") +
       theme(
