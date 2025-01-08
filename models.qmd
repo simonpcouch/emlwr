@@ -1,22 +1,10 @@
-# Models {#sec-models}
-
-<!--# Going to take some work for this not to feel super rote.  -->
-
-<!--# I do want some kind of content that's, like, tables of timings for every ___ engine fitted on a bunch of numbers of rows.  -->
-
-::: callout-caution
-This chapter still has a long way to go. I'd recommend exploring other portions of the draft in the meantime.
-:::
-
-## Tidymodels overhead
-
-<!--# TODO: currently this talks about the difference between CRAN and dev (at the time) packages. rephrase to just focus on the now. -->
-
-\
-<!--# also, need to rewrite to fit when `eval_fits` and not otherwise. -->
+---
+filters:
+  - shinylive
+---
 
 ```{r}
-#| label: setup-common-02
+#| label: setup-common-models
 #| include: false
 source("includes/common.R")
 ```
@@ -29,11 +17,39 @@ if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
 } else {
   eval_fits <- TRUE
 }
+```
+
+# Models {#sec-models}
+
+::: callout-caution
+This chapter is under active construction! You may be better off checking out other chapters in the meantime.
+:::
+
+At a high level, this chapter aims to help readers build intuition about how long various model types and engines take to fit. Our first order of business, in @sec-models-overhead, is demonstrating that fitting a model with tidymodels doesn't take much longer than it would to fit the model without tidymodels' unifying interface on top. That is, if I'd like to fit a boosted tree with XGBoost, will `xgboost::xgb.train()` fit notably more quickly than the analogous tidymodels interface `boost_tree(engine = "xgboost")`? Then, once you're convinced the penalty in performance is negligible, we'll move on to comparing fit times across modeling engines in @sec-models-benchmarks. That is, does `boost_tree(engine = "lightgbm")` fit more quickly than `boost_tree(engine = "xgboost")`? 
+
+## Tidymodels overhead {#sec-models-overhead}
+
+```{r}
+#| label: setup-common-02
+#| include: false
+source("includes/common.R")
+```
+
+```{r}
+#| label: setup-02-tbd
+#| include: false
+if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
+  eval_fits <- FALSE
+} else {
+  eval_fits <- TRUE
+}
 
 if (!eval_fits) {
-  data_files <- list.files("data/models", full.names = TRUE)
-  data_files <- data_files[grepl("\\.Rda", data_files)]
-  loaded <- lapply(data_files, load)
+  data_files <- list.files("data/models", full.names = TRUE, recursive = TRUE)
+  data_files <- data_files[grepl("\\.rds", data_files)]
+  for (file in data_files) {
+    assign(gsub(".rds", "", basename(file)), qread(file))
+  }
 }
 ```
 
@@ -41,9 +57,9 @@ While the tidymodels team develops the infrastructure that users interact with d
 
 ![A graphic representing the tidymodels interface. In order, step 1 "translate", step 2 "call", and step 3 "translate", outline the process of translating from the standardized tidymodels interface to an engine's specific interface, calling the modeling engine, and translating back to the standardized tidymodels interface. Step 1 and step 3 are in green, while step 2 is in orange.](figures/translate_diagram.png)
 
-When thinking about the time allotted to each of the three steps above, we refer to the "translate" steps in green as the *tidymodels overhead*. The time it takes to "translate" interfaces in steps **1)** and **3)** is within our control, while the time the modeling engine takes to do it's thing in step **2)** is not.
+When thinking about the time allotted to each of the three steps above, we refer to the "translate" steps in green as the *tidymodels overhead*. The time it takes to "translate" interfaces in steps **1)** and **3)** is within our control, while the time the modeling engine takes to do its thing in step **2)** is not.
 
-Let's demonstrate with an example classification problem. Generating some random data:
+Let's demonstrate with an example classification problem. Generating some data:
 
 ```{r}
 #| label: simulate-data
@@ -66,7 +82,7 @@ The default engine for a logistic regression in tidymodels is `stats::glm()`. So
 2)  Calls `stats::glm()` and collects its output.
 3)  Translates the output of `stats::glm()` back into a standardized model fit object.
 
-Again, we can control what happens in steps **1)** and **3)**, but step **2)** belongs to the `stats` package.
+Again, we can control what happens in steps **1)** and **3)**, but step **2)** belongs to the stats package.
 
 The time that steps **1)** and **3)** take is relatively independent of the dimensionality of the training data. That is, regardless of whether we train on one hundred or a million data points, *our* code (as in, the translation) takes about the same time to run. Regardless of training set size, our code pushes around small, relational data structures to determine how to correctly interface with a given engine. The time it takes to run step **2)**, though, depends almost completely on the size of the data. Depending on the modeling engine, modeling 10 times as much data could result in step **2)** taking twice as long, or 10x as long, or 100x as long as the original fit.
 
@@ -80,20 +96,32 @@ bench::mark(
   select(expression, median)
 ```
 
-About a millisecond. That means that, if the tidymodels overhead is one second, we've made this model fit a thousand times slower!
+Pretty dang fast. That means that, if the tidymodels overhead is one second, we've made this model fit a thousand times slower!
 
 In practice, the overhead here has hovered around a millisecond or two for the last couple years, and machine learning practitioners usually fit much more computationally expensive models than a logistic regression on 100 data points. You'll just have to believe me on that second point. Regarding the first:
 
 ```{r}
+#| eval: false
+bench::mark(
+  parsnip = fit(logistic_reg(), class ~ ., d),
+  stats = glm(class ~ ., family = binomial, data = d),
+  check = FALSE
+)
+```
+
+```{r}
+#| echo: false
 bm_logistic_reg <- 
   bench::mark(
     parsnip = fit(logistic_reg(), class ~ ., d),
     stats = glm(class ~ ., family = binomial, data = d),
     check = FALSE
   )
+
+bm_logistic_reg
 ```
 
-Remember that the first expression calls the second one, so the increase in time from the second to the first is the "overhead." In this case, it's `r as.numeric(bm_logistic_reg$median[1] - bm_logistic_reg$median[2]) * 1000` milliseconds, or `r round(1 - as.numeric(bm_logistic_reg$median[2] / bm_logistic_reg$median[1]), 3) * 100`% of the total elapsed time.
+Remember that the first expression calls the second one, so the increase in time from the second to the first is the "overhead." In this case, it's `r round(as.numeric(bm_logistic_reg$median[1] - bm_logistic_reg$median[2]) * 1000, 3)` milliseconds, or `r round(1 - as.numeric(bm_logistic_reg$median[2] / bm_logistic_reg$median[1]), 3) * 100`% of the total elapsed time.
 
 So, to fit a boosted tree model on 1,000,000 data points, step **2)** might take a few seconds. Steps **1)** and **3)** don't care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let's quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip's wrapper around it.
 
@@ -138,32 +166,226 @@ if (eval_fits) {
 ```{r}
 #| echo: false
 #| label: "plot-press-boost-tree"
-#| fig-cap: "TODO: write caption"
+#| fig-alt: "A ggplot line plot displaying numbers of rows, ranging from 100 to a million, on the x axis, and elapsed time, ranging from a millisecond to 10 seconds, on the y axis. One line shows the fit times for XGBoost itself and the other shows XGBoost with parsnip--fit times are only visually different for numbers of rows less than 10,000."
+#| fig-cap: "Elapsed fit times for XGBoost itself versus XBGoost interfaced with through parsnip. Fit times are non-negligigbly different only for very small data."
 press_boost_tree %>%
   mutate(expression = as.character(expression)) %>%
   ggplot() +
   aes(x = rows, y = median, color = expression, group = expression) +
-  scale_x_log10() +
+  scale_x_log10(labels = scales::comma) +
   geom_line() +
-  labs(x = "Number of Rows", y = "Elapsed Time")
+  labs(x = "Number of Rows", y = "Elapsed Time (seconds)")
 ```
 
-This graph shows the gist of tidymodels' overhead for modeling engines: as dataset size and model complexity grow larger, model fitting and prediction take up increasingly large proportions of the total evaluation time.
+```{r}
+#| include: false
+timings_100 <- 
+  press_boost_tree %>%
+  mutate(expression = as.character(expression)) %>%
+  filter(rows == 100)
 
-@sec-speedy-go showed a number of ways users can cut down on the evaluation time of their tidymodels code. Making use of parallelism, reducing the total number of model fits needed to search a given grid, and carefully constructing that grid to search over are all major parts of the story
+timing_parsnip <- 
+  timings_100 %>%
+  filter(expression == "parsnip") %>% 
+  pull(median)
 
-<!--# should this chapter go after everything else? -->
+timing_xgboost <- 
+  timings_100 %>%
+  filter(expression == "xgboost") %>% 
+  pull(median)
 
-## Benchmarks
+timings_1000 <- 
+  press_boost_tree %>%
+  mutate(expression = as.character(expression)) %>%
+  filter(rows == 10000)
 
-### Linear models
+timing_parsnip_1000 <- 
+  timings_1000 %>%
+  filter(expression == "parsnip") %>% 
+  pull(median)
 
-### Decision trees
+timing_xgboost_1000 <- 
+  timings_1000 %>%
+  filter(expression == "xgboost") %>% 
+  pull(median)
 
-### Boosted trees
+pct_1000 <- (as.numeric(timing_parsnip_1000) - as.numeric(timing_xgboost_1000)) / as.numeric(timing_xgboost_1000) * 100
+```
 
-XGBoost and LightGBM – comparison timings for the same thing but from the Python interface?
+In the left-most model fits on 100 rows, the model fit with XGBoost itself takes `r round(as.numeric(timing_xgboost) * 1000, 2)` milliseconds while parsnip takes `r round(as.numeric(timing_parsnip) * 1000, 2)`, a `r round((as.numeric(timing_parsnip) - as.numeric(timing_xgboost)) / as.numeric(timing_xgboost) * 100, 1)`% increase in total elapsed time. However, that increase shrinks to `r round(pct_1000, 1)`% with an 1000-row dataset, and is fractions of a percent by the time there are hundreds of thousands of rows in the training data. This is the gist of tidymodels' overhead for modeling engines: as dataset size and model complexity grow larger, the underlying model fit itself takes up increasingly large proportions of the total evaluation time.
 
-### Random forests
+@sec-speedy-go showed a number of ways users can cut down on the evaluation time of their tidymodels code. Making use of parallelism, reducing the total number of model fits needed to search a given grid, and carefully constructing that grid to search over are all major parts of the story. However, the rest of this chapter will focus explicitly on choosing performant modeling engines.
 
-### Support vector machines
+## Benchmarks {#sec-models-benchmarks}
+
+The following is a shiny app based on experimental benchmarks. For a given selection of model configurations, the app displays the time to resample various model configurations across a given number of rows of training data.
+
+```{r}
+#| label: load-shinylive
+#| include: false
+library(shiny)
+library(bslib)
+library(shinylive)
+```
+
+<!--# Going to take some work for this not to feel super rote.  -->
+
+<!--# I do want some kind of content that's, like, tables of timings for every ___ engine fitted on a bunch of numbers of rows.  -->
+
+```{shinylive-r}
+#| label: models-app
+#| standalone: true
+#| viewerHeight: 400
+#| eval: true
+#| echo: false
+#| file: "data/models/app/app.R"
+```
+
+```{r}
+#| include: false
+bm <- qs::qread("data/models/app/bm.rds")
+
+min_nrow <- min(bm$n_rows, na.rm = TRUE)
+```
+
+This app allows for quickly juxtaposing the time that it might take to evaluate performance across various modeling approaches. In @sec-models-one-data-point, I'll go into a bit more detail about what each data point in this app represents and why, and then analyze the data in further detail in @sec-models-analysis.
+
+### One data point {#sec-models-one-data-point}
+
+When the app first starts, the left-most point labeled `boost_tree (lightgbm)` is the observed time to sequentially evaluate an initial set of 10 models across 10 cross-validation folds of an `r min_nrow` row training set, resulting in 100 model fits on 900 rows, 100 sets of predictions of 100 rows, and metric calculations on each set of predictions. The actual benchmarking code is a bit more involved, but the code underlying that single data point looks something like the following.
+
+First, we load core packages as well as the bonsai parsnip extension (for lightgbm support):
+
+```{r}
+library(tidymodels)
+library(bonsai)
+```
+
+Next, we'll simulate a dataset with 1000 rows using `simulate_regression()`, *Efficient Machine Learning with R*'s in-house simulation function:
+
+```{r}
+d <- simulate_regression(1000)
+d
+```
+
+This step would happen as-is for every regression task on 1000 rows.
+
+Now, splitting the data into 10 folds using cross-validation:
+
+```{r}
+d_folds <- vfold_cv(d, v = 10)
+d_folds
+```
+
+Now, we specify a boosted tree model specification using the LightGBM engine. In this experiment, any tunable parameter (defined by whether tidymodels has a parameter definition that automatically kicks in when generating grids) is set to be tuned.
+
+```{r}
+spec <- 
+  boost_tree(
+    tree_depth = tune(),
+    trees = tune(),
+    learn_rate = tune(),
+    mtry = tune(),
+    min_n = tune(),
+    loss_reduction = tune(),
+    sample_size = tune(),
+    stop_iter = tune()
+  ) %>%
+  set_engine("lightgbm") %>%
+  set_mode("regression")
+```
+
+Each of these model fits are carried out with minimal preprocessors based on *Tidy Modeling with R's* "Recommended Preprocessing" appendix [@kuhn2022]. In this case, Kuhn and Silge recommend that users impute missing values for both numeric predictors (we do so using the median for all) and categorical predictors (we do so using the mode) when working with boosted trees.
+
+```{r}
+rec <- 
+  recipe(outcome ~ ., d) %>%
+  step_impute_median(all_numeric_predictors()) %>%
+  step_impute_mode(all_nominal_predictors())
+```
+
+With our data resampled and a modeling workflow defined, we're ready to resample this model. The resampling process will propose 10 different possible sets of parameter values for each parameter tagged with `tune()`. This will happen automatically under the hood of `tune_grid()`, but we can replicate this ourselves using dials:
+
+```{r}
+#| label: print-example-grid
+extract_parameter_set_dials(spec) %>% 
+  finalize(d) %>%
+  grid_space_filling(size = 10)
+```
+
+`tune_grid()` will evaluate those sets of values by fitting them to 10 different subsets of `d`.
+
+```{r}
+#| eval: false
+set.seed(1)
+res <- tune_grid(workflow(rec, spec), d_folds)
+```
+
+The point in the above plot is the time that those 100 model fits took altogether; in other words, the time that we'd wait for `tune_grid()` to evaluate.
+
+The data underlying this app is generated from thousands of experiments that look just like the one above, but varying the structure of the training data, the numbers of rows in the training data and the number of CPU cores utilized. In all, `r nrow(bm)` such experiments form the underlying data for this app:
+
+```{r}
+#| label: print-bm-mock
+#| eval: false
+bm
+```
+
+```{r}
+#| label: print-bm
+#| echo: false
+withr::local_options(pillar.min_chars = Inf)
+set.seed(1)
+slice_sample(bm, n = 10)
+```
+
+
+### Why not just model fits?
+
+This seems a bit involved for the purposes of getting a rough sense of how long a given model may take to fit; why don't we just use default parameter values from tidymodels and pass the model specification straight to `fit()`?
+
+There are a few reasons for this. In general, though, resampling a model specification across an initial set of possible parameter values is a fundamental unit of interactive machine learning. This initial resampling process gives the practitioner a sense for the ballpark of predictive performance she can expect for a given model task and how various parameter values may affect that performance. Does a higher `learn_rate` result in better predictive performance? How many `trees` is enough? A single model fit leaves the answer to all of these questions unknown.
+
+Importantly, too, the time that a given model specification takes to fit can vary greatly depending on parameter values. For example, only exploring the time to `fit()` rather than resample across a set of values would obscure the difference in these two elapsed times:
+
+```{r}
+#| label: bm-trees
+#| include: false
+if (eval_fits) {
+  bm_trees <-
+    bench::mark(
+      few_trees = fit(spec %>% set_args(trees = 10), outcome ~ ., d),
+      many_trees = fit(spec %>% set_args(trees = 1000), outcome ~ ., d),
+      check = FALSE
+    )
+  qsave(bm_trees, file = "data/models/bm_trees.rds")
+} else {
+  bm_trees <- qread("data/models/bm_trees.rds")
+}
+```
+
+```{r}
+#| eval: false
+#| label: fit-boost-trees
+spec <- boost_tree(mode = "regression", engine = "lightgbm")
+
+bench::mark(
+  few_trees = fit(spec %>% set_args(trees = 10), outcome ~ ., d),
+  many_trees = fit(spec %>% set_args(trees = 1000), outcome ~ ., d),
+  check = FALSE
+)
+```
+
+```{r}
+#| label: print-boost-trees
+#| echo: false
+bm_trees
+```
+
+By summing across many model configurations that result in varied fit times, we can get a better sense for a typical time to fit across typical parameter values.
+
+### Analysis {#sec-models-analysis}
+
+<!--# TODO: is an app that explores variations in fit times within a resampling process worth looking into? -->
+
+<!--# TODO: next bit is just a guided analysis of the data. this will live in both the web and print version of the book, but the book will need its own initial view of the data. -->

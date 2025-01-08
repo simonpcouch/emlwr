@@ -43,4 +43,7 @@ format:
   pdf:
     documentclass: scrreprt
 
+filters:
+  - shinylive
+  
 editor: visual
