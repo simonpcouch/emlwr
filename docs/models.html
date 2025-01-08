@@ -401,7 +401,7 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 1 × 2
   expression   median
 * &lt;bch:expr&gt; &lt;bch:tm&gt;
-1 fit           2.3ms</code></pre>
+1 fit          2.47ms</code></pre>
 </div>
 </div>
 <p>Pretty dang fast. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
@@ -418,11 +418,11 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 2 × 3
   expression   median mem_alloc
 * &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:byt&gt;
-1 parsnip      3.07ms    1.22MB
-2 stats         2.3ms    1.21MB</code></pre>
+1 parsnip       3.4ms    1.22MB
+2 stats         2.4ms    1.21MB</code></pre>
 </div>
 </div>
-<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.772 milliseconds, or 25.1% of the total elapsed time.</p>
+<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.999 milliseconds, or 29.4% of the total elapsed time.</p>
 <p>So, to fit a boosted tree model on 1,000,000 data points, step <strong>2)</strong> might take a few seconds. Steps <strong>1)</strong> and <strong>3)</strong> don’t care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let’s quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip’s wrapper around it.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -446,11 +446,25 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 #|   shinylive does not work in self-contained HTML documents.
 #|   Please set `embed-resources: false` in your metadata.
 #| label: models-app
+#| embed-resources: false
 #| standalone: true
 #| viewerHeight: 400
 #| eval: true
 #| echo: false
-#| file: "data/models/app/app.R"</code></pre>
+library(ggplot2)
+library(bench)
+library(qs)
+library(shiny)
+library(here)
+library(fresh)
+
+library(bslib)
+library(shinylive)
+library(httpuv)
+
+source("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/app.R")
+
+app</code></pre>
 <p>This app allows for quickly juxtaposing the time that it might take to evaluate performance across various modeling approaches. In <a href="#sec-models-one-data-point" class="quarto-xref"><span>Section 2.2.1</span></a>, I’ll go into a bit more detail about what each data point in this app represents and why, and then analyze the data in further detail in <a href="#sec-models-analysis" class="quarto-xref"><span>Section 2.2.3</span></a>.</p>
 <section id="sec-models-one-data-point" class="level3" data-number="2.2.1">
 <h3 data-number="2.2.1" class="anchored" data-anchor-id="sec-models-one-data-point"><span class="header-section-number">2.2.1</span> One data point</h3>

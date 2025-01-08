@@ -1,6 +1,7 @@
 ---
 filters:
   - shinylive
+embed-resources: false
 ---
 
 ```{r}
@@ -226,19 +227,35 @@ The following is a shiny app based on experimental benchmarks. For a given selec
 library(shiny)
 library(bslib)
 library(shinylive)
+library(httpuv)
 ```
 
 <!--# Going to take some work for this not to feel super rote.  -->
 
 <!--# I do want some kind of content that's, like, tables of timings for every ___ engine fitted on a bunch of numbers of rows.  -->
 
+
 ```{shinylive-r}
 #| label: models-app
+#| embed-resources: false
 #| standalone: true
 #| viewerHeight: 400
 #| eval: true
 #| echo: false
-#| file: "data/models/app/app.R"
+library(ggplot2)
+library(bench)
+library(qs)
+library(shiny)
+library(here)
+library(fresh)
+
+library(bslib)
+library(shinylive)
+library(httpuv)
+
+source("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/app.R")
+
+app
 ```
 
 ```{r}
