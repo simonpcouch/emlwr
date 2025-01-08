@@ -239,7 +239,7 @@ library(httpuv)
 #| label: models-app
 #| embed-resources: false
 #| standalone: true
-#| viewerHeight: 400
+#| viewerHeight: 600
 #| eval: true
 #| echo: false
 library(ggplot2)
@@ -248,6 +248,7 @@ library(qs)
 library(shiny)
 library(bslib)
 library(shinylive)
+library(scales)
 
 options(
   ggplot2.discrete.colour = c(
@@ -267,16 +268,31 @@ footer_context <- paste0(collapse = "", c(
 load(url("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/bm.rda"))
 load(url("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/cpus.rda"))
 
+# copying over r-lib/bench#144
+bench_time_trans <- function(base = 10) {
+  if (is.null(base)) {
+    return(
+      scales::trans_new("bch:tm", as.numeric, as_bench_time,
+                        breaks = scales::pretty_breaks(), domain = c(1e-100, Inf)
+      )
+    )
+  }
+  trans <- function(x) log(as.numeric(x), base)
+  inv <- function(x) bench::as_bench_time(base ^ as.numeric(x))
+  
+  trans_new(paste0("bch:tm-", format(base)), trans, inv, 
+            breaks = log_breaks(base = base), domain = c(1e-100, Inf))
+}
+
 ui <- page_fillable(
   theme = bs_theme(
     bg = "#ffffff",
     fg = "#333333",
-    primary = "#42725c"
+    primary = "#42725c",
+    font_scale = .8
   ),
   title = "Time To Tune",
-  layout_column_wrap(
-    width = 1/1,
-    heights_equal = "row",
+  layout_columns(
     selectInput(
       "model", "Model:",
       choices = unique(bm$model),
@@ -290,6 +306,8 @@ ui <- page_fillable(
   ),
   layout_sidebar(
     sidebar = sidebar(
+      open = "always",
+      position = "right",
       selectInput(
         "task", "Task:",
         choices = unique(bm$task),
@@ -300,8 +318,7 @@ ui <- page_fillable(
         value = 1,
         min = 1,
         max = 10,
-        step = 1,
-        animate = TRUE
+        step = 1
       ),
       selectInput(
         "tuning_fn", "Tuning Function:",
@@ -316,7 +333,7 @@ ui <- page_fillable(
     card(
       full_screen = TRUE,
       card_header("Time To Tune"),
-      plotOutput("plot", height = "400px"),
+      plotOutput("plot"),
       footer = footer_context
     )
   )
@@ -349,13 +366,11 @@ server <- function(input, output, session) {
     ggplot(new_data, aes(x = n_rows, y = time_to_tune, col = model, group = model)) +
       geom_point() +
       geom_line() +
-      scale_x_log10() +
-      labs(x = "Number of Rows", y = "Time to Tune (seconds)") +
+      scale_x_log10(labels = comma) +
+      scale_y_continuous(trans = bench_time_trans(base = 10)) +
+      labs(x = "Number of Rows", y = "Time to Tune (seconds)", col = "Model") +
       theme(
-        text = element_text(size = 14),
-        axis.title = element_text(size = 14),
-        axis.text = element_text(size = 12),
-        legend.text = element_text(size = 12)
+        legend.position = "bottom"
       )
   })
 }
