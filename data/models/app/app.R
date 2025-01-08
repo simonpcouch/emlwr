@@ -1,3 +1,15 @@
+library(ggplot2)
+library(bench)
+library(qs)
+library(shiny)
+library(here)
+library(fresh)
+
+library(bslib)
+library(shinylive)
+library(httpuv)
+library(shinydashboard)
+
 # setup ------------------------------------------------------------------------
 options(
   ggplot2.discrete.colour = c(
@@ -20,6 +32,13 @@ footer_context <- paste0(collapse = "", c(
   "resamples, resulting in 100 model fits on 9/10th of rows, 100 sets of ",
   "predictions on 1/10th of rows, and metric calculations on each set of predictions."
 ))
+
+# note we read these in from URLs rather than the file system to
+# satisfy wasm security restrictions
+load(url("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/bm.rda"))
+
+# from https://www.cpubenchmark.net/cpu_list.php
+load(url("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/cpus.rda"))
 
 # ui ---------------------------------------------------------------------------
 ui <- dashboardPage(
@@ -91,13 +110,6 @@ ui <- dashboardPage(
 
 # server -----------------------------------------------------------------------
 server <- function(input, output, session) {
-  # note we read these in from URLs rather than the file system to
-  # satisfy wasm security restrictions
-  load(url("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/bm.rda"))
-  
-  # from https://www.cpubenchmark.net/cpu_list.php
-  load(url("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/cpus.rda"))
-  
   updateSelectizeInput(
     session,
     'cpu',
