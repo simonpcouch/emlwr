@@ -401,7 +401,7 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 1 × 2
   expression   median
 * &lt;bch:expr&gt; &lt;bch:tm&gt;
-1 fit           2.4ms</code></pre>
+1 fit           2.3ms</code></pre>
 </div>
 </div>
 <p>Pretty dang fast. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
@@ -418,11 +418,11 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 2 × 3
   expression   median mem_alloc
 * &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:byt&gt;
-1 parsnip      3.26ms    1.22MB
-2 stats        2.36ms    1.21MB</code></pre>
+1 parsnip      3.11ms    1.22MB
+2 stats        2.43ms    1.21MB</code></pre>
 </div>
 </div>
-<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.904 milliseconds, or 27.7% of the total elapsed time.</p>
+<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.68 milliseconds, or 21.9% of the total elapsed time.</p>
 <p>So, to fit a boosted tree model on 1,000,000 data points, step <strong>2)</strong> might take a few seconds. Steps <strong>1)</strong> and <strong>3)</strong> don’t care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let’s quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip’s wrapper around it.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -451,7 +451,125 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 #| viewerHeight: 400
 #| eval: true
 #| echo: false
-source("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/app.R")
+library(ggplot2)
+library(bench)
+library(qs)
+library(shiny)
+library(bslib)
+library(shinylive)
+
+options(
+  ggplot2.discrete.colour = c(
+    "#1a162d", "#42725c", "#cd6f3d", "#a8ab71",
+    "#8b4b65", "#557088", "#d9b594", "#6b705c", "#956b4b", "#2d4041"
+  )
+)
+
+n_rows &lt;- round(10^seq(from = 2, to = 6, by = .5))
+reference_mark &lt;- 37002
+footer_context &lt;- paste0(collapse = "", c(
+  "Timings estimate the time to evaluate an initial set of 10 models across 10 ",
+  "resamples, resulting in 100 model fits on 9/10th of rows, 100 sets of ",
+  "predictions on 1/10th of rows, and metric calculations on each set of predictions."
+))
+
+load(url("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/bm.rda"))
+load(url("https://raw.githubusercontent.com/simonpcouch/emlwr/main/data/models/app/cpus.rda"))
+
+ui &lt;- page_fillable(
+  theme = bs_theme(
+    bg = "#ffffff",
+    fg = "#333333",
+    primary = "#42725c"
+  ),
+  title = "Time To Tune",
+  layout_column_wrap(
+    width = 1/1,
+    heights_equal = "row",
+    selectInput(
+      "model", "Model:",
+      choices = unique(bm$model),
+      multiple = TRUE,
+      selected = c(
+        "linear_reg (glmnet)", 
+        "boost_tree (xgboost)",
+        "boost_tree (lightgbm)"
+      )
+    )
+  ),
+  layout_sidebar(
+    sidebar = sidebar(
+      selectInput(
+        "task", "Task:",
+        choices = unique(bm$task),
+        selected = "regression"
+      ),
+      sliderInput(
+        "n_workers", "Number of Workers:",
+        value = 1,
+        min = 1,
+        max = 10,
+        step = 1,
+        animate = TRUE
+      ),
+      selectInput(
+        "tuning_fn", "Tuning Function:",
+        choices = unique(bm$tuning_fn)
+      ),
+      selectInput(
+        "cpu", "CPU:", 
+        choices = NULL
+      ),
+      markdown("Timings scaled according to [CPU benchmarks](https://www.cpubenchmark.net/cpu_list.php).")
+    ),
+    card(
+      full_screen = TRUE,
+      card_header("Time To Tune"),
+      plotOutput("plot", height = "400px"),
+      footer = footer_context
+    )
+  )
+)
+
+server &lt;- function(input, output, session) {
+  updateSelectizeInput(
+    session,
+    'cpu',
+    choices = cpus$name,
+    server = TRUE,
+    selected = "Intel Core i7-13700"
+  )
+  
+  output$plot &lt;- renderPlot({
+    new_data &lt;- bm[
+      bm$model %in% input$model &amp;
+        bm$task == input$task &amp;
+        bm$n_workers == input$n_workers &amp;
+        bm$tuning_fn == input$tuning_fn,
+    ]
+    
+    if (!identical(input$cpu, "")) {
+      new_data$time_to_tune_float &lt;-
+        new_data$time_to_tune_float *
+        (reference_mark / cpus$mark[cpus$name == input$cpu])
+      new_data$time_to_tune &lt;- as_bench_time(new_data$time_to_tune_float)
+    }
+    
+    ggplot(new_data, aes(x = n_rows, y = time_to_tune, col = model, group = model)) +
+      geom_point() +
+      geom_line() +
+      scale_x_log10() +
+      labs(x = "Number of Rows", y = "Time to Tune (seconds)") +
+      theme(
+        text = element_text(size = 14),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12),
+        legend.text = element_text(size = 12)
+      )
+  })
+}
+
+app &lt;- shinyApp(ui, server)
 
 app</code></pre>
 <p>This app allows for quickly juxtaposing the time that it might take to evaluate performance across various modeling approaches. In <a href="#sec-models-one-data-point" class="quarto-xref"><span>Section 2.2.1</span></a>, I’ll go into a bit more detail about what each data point in this app represents and why, and then analyze the data in further detail in <a href="#sec-models-analysis" class="quarto-xref"><span>Section 2.2.3</span></a>.</p>
