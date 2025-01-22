@@ -2,6 +2,8 @@
 filters:
   - shinylive
 embed-resources: false
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r}
@@ -26,7 +28,7 @@ if (!identical(Sys.getenv("emlwr.eval_fits"), "true")) {
 This chapter is under active construction! You may be better off checking out other chapters in the meantime.
 :::
 
-At a high level, this chapter aims to help readers build intuition about how long various model types and engines take to fit. Our first order of business, in @sec-models-overhead, is demonstrating that fitting a model with tidymodels doesn't take much longer than it would to fit the model without tidymodels' unifying interface on top. That is, if I'd like to fit a boosted tree with XGBoost, will `xgboost::xgb.train()` fit notably more quickly than the analogous tidymodels interface `boost_tree(engine = "xgboost")`? Then, once you're convinced the penalty in performance is negligible, we'll move on to comparing fit times across modeling engines in @sec-models-benchmarks. That is, does `boost_tree(engine = "lightgbm")` fit more quickly than `boost_tree(engine = "xgboost")`? 
+At a high level, this chapter aims to help readers build intuition about how long various model types and engines take to fit. Our first order of business, in @sec-models-overhead, is demonstrating that fitting a model with tidymodels doesn't take much longer than it would to fit the model without tidymodels' unifying interface on top. That is, if I'd like to fit a boosted tree with XGBoost, will `xgboost::xgb.train()` fit notably more quickly than the analogous tidymodels interface `boost_tree(engine = "xgboost")`? Then, once you're convinced the penalty in performance is negligible, we'll move on to comparing fit times across modeling engines in @sec-models-benchmarks. That is, does `boost_tree(engine = "lightgbm")` fit more quickly than `boost_tree(engine = "xgboost")`?
 
 ## Tidymodels overhead {#sec-models-overhead}
 
@@ -233,7 +235,6 @@ library(httpuv)
 <!--# Going to take some work for this not to feel super rote.  -->
 
 <!--# I do want some kind of content that's, like, tables of timings for every ___ engine fitted on a bunch of numbers of rows.  -->
-
 
 ```{shinylive-r}
 #| label: models-app
@@ -478,7 +479,6 @@ set.seed(1)
 slice_sample(bm, n = 10)
 ```
 
-
 ### Why not just model fits?
 
 This seems a bit involved for the purposes of getting a rough sense of how long a given model may take to fit; why don't we just use default parameter values from tidymodels and pass the model specification straight to `fit()`?
@@ -525,6 +525,256 @@ By summing across many model configurations that result in varied fit times, we 
 
 ### Analysis {#sec-models-analysis}
 
+```{r}
+#| label: analysis-fns
+#| include: false
+plot_engines <- function(model_type, mode) {
+  plot_data <- 
+    benchmarks %>%
+    unnest(bench_mark) %>%
+    filter(
+      preprocessor == model_type,
+      dataset %in% mode,
+      n_workers == 1
+    ) %>%
+    mutate(
+      engine = gsub(
+        paste0(c(model_type, "_classification_|", model_type, "_regression_"), collapse = ""),
+        "",
+        model
+      ),
+      n_rows = as.numeric(n_rows)
+    )
+
+  plot_data %>%
+    ggplot() +
+    aes(x = n_rows, y = median, col = engine, group = engine) +
+    geom_point() +
+    geom_line() +
+    labs(x = "Number of Rows", y = "Time to Tune", col = "Engine") +
+    theme(
+      legend.position = "bottom"
+    ) + 
+    scale_x_log10(labels = scales::comma, breaks = unique(plot_data$n_rows))
+}
+
+unnest_fit_timings <- function(model_type) {
+  benchmarks %>%
+    filter(preprocessor == model_type) %>%
+    mutate(
+      engine = gsub(
+        paste0(c(model_type, "_classification_|", model_type, "_regression_"), collapse = ""),
+        "",
+        model
+      ),
+      n_rows = as.numeric(n_rows)
+    ) %>%
+    select(
+      model = preprocessor,
+      engine,
+      task = dataset,
+      n_rows,
+      extracts_timings
+    ) %>% 
+    unnest(extracts_timings) %>%
+    unnest(.extracts) %>%
+    mutate(elapsed = as_bench_time(elapsed))
+}
+
+# TODO: only works for numeric parameters
+plot_parameter_vs_timing_by_engine <- function(model_type, parameter) {
+  unnest_fit_timings(model_type = model_type) %>%
+  mutate(n_rows = factor(
+    format(n_rows, big.mark = ","),
+    levels = format(sort(unique(n_rows), decreasing = TRUE), big.mark = ",")
+  )) %>%
+  ggplot(aes(x = !!sym(parameter), y = elapsed, color = n_rows)) +
+  labs(y = "Elapsed Time", color = "Number of Rows") +
+  # TODO: drop doesn't seem to work here?
+  facet_wrap(vars(engine), drop = TRUE)
+}
+```
+
 <!--# TODO: is an app that explores variations in fit times within a resampling process worth looking into? -->
 
 <!--# TODO: next bit is just a guided analysis of the data. this will live in both the web and print version of the book, but the book will need its own initial view of the data. -->
+
+#### Decision Trees
+
+Decision trees recursively partition data by selecting values of predictor variables that, when split at that value, best predict the outcome at each node. The tree makes predictions by routing new samples through these splits to reach leaf nodes containing similar training examples. The tidymodels framework supports a number of modeling engines for fitting and predicting from decision trees, including `r cli::format_inline("{sort(unique(show_engines('decision_tree')$engine))}")`, and decision trees can be used for either classification or regression (with some engine-specific exceptions).
+
+At the highest level, here's what the tuning times for various `decision_tree()` engines supported by tidymodels look like:
+
+```{r}
+#| label: fig-decision-tree-engines
+#| echo: false
+#| fig-cap: "Elapsed times to generate preliminary tuning results for decision trees with tidymodels by modeling engine."
+#| fig-alt: "A line plot comparing performance of C5.0, partykit, and rpart engines across different dataset sizes. The x-axis shows number of rows (from 1,000 to 100,000) on a log scale, while y-axis shows time to tune on a log scale. C5.0 shows the highest elapsed times, followed by rpart, while partykit consistently evaluates most quickly."
+plot_engines(model_type = "decision_tree", mode = "classification")
+```
+
+@fig-decision-tree-engines is a special case of the Time to Tune app from @sec-models-benchmarks; each data point shows the total time to fit and predict from 100 decision trees of varying parameterizations. `partykit` consistently evaluates the fastest across all dataset sizes, while `C5.0` is the slowest, with the performance gap between engines widening as the number of rows increases.
+
+tidymodels supports tuning the decision tree hyperparameters `min_n`, `tree_depth`, and `cost_complexity`.^[That is, tidymodels provides default distributions of parameter values to sample from for these parameters. Other parameters can be tuned by providing your own distributions using the dials package.] We'll discuss the implications for each on the time to fit decision trees in the rest of this section. In general, though, it's helpful to keep in mind that the computationally intensive part of fitting decision trees is the search for optimal split points. Because of this, more complex trees generally take longer to fit than less complex trees, and parameter values allowing for more complex trees will tend to result in longer fit times. That said, the effect on fit time of changing individual parameter values is often relatively mild, as changes in one parameter value are mediated by other parameters.
+
+First, the **Minimum Points Per Node**, or `min_n`, is the minimum number of training set observations in a node required for the node to be split further. For example, if only 3 observations meet some split criteria `some_variable < 2` and `min_n` is set to 3, then the tree will make a prediction at that node rather than considering whether to further break those 3 observations up into smaller buckets based on another split criteria before making predictions. Smaller values of `min_n` allow for more complex trees, and thus the time to fit a decision tree is inversely correlated to `min_n` when the complexity of the tree isn't mediated by other parameter values. In CART-based settings like with `engine = "rpart"`, `min_n` can usually be set to a reasonably high value without affecting predictive performance "since smaller nodes are almost always pruned away by cross-validation"; in other words, even if the tree is allowed to generate more splits via a small `min_n` value, those splits based on smaller numbers of observations are often pruned away via the `cost_complexity` parameter anyway [@pkgrpart].
+
+Let's see how this plays out in practice:
+
+```{r}
+#| label: fig-decision-tree-timings-by-min-n
+#| echo: false
+#| fig-cap: "Distributions of time-to-fit for various minimum points per node values, faceted by engine and colored according to numbers of rows. Generally, in practice, the minimum points per node doesn't tend to affect fit times as tree complexity is mediated by other parameter values."
+#| fig-alt: "A ggplot2 dotplot faceted by engine showing elapsed computation time versus minimum points per node. The x-axis shows parameter values from 0 to 40, while the y-axis shows elapsed time on a log scale from 1ms to 10s. Each engine panel contains scattered points colored by dataset size (1,000 to 100,000 rows), showing that fit times don't tend to vary relative to minimum points per node."
+#| fig-width: 10
+#| out-width: 100%
+plot_parameter_vs_timing_by_engine(
+  model_type = "decision_tree", 
+  parameter = "min_n"
+) +
+  labs(x = "Minimum Points Per Node") +
+  geom_jitter(width = 1, height = .3)
+```
+
+This plot disaggregates the information in @fig-decision-tree-engines. Instead of summing across the time to fit and predict from each model to determine a data point (with varying values of `min_n` and other parameters), this plot shows one point per model fit. Generally, we see that `min_n` has little effect on the time to fit across all modeling engines supported by tidymodels.
+
+The **Tree Depth**, or `tree_depth` in tidymodels, is the maximum depth of the tree. For example, if `tree_depth = 2`, the tree must reach a node (i.e. a point at which a prediction is made rather than a further split) after splitting twice. Larger values of `tree_depth` allow for more complex trees, and thus the time to fit a decision tree increases as `tree_depth` does unless the complexity of the tree is mediated by some other parameter.
+
+```{r}
+#| label: fig-decision-tree-timings-by-tree-depth
+#| echo: false
+#| fig-cap: "Distributions of time-to-fit for various tree depth values, faceted by engine and colored according to numbers of rows. For the engines that support tree depth, higher values of tree depth tend to result in greater fit times, even as other parameter values vary. C5.O doesn't support the tree depth parameter [@pkgC50; @pkgC502]."
+#| fig-alt: "An identical plot to that above but plotting tree depth instead of minimum points per node. The C5.0 panel is empty, while partykit and rpart panels show positive correlation between tree depth and computation time, with larger datasets taking longer to compute across all depths."
+#| fig-width: 10
+#| out-width: 100%
+plot_parameter_vs_timing_by_engine(
+  model_type = "decision_tree", 
+  parameter = "tree_depth"
+) +
+  labs(x = "Tree Depth") +
+  geom_jitter(width = 1, height = .3)
+```
+
+The **Cost of Complexity**, or `cost_complexity` in tidymodels, is a penalization parameter (often referred to as $C_p$) on adding additional complexity to the tree. This parameter is only used by CART models, so is available only for specific engines. When training CART-based decision trees, once splits are generated, each are evaluated according to how much they decrease error on out-of-sample data relative to the tree without that split. If the decrease in error doesn't surpass some threshold $C_p$, the split is "pruned" back, forming a less complex tree. Higher values of penalization mean that the decision tree will evaluate (and thus search for) fewer splits in total, ultimately saving "considerable computational effort" and decreasing the time to fit the model [@pkgrpart; @kuhn2013applied].
+
+```{r}
+#| label: fig-decision-tree-timings-by-cost-complexity
+#| echo: false
+#| fig-cap: "Distributions of time-to-fit for various values of cost of complexity, faceted by engine and colored according to numbers of rows. Neither C5.0 nor partykit make use of this parameter [@pkgC502; @pkgpartykit2]."
+#| fig-alt: "An identical plot to that above but plotting cost of complexity instead of tree depth. The C5.0 and partykit panels are empty, while rpart panel shows scattered points across complexity values, with computation time primarily determined by dataset size rather than complexity parameter."
+#| fig-width: 10
+#| out-width: 100%
+plot_parameter_vs_timing_by_engine(
+  model_type = "decision_tree", 
+  parameter = "cost_complexity"
+) +
+  geom_point(position = position_jitter(width = .3, height = .2)) +
+  labs(x = "Log(Cost of Complexity)") +
+  scale_x_log10()
+```
+
+:::callout-note
+C5.0 and partykit make use of related parameters to automatically prune trees, though they aren't supported by tidymodels as a default tuning parameter as they're engine-specific. C5.0's _confidence factor_ parameter is a very computationally efficient way to control complexity, though do note that the approach stands on "shaky statistical grounds" [@kuhn2013applied]. partykit determines whether a split is "worth it" based on hypothesis testing, and the significance level of that hypothesis test can be used to prune splits more aggressively [@pkgpartykit2]. 
+:::
+
+Again, the time-consuming portion of fitting decision trees is searching for optimal predictor values to split on. Because of this, more complex trees tend to take longer to fit than less complex trees. On its own, though, this doesn't necessarily mean that setting an individual parameter value to allow for a more complex tree will result in a longer fit time, and we saw this effect above. Instead, the complex interplay of many parameter values simultaneously allowing for greater complexity is what drives longer fit times. We can quickly demonstrate this in-the-small with a brief set of model fits.
+
+```{r}
+#| label: prepare-decision-tree-args
+# generate a dataset with 100,000 rows
+set.seed(1)
+d <- simulate_classification(100000)
+
+# define a decision tree model specification
+spec_small <-  
+  decision_tree(cost_complexity = .1, tree_depth = 2, min_n = 1000) %>%
+  set_engine("rpart") %>%
+  set_mode("classification")
+```
+
+In the above, `spec_small` defines a very minimal tree; this `cost_complexity()` value heavily penalizes further splits, the `tree_depth` describes a very shallow tree, and `min_n` only allows for further splits when a given split contains _many_ observations.
+
+Now, we can examine the effect of setting individual values on fit time by benchmarking the time to fit a simple tree by all measures, then toggling each of the parameter values individually to allow for more complex trees, and finally by toggling all of them to allow for a very complex tree.
+
+```{r}
+#| label: bench-mark-decision-tree-args
+#| eval: !expr eval_fits
+#| include: false
+decision_tree_args <-
+  bench::mark(
+  # small by all measures
+  small = fit(object = spec_small, formula = class ~ ., data = d),
+  
+  # allowing for greater complexity with only one parameter value
+  complex_cost_complexity = fit(
+    set_args(spec_small, cost_complexity = 10e-9), class ~ ., d
+  ),
+  complex_tree_depth = fit(
+    set_args(spec_small, tree_depth = 30), class ~ ., d
+  ),
+  complex_min_n = fit(
+    set_args(spec_small, min_n = 1), class ~ ., d
+  ),
+  
+  # allowing for greater complexity with all parameter values
+  complex = fit(
+    set_args(spec_small, cost_complexity = 10e-9, tree_depth = 30, min_n = 1),
+    class ~ ., 
+    d
+  ),
+  check = FALSE
+)
+```
+
+```{r}
+#| label: save-decision-tree-args
+#| include: false
+if (eval_fits) {
+  decision_tree_args <- trim_bench_mark(decision_tree_args)
+  qsave(decision_tree_args, file = "data/models/decision_tree_args.rds")
+} else {
+  decision_tree_args <- qread(file = "data/models/decision_tree_args.rds")
+}
+```
+
+```{r}
+#| label: mock-decision-tree-args
+#| eval: false
+bench::mark(
+  # small by all measures
+  small = fit(object = spec_small, formula = class ~ ., data = d),
+  
+  # allowing for greater complexity with only one parameter value
+  complex_cost_complexity = fit(
+    set_args(spec_small, cost_complexity = 10e-9), class ~ ., d
+  ),
+  complex_tree_depth = fit(
+    set_args(spec_small, tree_depth = 30), class ~ ., d
+  ),
+  complex_min_n = fit(
+    set_args(spec_small, min_n = 1), class ~ ., d
+  ),
+  
+  # allowing for greater complexity with all parameter values
+  complex = fit(
+    set_args(spec_small, cost_complexity = 10e-9, tree_depth = 30, min_n = 1),
+    class ~ ., 
+    d
+  ),
+  check = FALSE
+)
+```
+
+```{r}
+#| echo: false
+#| label: print-decision-tree-args
+decision_tree_args
+```
+
+Again, we see that individual parameter values allowing for greater complexity are mediated by other parameter values, but setting them all together allows for a complex tree and, thus, a significantly longer fit time.
+
+_Summary: Decision Trees_
+
+* More complex decision trees take longer to fit.
+* Setting individual parameter values to allow for more complex fits doesn't necessarily mean that a tree will take longer to fit.
+* Compared to many of the other methods described in this chapter, decision trees are quite quick-fitting.

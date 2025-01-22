@@ -137,6 +137,35 @@ gtag('js', new Date());
 gtag('config', 'G-C5VQ0DLJJW', { 'anonymize_ip': true});
 </script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -401,7 +430,7 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 1 × 2
   expression   median
 * &lt;bch:expr&gt; &lt;bch:tm&gt;
-1 fit           2.3ms</code></pre>
+1 fit          2.37ms</code></pre>
 </div>
 </div>
 <p>Pretty dang fast. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
@@ -418,11 +447,11 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 2 × 3
   expression   median mem_alloc
 * &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:byt&gt;
-1 parsnip      3.08ms    1.22MB
-2 stats         2.3ms    1.21MB</code></pre>
+1 parsnip      3.27ms    1.22MB
+2 stats        2.35ms    1.21MB</code></pre>
 </div>
 </div>
-<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.774 milliseconds, or 25.1% of the total elapsed time.</p>
+<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.929 milliseconds, or 28.4% of the total elapsed time.</p>
 <p>So, to fit a boosted tree model on 1,000,000 data points, step <strong>2)</strong> might take a few seconds. Steps <strong>1)</strong> and <strong>3)</strong> don’t care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let’s quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip’s wrapper around it.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -659,7 +688,7 @@ app</code></pre>
 <span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"lightgbm"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"regression"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Each of these model fits are carried out with minimal preprocessors based on <em>Tidy Modeling with R’s</em> “Recommended Preprocessing” appendix <span class="citation" data-cites="kuhn2022">(<a href="references.html#ref-kuhn2022" role="doc-biblioref">Kuhn and Silge 2022</a>)</span>. In this case, Kuhn and Silge recommend that users impute missing values for both numeric predictors (we do so using the median for all) and categorical predictors (we do so using the mode) when working with boosted trees.</p>
+<p>Each of these model fits are carried out with minimal preprocessors based on <em>Tidy Modeling with R’s</em> “Recommended Preprocessing” appendix <span class="citation" data-cites="kuhn2022">(<a href="references.html#ref-kuhn2022" role="doc-biblioref">Max Kuhn and Silge 2022</a>)</span>. In this case, Kuhn and Silge recommend that users impute missing values for both numeric predictors (we do so using the median for all) and categorical predictors (we do so using the mode) when working with boosted trees.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>rec <span class="ot">&lt;-</span> </span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(outcome <span class="sc">~</span> ., d) <span class="sc">%&gt;%</span></span>
@@ -746,14 +775,174 @@ app</code></pre>
 <h3 data-number="2.2.3" class="anchored" data-anchor-id="sec-models-analysis"><span class="header-section-number">2.2.3</span> Analysis</h3>
 <!--# TODO: is an app that explores variations in fit times within a resampling process worth looking into? -->
 <!--# TODO: next bit is just a guided analysis of the data. this will live in both the web and print version of the book, but the book will need its own initial view of the data. -->
+<section id="decision-trees" class="level4" data-number="2.2.3.1">
+<h4 data-number="2.2.3.1" class="anchored" data-anchor-id="decision-trees"><span class="header-section-number">2.2.3.1</span> Decision Trees</h4>
+<p>Decision trees recursively partition data by selecting values of predictor variables that, when split at that value, best predict the outcome at each node. The tree makes predictions by routing new samples through these splits to reach leaf nodes containing similar training examples. The tidymodels framework supports a number of modeling engines for fitting and predicting from decision trees, including C5.0, partykit, rpart, and spark, and decision trees can be used for either classification or regression (with some engine-specific exceptions).</p>
+<p>At the highest level, here’s what the tuning times for various <code>decision_tree()</code> engines supported by tidymodels look like:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-decision-tree-engines" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A line plot comparing performance of C5.0, partykit, and rpart engines across different dataset sizes. The x-axis shows number of rows (from 1,000 to 100,000) on a log scale, while y-axis shows time to tune on a log scale. C5.0 shows the highest elapsed times, followed by rpart, while partykit consistently evaluates most quickly.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-decision-tree-engines-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="models_files/figure-html/fig-decision-tree-engines-1.png" class="img-fluid figure-img" alt="A line plot comparing performance of C5.0, partykit, and rpart engines across different dataset sizes. The x-axis shows number of rows (from 1,000 to 100,000) on a log scale, while y-axis shows time to tune on a log scale. C5.0 shows the highest elapsed times, followed by rpart, while partykit consistently evaluates most quickly." width="576">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-decision-tree-engines-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2.1: Elapsed times to generate preliminary tuning results for decision trees with tidymodels by modeling engine.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="#fig-decision-tree-engines" class="quarto-xref">Figure&nbsp;<span>2.1</span></a> is a special case of the Time to Tune app from <a href="#sec-models-benchmarks" class="quarto-xref"><span>Section 2.2</span></a>; each data point shows the total time to fit and predict from 100 decision trees of varying parameterizations. <code>partykit</code> consistently evaluates the fastest across all dataset sizes, while <code>C5.0</code> is the slowest, with the performance gap between engines widening as the number of rows increases.</p>
+<p>tidymodels supports tuning the decision tree hyperparameters <code>min_n</code>, <code>tree_depth</code>, and <code>cost_complexity</code>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> We’ll discuss the implications for each on the time to fit decision trees in the rest of this section. In general, though, it’s helpful to keep in mind that the computationally intensive part of fitting decision trees is the search for optimal split points. Because of this, more complex trees generally take longer to fit than less complex trees, and parameter values allowing for more complex trees will tend to result in longer fit times. That said, the effect on fit time of changing individual parameter values is often relatively mild, as changes in one parameter value are mediated by other parameters.</p>
+<p>First, the <strong>Minimum Points Per Node</strong>, or <code>min_n</code>, is the minimum number of training set observations in a node required for the node to be split further. For example, if only 3 observations meet some split criteria <code>some_variable &lt; 2</code> and <code>min_n</code> is set to 3, then the tree will make a prediction at that node rather than considering whether to further break those 3 observations up into smaller buckets based on another split criteria before making predictions. Smaller values of <code>min_n</code> allow for more complex trees, and thus the time to fit a decision tree is inversely correlated to <code>min_n</code> when the complexity of the tree isn’t mediated by other parameter values. In CART-based settings like with <code>engine = "rpart"</code>, <code>min_n</code> can usually be set to a reasonably high value without affecting predictive performance “since smaller nodes are almost always pruned away by cross-validation”; in other words, even if the tree is allowed to generate more splits via a small <code>min_n</code> value, those splits based on smaller numbers of observations are often pruned away via the <code>cost_complexity</code> parameter anyway <span class="citation" data-cites="pkgrpart">(<a href="references.html#ref-pkgrpart" role="doc-biblioref">Therneau and Atkinson 2025</a>)</span>.</p>
+<p>Let’s see how this plays out in practice:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-decision-tree-timings-by-min-n" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A ggplot2 dotplot faceted by engine showing elapsed computation time versus minimum points per node. The x-axis shows parameter values from 0 to 40, while the y-axis shows elapsed time on a log scale from 1ms to 10s. Each engine panel contains scattered points colored by dataset size (1,000 to 100,000 rows), showing that fit times don't tend to vary relative to minimum points per node.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-decision-tree-timings-by-min-n-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="models_files/figure-html/fig-decision-tree-timings-by-min-n-1.png" class="img-fluid figure-img" style="width:100.0%" alt="A ggplot2 dotplot faceted by engine showing elapsed computation time versus minimum points per node. The x-axis shows parameter values from 0 to 40, while the y-axis shows elapsed time on a log scale from 1ms to 10s. Each engine panel contains scattered points colored by dataset size (1,000 to 100,000 rows), showing that fit times don't tend to vary relative to minimum points per node.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-decision-tree-timings-by-min-n-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2.2: Distributions of time-to-fit for various minimum points per node values, faceted by engine and colored according to numbers of rows. Generally, in practice, the minimum points per node doesn’t tend to affect fit times as tree complexity is mediated by other parameter values.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>This plot disaggregates the information in <a href="#fig-decision-tree-engines" class="quarto-xref">Figure&nbsp;<span>2.1</span></a>. Instead of summing across the time to fit and predict from each model to determine a data point (with varying values of <code>min_n</code> and other parameters), this plot shows one point per model fit. Generally, we see that <code>min_n</code> has little effect on the time to fit across all modeling engines supported by tidymodels.</p>
+<p>The <strong>Tree Depth</strong>, or <code>tree_depth</code> in tidymodels, is the maximum depth of the tree. For example, if <code>tree_depth = 2</code>, the tree must reach a node (i.e.&nbsp;a point at which a prediction is made rather than a further split) after splitting twice. Larger values of <code>tree_depth</code> allow for more complex trees, and thus the time to fit a decision tree increases as <code>tree_depth</code> does unless the complexity of the tree is mediated by some other parameter.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-decision-tree-timings-by-tree-depth" class="quarto-float quarto-figure quarto-figure-center anchored" alt="An identical plot to that above but plotting tree depth instead of minimum points per node. The C5.0 panel is empty, while partykit and rpart panels show positive correlation between tree depth and computation time, with larger datasets taking longer to compute across all depths.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-decision-tree-timings-by-tree-depth-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="models_files/figure-html/fig-decision-tree-timings-by-tree-depth-1.png" class="img-fluid figure-img" style="width:100.0%" alt="An identical plot to that above but plotting tree depth instead of minimum points per node. The C5.0 panel is empty, while partykit and rpart panels show positive correlation between tree depth and computation time, with larger datasets taking longer to compute across all depths.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-decision-tree-timings-by-tree-depth-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2.3: Distributions of time-to-fit for various tree depth values, faceted by engine and colored according to numbers of rows. For the engines that support tree depth, higher values of tree depth tend to result in greater fit times, even as other parameter values vary. C5.O doesn’t support the tree depth parameter <span class="citation" data-cites="pkgC50 pkgC502">(<a href="references.html#ref-pkgC50" role="doc-biblioref">Max Kuhn and Quinlan 2023</a>; <a href="references.html#ref-pkgC502" role="doc-biblioref">Quinlan 2014</a>)</span>.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The <strong>Cost of Complexity</strong>, or <code>cost_complexity</code> in tidymodels, is a penalization parameter (often referred to as <span class="math inline">\(C_p\)</span>) on adding additional complexity to the tree. This parameter is only used by CART models, so is available only for specific engines. When training CART-based decision trees, once splits are generated, each are evaluated according to how much they decrease error on out-of-sample data relative to the tree without that split. If the decrease in error doesn’t surpass some threshold <span class="math inline">\(C_p\)</span>, the split is “pruned” back, forming a less complex tree. Higher values of penalization mean that the decision tree will evaluate (and thus search for) fewer splits in total, ultimately saving “considerable computational effort” and decreasing the time to fit the model <span class="citation" data-cites="pkgrpart kuhn2013applied">(<a href="references.html#ref-pkgrpart" role="doc-biblioref">Therneau and Atkinson 2025</a>; <a href="references.html#ref-kuhn2013applied" role="doc-biblioref">M. Kuhn 2013</a>)</span>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-decision-tree-timings-by-cost-complexity" class="quarto-float quarto-figure quarto-figure-center anchored" alt="An identical plot to that above but plotting cost of complexity instead of tree depth. The C5.0 and partykit panels are empty, while rpart panel shows scattered points across complexity values, with computation time primarily determined by dataset size rather than complexity parameter.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-decision-tree-timings-by-cost-complexity-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="models_files/figure-html/fig-decision-tree-timings-by-cost-complexity-1.png" class="img-fluid figure-img" style="width:100.0%" alt="An identical plot to that above but plotting cost of complexity instead of tree depth. The C5.0 and partykit panels are empty, while rpart panel shows scattered points across complexity values, with computation time primarily determined by dataset size rather than complexity parameter.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-decision-tree-timings-by-cost-complexity-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2.4: Distributions of time-to-fit for various values of cost of complexity, faceted by engine and colored according to numbers of rows. Neither C5.0 nor partykit make use of this parameter <span class="citation" data-cites="pkgC502 pkgpartykit2">(<a href="references.html#ref-pkgC502" role="doc-biblioref">Quinlan 2014</a>; <a href="references.html#ref-pkgpartykit2" role="doc-biblioref">Hothorn, Hornik, and Zeileis 2006</a>)</span>.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>C5.0 and partykit make use of related parameters to automatically prune trees, though they aren’t supported by tidymodels as a default tuning parameter as they’re engine-specific. C5.0’s <em>confidence factor</em> parameter is a very computationally efficient way to control complexity, though do note that the approach stands on “shaky statistical grounds” <span class="citation" data-cites="kuhn2013applied">(<a href="references.html#ref-kuhn2013applied" role="doc-biblioref">M. Kuhn 2013</a>)</span>. partykit determines whether a split is “worth it” based on hypothesis testing, and the significance level of that hypothesis test can be used to prune splits more aggressively <span class="citation" data-cites="pkgpartykit2">(<a href="references.html#ref-pkgpartykit2" role="doc-biblioref">Hothorn, Hornik, and Zeileis 2006</a>)</span>.</p>
+</div>
+</div>
+<p>Again, the time-consuming portion of fitting decision trees is searching for optimal predictor values to split on. Because of this, more complex trees tend to take longer to fit than less complex trees. On its own, though, this doesn’t necessarily mean that setting an individual parameter value to allow for a more complex tree will result in a longer fit time, and we saw this effect above. Instead, the complex interplay of many parameter values simultaneously allowing for greater complexity is what drives longer fit times. We can quickly demonstrate this in-the-small with a brief set of model fits.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># generate a dataset with 100,000 rows</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">simulate_classification</span>(<span class="dv">100000</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># define a decision tree model specification</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>spec_small <span class="ot">&lt;-</span>  </span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">decision_tree</span>(<span class="at">cost_complexity =</span> .<span class="dv">1</span>, <span class="at">tree_depth =</span> <span class="dv">2</span>, <span class="at">min_n =</span> <span class="dv">1000</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"rpart"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"classification"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In the above, <code>spec_small</code> defines a very minimal tree; this <code>cost_complexity()</code> value heavily penalizes further splits, the <code>tree_depth</code> describes a very shallow tree, and <code>min_n</code> only allows for further splits when a given split contains <em>many</em> observations.</p>
+<p>Now, we can examine the effect of setting individual values on fit time by benchmarking the time to fit a simple tree by all measures, then toggling each of the parameter values individually to allow for more complex trees, and finally by toggling all of them to allow for a very complex tree.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>bench<span class="sc">::</span><span class="fu">mark</span>(</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># small by all measures</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">small =</span> <span class="fu">fit</span>(<span class="at">object =</span> spec_small, <span class="at">formula =</span> class <span class="sc">~</span> ., <span class="at">data =</span> d),</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># allowing for greater complexity with only one parameter value</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">complex_cost_complexity =</span> <span class="fu">fit</span>(</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_args</span>(spec_small, <span class="at">cost_complexity =</span> <span class="fl">10e-9</span>), class <span class="sc">~</span> ., d</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">complex_tree_depth =</span> <span class="fu">fit</span>(</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_args</span>(spec_small, <span class="at">tree_depth =</span> <span class="dv">30</span>), class <span class="sc">~</span> ., d</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">complex_min_n =</span> <span class="fu">fit</span>(</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_args</span>(spec_small, <span class="at">min_n =</span> <span class="dv">1</span>), class <span class="sc">~</span> ., d</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># allowing for greater complexity with all parameter values</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">complex =</span> <span class="fu">fit</span>(</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set_args</span>(spec_small, <span class="at">cost_complexity =</span> <span class="fl">10e-9</span>, <span class="at">tree_depth =</span> <span class="dv">30</span>, <span class="at">min_n =</span> <span class="dv">1</span>),</span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>    class <span class="sc">~</span> ., </span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>    d</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">check =</span> <span class="cn">FALSE</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 3
+  expression                median mem_alloc
+* &lt;bch:expr&gt;              &lt;bch:tm&gt; &lt;bch:byt&gt;
+1 small                   750.08ms     102MB
+2 complex_cost_complexity 814.43ms     102MB
+3 complex_tree_depth          1.2s     102MB
+4 complex_min_n           749.36ms     102MB
+5 complex                    7.16s     124MB</code></pre>
+</div>
+</div>
+<p>Again, we see that individual parameter values allowing for greater complexity are mediated by other parameter values, but setting them all together allows for a complex tree and, thus, a significantly longer fit time.</p>
+<p><em>Summary: Decision Trees</em></p>
+<ul>
+<li>More complex decision trees take longer to fit.</li>
+<li>Setting individual parameter values to allow for more complex fits doesn’t necessarily mean that a tree will take longer to fit.</li>
+<li>Compared to many of the other methods described in this chapter, decision trees are quite quick-fitting.</li>
+</ul>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-pkgpartykit2" class="csl-entry" role="listitem">
+Hothorn, Torsten, Kurt Hornik, and Achim Zeileis. 2006. <span>“Unbiased Recursive Partitioning: A Conditional Inference Framework.”</span> <em>Journal of Computational and Graphical Statistics</em> 15 (3): 651–74. <a href="https://doi.org/10.1198/106186006X133933">https://doi.org/10.1198/106186006X133933</a>.
+</div>
+<div id="ref-kuhn2013applied" class="csl-entry" role="listitem">
+Kuhn, M. 2013. <span>“Applied Predictive Modeling.”</span> Springer.
+</div>
+<div id="ref-pkgC50" class="csl-entry" role="listitem">
+Kuhn, Max, and Ross Quinlan. 2023. <em><span>C50</span>: C5.0 Decision Trees and Rule-Based Models</em>. <a href="https://CRAN.R-project.org/package=C50">https://CRAN.R-project.org/package=C50</a>.
+</div>
 <div id="ref-kuhn2022" class="csl-entry" role="listitem">
 Kuhn, Max, and Julia Silge. 2022. <em>Tidy Modeling with <span>R</span></em>. " O’Reilly Media, Inc.".
 </div>
+<div id="ref-pkgC502" class="csl-entry" role="listitem">
+Quinlan, J Ross. 2014. <em><span>C4.5</span>: Programs for Machine Learning</em>. Elsevier.
+</div>
+<div id="ref-pkgrpart" class="csl-entry" role="listitem">
+Therneau, Terry, and Beth Atkinson. 2025. <em>Rpart: Recursive Partitioning and Regression Trees</em>. <a href="https://CRAN.R-project.org/package=rpart">https://CRAN.R-project.org/package=rpart</a>.
+</div>
 </div>
 </section>
+</section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>That is, tidymodels provides default distributions of parameter values to sample from for these parameters. Other parameters can be tuned by providing your own distributions using the dials package.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->

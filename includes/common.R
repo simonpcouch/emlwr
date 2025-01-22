@@ -30,8 +30,8 @@ trim_bench_mark <- function(bench_mark) {
 
 # ggplot styling ---------------------------------------------------------------
 options(
-  ggplot2.discrete.colour = c("#42725c", "#cd6f3d", "#1a162d", "#a8ab71"),
-  ggplot2.discrete.fill = c("#42725c", "#cd6f3d", "#1a162d", "#a8ab71")
+  ggplot2.discrete.colour = c("#42725c", "#cd6f3d", "#1a162d", "#a8ab71", "#858585", "#d8b365"),
+  ggplot2.discrete.fill = c("#42725c", "#cd6f3d", "#1a162d", "#a8ab71", "#858585", "#d8b365")
 )
 
 # functions to simulate data ---------------------------------------------------
