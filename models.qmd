@@ -290,7 +290,6 @@ ui <- page_fillable(
     bg = "#ffffff",
     fg = "#333333",
     primary = "#42725c",
-    font_scale = .8
   ),
   title = "Time To Tune",
   layout_columns(
@@ -314,17 +313,17 @@ ui <- page_fillable(
         choices = unique(bm$task),
         selected = "regression"
       ),
-      sliderInput(
-        "n_workers", "Number of Workers:",
-        value = 1,
-        min = 1,
-        max = 10,
-        step = 1
-      ),
-      selectInput(
-        "tuning_fn", "Tuning Function:",
-        choices = unique(bm$tuning_fn)
-      ),
+      # sliderInput(
+      #   "n_workers", "Number of Workers:",
+      #   value = 1,
+      #   min = 1,
+      #   max = 10,
+      #   step = 1
+      # ),
+      # selectInput(
+      #   "tuning_fn", "Tuning Function:",
+      #   choices = unique(bm$tuning_fn)
+      # ),
       selectInput(
         "cpu", "CPU:", 
         choices = NULL
@@ -353,8 +352,8 @@ server <- function(input, output, session) {
     new_data <- bm[
       bm$model %in% input$model &
         bm$task == input$task &
-        bm$n_workers == input$n_workers &
-        bm$tuning_fn == input$tuning_fn,
+        bm$n_workers == 1 &
+        bm$tuning_fn == "tune_grid",
     ]
     
     if (!identical(input$cpu, "")) {
@@ -615,7 +614,9 @@ plot_engines(model_type = "decision_tree", mode = "classification")
 
 @fig-decision-tree-engines is a special case of the Time to Tune app from @sec-models-benchmarks; each data point shows the total time to fit and predict from 100 decision trees of varying parameterizations. `partykit` consistently evaluates the fastest across all dataset sizes, while `C5.0` is the slowest, with the performance gap between engines widening as the number of rows increases.
 
-tidymodels supports tuning the decision tree hyperparameters `min_n`, `tree_depth`, and `cost_complexity`.^[That is, tidymodels provides default distributions of parameter values to sample from for these parameters. Other parameters can be tuned by providing your own distributions using the dials package.] We'll discuss the implications for each on the time to fit decision trees in the rest of this section. In general, though, it's helpful to keep in mind that the computationally intensive part of fitting decision trees is the search for optimal split points. Because of this, more complex trees generally take longer to fit than less complex trees, and parameter values allowing for more complex trees will tend to result in longer fit times. That said, the effect on fit time of changing individual parameter values is often relatively mild, as changes in one parameter value are mediated by other parameters.
+tidymodels supports tuning the decision tree hyperparameters `min_n`, `tree_depth`, and `cost_complexity`.[^models-1] We'll discuss the implications for each on the time to fit decision trees in the rest of this section. In general, though, it's helpful to keep in mind that the computationally intensive part of fitting decision trees is the search for optimal split points. Because of this, more complex trees generally take longer to fit than less complex trees, and parameter values allowing for more complex trees will tend to result in longer fit times. That said, the effect on fit time of changing individual parameter values is often relatively mild, as changes in one parameter value are mediated by other parameters.
+
+[^models-1]: That is, tidymodels provides default distributions of parameter values to sample from for these parameters. Other parameters can be tuned by providing your own distributions using the dials package.
 
 First, the **Minimum Points Per Node**, or `min_n`, is the minimum number of training set observations in a node required for the node to be split further. For example, if only 3 observations meet some split criteria `some_variable < 2` and `min_n` is set to 3, then the tree will make a prediction at that node rather than considering whether to further break those 3 observations up into smaller buckets based on another split criteria before making predictions. Smaller values of `min_n` allow for more complex trees, and thus the time to fit a decision tree is inversely correlated to `min_n` when the complexity of the tree isn't mediated by other parameter values. In CART-based settings like with `engine = "rpart"`, `min_n` can usually be set to a reasonably high value without affecting predictive performance "since smaller nodes are almost always pruned away by cross-validation"; in other words, even if the tree is allowed to generate more splits via a small `min_n` value, those splits based on smaller numbers of observations are often pruned away via the `cost_complexity` parameter anyway [@pkgrpart].
 
@@ -673,8 +674,8 @@ plot_parameter_vs_timing_by_engine(
   scale_x_log10()
 ```
 
-:::callout-note
-C5.0 and partykit make use of related parameters to automatically prune trees, though they aren't supported by tidymodels as a default tuning parameter as they're engine-specific. C5.0's _confidence factor_ parameter is a very computationally efficient way to control complexity, though do note that the approach stands on "shaky statistical grounds" [@kuhn2013applied]. partykit determines whether a split is "worth it" based on hypothesis testing, and the significance level of that hypothesis test can be used to prune splits more aggressively [@pkgpartykit2]. 
+::: callout-note
+C5.0 and partykit make use of related parameters to automatically prune trees, though they aren't supported by tidymodels as a default tuning parameter as they're engine-specific. C5.0's *confidence factor* parameter is a very computationally efficient way to control complexity, though do note that the approach stands on "shaky statistical grounds" [@kuhn2013applied]. partykit determines whether a split is "worth it" based on hypothesis testing, and the significance level of that hypothesis test can be used to prune splits more aggressively [@pkgpartykit2].
 :::
 
 Again, the time-consuming portion of fitting decision trees is searching for optimal predictor values to split on. Because of this, more complex trees tend to take longer to fit than less complex trees. On its own, though, this doesn't necessarily mean that setting an individual parameter value to allow for a more complex tree will result in a longer fit time, and we saw this effect above. Instead, the complex interplay of many parameter values simultaneously allowing for greater complexity is what drives longer fit times. We can quickly demonstrate this in-the-small with a brief set of model fits.
@@ -692,7 +693,7 @@ spec_small <-
   set_mode("classification")
 ```
 
-In the above, `spec_small` defines a very minimal tree; this `cost_complexity()` value heavily penalizes further splits, the `tree_depth` describes a very shallow tree, and `min_n` only allows for further splits when a given split contains _many_ observations.
+In the above, `spec_small` defines a very minimal tree; this `cost_complexity()` value heavily penalizes further splits, the `tree_depth` describes a very shallow tree, and `min_n` only allows for further splits when a given split contains *many* observations.
 
 Now, we can examine the effect of setting individual values on fit time by benchmarking the time to fit a simple tree by all measures, then toggling each of the parameter values individually to allow for more complex trees, and finally by toggling all of them to allow for a very complex tree.
 
@@ -773,8 +774,8 @@ decision_tree_args
 
 Again, we see that individual parameter values allowing for greater complexity are mediated by other parameter values, but setting them all together allows for a complex tree and, thus, a significantly longer fit time.
 
-_Summary: Decision Trees_
+*Summary: Decision Trees*
 
-* More complex decision trees take longer to fit.
-* Setting individual parameter values to allow for more complex fits doesn't necessarily mean that a tree will take longer to fit.
-* Compared to many of the other methods described in this chapter, decision trees are quite quick-fitting.
+-   More complex decision trees take longer to fit.
+-   Setting individual parameter values to allow for more complex fits doesn't necessarily mean that a tree will take longer to fit.
+-   Compared to many of the other methods described in this chapter, decision trees are quite quick-fitting.

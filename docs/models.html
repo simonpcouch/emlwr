@@ -430,7 +430,7 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 1 × 2
   expression   median
 * &lt;bch:expr&gt; &lt;bch:tm&gt;
-1 fit          2.37ms</code></pre>
+1 fit          2.28ms</code></pre>
 </div>
 </div>
 <p>Pretty dang fast. That means that, if the tidymodels overhead is one second, we’ve made this model fit a thousand times slower!</p>
@@ -447,11 +447,11 @@ Residual Deviance: 54.75    AIC: 102.8</code></pre>
 <pre><code># A tibble: 2 × 3
   expression   median mem_alloc
 * &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:byt&gt;
-1 parsnip      3.27ms    1.22MB
-2 stats        2.35ms    1.21MB</code></pre>
+1 parsnip      3.19ms    1.22MB
+2 stats        2.33ms    1.21MB</code></pre>
 </div>
 </div>
-<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.929 milliseconds, or 28.4% of the total elapsed time.</p>
+<p>Remember that the first expression calls the second one, so the increase in time from the second to the first is the “overhead.” In this case, it’s 0.858 milliseconds, or 26.9% of the total elapsed time.</p>
 <p>So, to fit a boosted tree model on 1,000,000 data points, step <strong>2)</strong> might take a few seconds. Steps <strong>1)</strong> and <strong>3)</strong> don’t care about the size of the data, so they still take a few thousandths of a second. No biggie—the overhead is negligible. Let’s quickly back that up by fitting boosted tree models on simulated datasets of varying sizes, once with the XGBoost interface and once with parsnip’s wrapper around it.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -527,7 +527,6 @@ ui &lt;- page_fillable(
     bg = "#ffffff",
     fg = "#333333",
     primary = "#42725c",
-    font_scale = .8
   ),
   title = "Time To Tune",
   layout_columns(
@@ -551,17 +550,17 @@ ui &lt;- page_fillable(
         choices = unique(bm$task),
         selected = "regression"
       ),
-      sliderInput(
-        "n_workers", "Number of Workers:",
-        value = 1,
-        min = 1,
-        max = 10,
-        step = 1
-      ),
-      selectInput(
-        "tuning_fn", "Tuning Function:",
-        choices = unique(bm$tuning_fn)
-      ),
+      # sliderInput(
+      #   "n_workers", "Number of Workers:",
+      #   value = 1,
+      #   min = 1,
+      #   max = 10,
+      #   step = 1
+      # ),
+      # selectInput(
+      #   "tuning_fn", "Tuning Function:",
+      #   choices = unique(bm$tuning_fn)
+      # ),
       selectInput(
         "cpu", "CPU:", 
         choices = NULL
@@ -590,8 +589,8 @@ server &lt;- function(input, output, session) {
     new_data &lt;- bm[
       bm$model %in% input$model &amp;
         bm$task == input$task &amp;
-        bm$n_workers == input$n_workers &amp;
-        bm$tuning_fn == input$tuning_fn,
+        bm$n_workers == 1 &amp;
+        bm$tuning_fn == "tune_grid",
     ]
     
     if (!identical(input$cpu, "")) {
